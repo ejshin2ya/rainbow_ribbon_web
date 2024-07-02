@@ -1,4 +1,4 @@
-# 무지개리본 웹
+# 무지개리본 Web
 
 # Getting Started with Create React App
 
