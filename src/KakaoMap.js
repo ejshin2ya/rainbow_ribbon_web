@@ -11,10 +11,12 @@ const KakaoMap = () => {
   const circleRef = useRef(null) // 원 객체
   const overlaysRef = useRef([]) // 모든 오버레이를 추적
   const markersRef = useRef([]) // 모든 마커를 추적
+  const [currentPosition, setCurrentPosition] = useState(null) // 현재 위치 상태
 
   // public 폴더 내 이미지 경로
   const selectedMarkerImage = "/assets/images/icMapMarkerOrange.png"
   const unselectedMarkerImage = "/assets/images/icMapMarkerGray.png"
+  const currentLocationImage = "/assets/images/icCurrentLocation.png" // 현재 위치 아이콘 경로
 
   useEffect(() => {
     const script = document.createElement("script")
@@ -39,9 +41,10 @@ const KakaoMap = () => {
     if (map) {
       window.updateLocation = (latitude, longitude) => {
         const locPosition = new window.kakao.maps.LatLng(latitude, longitude)
+        setCurrentPosition(locPosition) // 현재 위치 설정
         map.setCenter(locPosition)
         fetchLocations(latitude, longitude, distance)
-        drawCircle(latitude, longitude, distance)
+        drawCircle(locPosition, distance)
       }
     }
   }, [map])
@@ -58,8 +61,11 @@ const KakaoMap = () => {
         newLevel = 10
       }
       map.setLevel(newLevel)
+      if (currentPosition) {
+        drawCircle(currentPosition, distance)
+      }
     }
-  }, [distance, map])
+  }, [distance, map, currentPosition])
 
   const fetchLocations = async (latitude, longitude, distance) => {
     try {
@@ -81,13 +87,13 @@ const KakaoMap = () => {
     }
   }
 
-  const drawCircle = (latitude, longitude, distance) => {
+  const drawCircle = (position, distance) => {
     if (circleRef.current) {
       circleRef.current.setMap(null)
     }
 
     const circleOptions = {
-      center: new window.kakao.maps.LatLng(latitude, longitude),
+      center: position,
       radius: distance * 1000,
       strokeWeight: 1,
       strokeColor: "#FC9974",
@@ -183,13 +189,37 @@ const KakaoMap = () => {
     }
   }, [map, markers])
 
+  // 현재 위치 마커 생성
+  useEffect(() => {
+    if (map && currentPosition) {
+      const markerImageSrc = currentLocationImage
+      const markerImageSize = new window.kakao.maps.Size(25, 25)
+      const markerImageOption = { offset: new window.kakao.maps.Point(12, 35) }
+      const markerImage = new window.kakao.maps.MarkerImage(
+        markerImageSrc,
+        markerImageSize,
+        markerImageOption
+      )
+
+      const currentMarker = new window.kakao.maps.Marker({
+        map: map,
+        position: currentPosition,
+        image: markerImage,
+      })
+
+      return () => {
+        currentMarker.setMap(null)
+      }
+    }
+  }, [map, currentPosition])
+
   const handleDropdownClick = (value) => {
     setDistance(value)
     setIsDropdownOpen(false)
   }
 
   return (
-    <div style={{ width: "100%", height: "75vh", position: "relative" }}>
+    <div style={{ width: "100%", height: "175vh", position: "relative" }}>
       <div className="dropdown" onClick={() => setIsDropdownOpen(true)}>
         <label>내 주변 {distance}km</label>
       </div>
