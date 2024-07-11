@@ -35,40 +35,16 @@ const KakaoMap = () => {
     document.head.appendChild(script)
   }, [])
 
-  // GPS 데이터 받아오기
-  useEffect(() => {
-    if (map && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          const locPosition = new window.kakao.maps.LatLng(latitude, longitude)
-          map.setCenter(locPosition)
-          fetchLocations(latitude, longitude, distance)
-          drawCircle(latitude, longitude, distance) // 원 그리기
-          console.log("Latitude:", latitude, "Longitude:", longitude)
-        },
-        (error) => {
-          console.error("Error getting GPS location:", error)
-          alert("위치 정보를 가져오는데 실패했습니다.")
-        },
-        { enableHighAccuracy: true }
-      )
-    } else if (!navigator.geolocation) {
-      alert("GPS를 지원하지 않습니다")
-    }
-  }, [map])
-
   useEffect(() => {
     if (map) {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-          const { latitude, longitude } = position.coords
-          fetchLocations(latitude, longitude, distance)
-          drawCircle(latitude, longitude, distance) // 원 그리기
-        })
+      window.updateLocation = (latitude, longitude) => {
+        const locPosition = new window.kakao.maps.LatLng(latitude, longitude)
+        map.setCenter(locPosition)
+        fetchLocations(latitude, longitude, distance)
+        drawCircle(latitude, longitude, distance)
       }
     }
-  }, [distance, map])
+  }, [map])
 
   // 지도 레벨 변경 로직
   useEffect(() => {
@@ -85,7 +61,6 @@ const KakaoMap = () => {
     }
   }, [distance, map])
 
-  // 백엔드 서버에서 위치 데이터 가져오기
   const fetchLocations = async (latitude, longitude, distance) => {
     try {
       const response = await axios.get(
@@ -98,7 +73,7 @@ const KakaoMap = () => {
           },
         }
       )
-      const locations = response.data.data // 데이터 형식에 맞게 수정
+      const locations = response.data.data
       console.log("Fetched locations:", locations)
       setMarkers(locations)
     } catch (error) {
@@ -106,15 +81,14 @@ const KakaoMap = () => {
     }
   }
 
-  // 원 그리기 함수
   const drawCircle = (latitude, longitude, distance) => {
     if (circleRef.current) {
-      circleRef.current.setMap(null) // 기존 원 제거
+      circleRef.current.setMap(null)
     }
 
     const circleOptions = {
       center: new window.kakao.maps.LatLng(latitude, longitude),
-      radius: distance * 1000, // km를 미터로 변환
+      radius: distance * 1000,
       strokeWeight: 1,
       strokeColor: "#FC9974",
       strokeOpacity: 0.8,
@@ -127,11 +101,10 @@ const KakaoMap = () => {
     circleRef.current = newCircle
   }
 
-  // 마커와 인포윈도우 생성 함수
   const createMarker = (map, position, index) => {
     const markerImageSrc = unselectedMarkerImage
-    const markerImageSize = new window.kakao.maps.Size(25, 25) // 마커 이미지 크기 설정
-    const markerImageOption = { offset: new window.kakao.maps.Point(12, 35) } // 마커 이미지의 중심 좌표 설정
+    const markerImageSize = new window.kakao.maps.Size(25, 25)
+    const markerImageOption = { offset: new window.kakao.maps.Point(12, 35) }
     const markerImage = new window.kakao.maps.MarkerImage(
       markerImageSrc,
       markerImageSize,
@@ -168,13 +141,10 @@ const KakaoMap = () => {
     })
 
     window.kakao.maps.event.addListener(marker, "click", () => {
-      // 기존의 열려있는 모든 오버레이를 닫음
       overlaysRef.current.forEach((overlay) => overlay.setMap(null))
-      // 새로운 인포윈도우 열기
       customOverlay.setMap(map)
-      // 현재 열려있는 인포윈도우로 설정
       overlaysRef.current = [customOverlay]
-      // 기존 선택된 마커를 회색으로 변경
+
       if (selectedMarker) {
         selectedMarker.setImage(
           new window.kakao.maps.MarkerImage(
@@ -184,7 +154,7 @@ const KakaoMap = () => {
           )
         )
       }
-      // 현재 선택된 마커를 오렌지색으로 변경
+
       marker.setImage(
         new window.kakao.maps.MarkerImage(
           selectedMarkerImage,
@@ -192,23 +162,20 @@ const KakaoMap = () => {
           markerImageOption
         )
       )
-      // 선택된 마커 업데이트
+
       setSelectedMarker(marker)
     })
 
     return marker
   }
 
-  // 마커 표시하기
   useEffect(() => {
     if (map && markers.length > 0) {
       console.log("Markers to display:", markers)
-      // 기존 마커 제거
       markersRef.current.forEach((marker) => marker.setMap(null))
       overlaysRef.current.forEach((overlay) => overlay.setMap(null))
       markersRef.current = []
       overlaysRef.current = []
-      // 새 마커 생성
       markers.forEach((location, index) => {
         const marker = createMarker(map, location, index)
         markersRef.current.push(marker)
@@ -222,19 +189,14 @@ const KakaoMap = () => {
   }
 
   return (
-    <div style={{ width: "100%", height: "125vh", position: "relative" }}>
+    <div style={{ width: "100%", height: "75vh", position: "relative" }}>
       <div className="dropdown" onClick={() => setIsDropdownOpen(true)}>
-        <label className="dropdown-label">내 주변 {distance}km </label>
-        <img
-          className="icChevron"
-          alt="ic_chevron"
-          src="assets/images/ic_chevron.png"
-        />
+        <label>내 주변 {distance}km</label>
       </div>
       {isDropdownOpen && (
         <div className="dropdown-modal">
           <div className="dropdown-content">
-            {[20, 30, 50].map((value) => (
+            {[20, 30, 50, 100].map((value) => (
               <div
                 key={value}
                 className="dropdown-item"
