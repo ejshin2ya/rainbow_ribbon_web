@@ -26,6 +26,7 @@ const KakaoMap = () => {
         const mapOption = {
           center: new window.kakao.maps.LatLng(33.450701, 126.570667),
           level: 10,
+          draggable: true, // 드래그 가능하게 설정
         }
         const kakaoMap = new window.kakao.maps.Map(mapContainer, mapOption)
         setMap(kakaoMap)
@@ -37,14 +38,21 @@ const KakaoMap = () => {
   // GPS 데이터 받아오기
   useEffect(() => {
     if (map && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords
-        const locPosition = new window.kakao.maps.LatLng(latitude, longitude)
-        map.setCenter(locPosition)
-        fetchLocations(latitude, longitude, distance)
-        drawCircle(latitude, longitude, distance) // 원 그리기
-        console.log(latitude, longitude)
-      })
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          const locPosition = new window.kakao.maps.LatLng(latitude, longitude)
+          map.setCenter(locPosition)
+          fetchLocations(latitude, longitude, distance)
+          drawCircle(latitude, longitude, distance) // 원 그리기
+          console.log("Latitude:", latitude, "Longitude:", longitude)
+        },
+        (error) => {
+          console.error("Error getting GPS location:", error)
+          alert("위치 정보를 가져오는데 실패했습니다.")
+        },
+        { enableHighAccuracy: true }
+      )
     } else if (!navigator.geolocation) {
       alert("GPS를 지원하지 않습니다")
     }
@@ -110,7 +118,7 @@ const KakaoMap = () => {
       strokeWeight: 1,
       strokeColor: "#FC9974",
       strokeOpacity: 0.8,
-      fillColor: "#FC997420",
+      fillColor: "#FC997410",
       fillOpacity: 0.7,
     }
 
@@ -166,7 +174,6 @@ const KakaoMap = () => {
       customOverlay.setMap(map)
       // 현재 열려있는 인포윈도우로 설정
       overlaysRef.current = [customOverlay]
-
       // 기존 선택된 마커를 회색으로 변경
       if (selectedMarker) {
         selectedMarker.setImage(
@@ -177,7 +184,6 @@ const KakaoMap = () => {
           )
         )
       }
-
       // 현재 선택된 마커를 오렌지색으로 변경
       marker.setImage(
         new window.kakao.maps.MarkerImage(
@@ -186,7 +192,6 @@ const KakaoMap = () => {
           markerImageOption
         )
       )
-
       // 선택된 마커 업데이트
       setSelectedMarker(marker)
     })
