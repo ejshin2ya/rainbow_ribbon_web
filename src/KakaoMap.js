@@ -189,7 +189,7 @@ const KakaoMap = () => {
   }
 
   return (
-    <div style={{ width: "100%", height: "125vh", position: "relative" }}>
+    <div style={{ width: "100%", height: "75vh", position: "relative" }}>
       <div className="dropdown" onClick={() => setIsDropdownOpen(true)}>
         <label>내 주변 {distance}km</label>
       </div>
