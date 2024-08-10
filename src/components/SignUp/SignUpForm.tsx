@@ -6,7 +6,7 @@ import AccountInfo from "./AccountInfo";
 import BusinessInfo from "./BusinessInfo";
 
 enum SignUpStep {
-  TermsAgreement,
+  termsAgreedInfo,
   UserInfo,
   AccountInfo,
   BusinessInfo,
@@ -14,10 +14,10 @@ enum SignUpStep {
 
 const SignUpForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<SignUpStep>(
-    SignUpStep.TermsAgreement
+    SignUpStep.termsAgreedInfo
   );
   const [formData, setFormData] = useState({
-    termsAgreed: false,
+    termsAgreedInfo: {},
     userInfo: {},
     accountInfo: {},
     businessInfo: {},
@@ -37,7 +37,7 @@ const SignUpForm: React.FC = () => {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case SignUpStep.TermsAgreement:
+      case SignUpStep.termsAgreedInfo:
         return (
           <TermsAgreement
             onNext={handleNextStep}
@@ -85,7 +85,6 @@ const FormContainer = styled.div`
   max-width: 500px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f5f5f5;
   border-radius: 8px;
 `;
 

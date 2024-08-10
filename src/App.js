@@ -12,7 +12,15 @@ const App = () => {
         <Route path="/kakao-map" element={<KakaoMap />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/" element={<div>메인 페이지</div>} />
+        <Route
+          path="/"
+          element={
+            <>
+              <div>메인 페이지</div>
+              <a href="/login">로그인 페이지</a>
+            </>
+          }
+        />
       </Routes>
     </Router>
   );
