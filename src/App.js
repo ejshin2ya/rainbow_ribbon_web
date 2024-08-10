@@ -3,7 +3,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import KakaoMap from "./KakaoMap";
 import LoginPage from "./pages/login";
-import SignupPage from "./pages/SignUp";
+import SignupPage from "./pages/signup";
 
 const App = () => {
   return (
