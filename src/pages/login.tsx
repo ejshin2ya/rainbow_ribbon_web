@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
           </CheckboxContainer>
         </FormBox>
         <LinkContainer>
-          <Link href="#">회원가입</Link>
+          <Link href="/signup">회원가입</Link>
           <Link href="#">아이디 찾기</Link>
           <Link href="#">비밀번호 찾기</Link>
         </LinkContainer>
