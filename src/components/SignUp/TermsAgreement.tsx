@@ -27,13 +27,14 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
     "서비스/이벤트 정보 수신 동의",
   ];
 
-  const [TermsAgreedInfoData, setTermsAgreedInfoData] =
+  const [TermsAgreedInfoData, setTermsAgreedInfoData] = //전체동의 여부와, 개별항목 동의 여부 상태 저장
     useState<TermsAgreedInfoData>({
       allAgreed: false,
       agreements: Array(terms.length).fill(false),
     });
 
   const handleAgreeAllChange = () => {
+    //전체동의 선택시 useState 함수가 작동되어 값을 업데이트하고 렌더링 하는 함수
     const newState = TermsAgreedInfoData.allAgreed;
     setTermsAgreedInfoData((prev) => ({
       ...prev,
@@ -43,6 +44,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
   };
 
   const handleIndividualChange = (index: number) => {
+    //개별 항목 동의 선택시 useState 함수가 작동되어 값을 업데이트하고 렌더링하는 함수
     const newAgreements = [...TermsAgreedInfoData.agreements];
     newAgreements[index] = !newAgreements[index];
     setTermsAgreedInfoData((prev) => ({
@@ -53,6 +55,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
   };
 
   const handleSubmit = (e: React.FormEvent) => {
+    //전체동의 완료 후 제출 버튼 선택시 상위 컴포넌트인 SignUpForm 컴포넌트로 값을 보내주는 함수
     e.preventDefault();
     updateFormData({ termsAgreedInfo: TermsAgreedInfoData });
     onNext();
@@ -70,31 +73,68 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
           진행하시기 전에 내용을 검토하고 동의해 주세요.
         </SubTitle>
         <CheckboxContainer>
-          <Checkbox
+          <AllCheckbox
+            id="checkbox"
             type="checkbox"
             checked={TermsAgreedInfoData.allAgreed}
             onChange={handleAgreeAllChange}
           />
+          <label htmlFor="checkbox" style={{ cursor: "pointer" }}>
+            <StyledCheckbox isChecked={TermsAgreedInfoData.allAgreed}>
+              <FaCheck color="#FFFFFF" display="relative" />
+            </StyledCheckbox>
+          </label>
           <Label>모든 약관에 동의합니다</Label>
         </CheckboxContainer>
         <TermsList>
           {terms.map((term, index) => (
             <TermItem key={index}>
-              <Checkbox
+              <HiddenCheckbox
+                id={`checkbox-${index}`}
                 checked={TermsAgreedInfoData.agreements[index]}
                 onChange={() => handleIndividualChange(index)}
               />
+              <label
+                htmlFor={`checkbox-${index}`}
+                style={{ cursor: "pointer" }}
+              >
+                <FaCheck
+                  color={
+                    TermsAgreedInfoData.agreements[index]
+                      ? "#FF6632"
+                      : "#EBEBEB"
+                  }
+                />
+              </label>
+
               <span>{term}</span>
             </TermItem>
           ))}
         </TermsList>
-        <SubmitButton type="submit" disabled={!TermsAgreedInfoData.allAgreed}>
+        <SubmitButton type="submit" isvalid={TermsAgreedInfoData.allAgreed}>
           시작하기
         </SubmitButton>
       </AgreementBox>
     </Container>
   );
 };
+
+const StyledCheckbox = styled.div<{ isChecked: boolean }>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  ${(props) => (props.isChecked ? "width: 21px;" : "width: 20px;")}
+  ${(props) => (props.isChecked ? "height: 21px;" : "height: 20px;")}
+  ${(props) =>
+    props.isChecked
+      ? "background-color: #ff6632;"
+      : "background-color: #FFFFFF;"}
+  border-radius: 4px;
+  ${(props) =>
+    props.isChecked
+      ? "border: 0px solid #ebebeb;"
+      : "border: 2px solid #ebebeb;"}
+`;
 
 const Container = styled.form`
   display: flex;
@@ -103,15 +143,23 @@ const Container = styled.form`
   min-height: 100vh;
 `;
 
+const AgreementBox = styled.div`
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: left;
+`;
+
 const Title = styled.h1`
-  font-size: 18px;
+  font-size: 22px;
   margin-bottom: 10px;
-  color: #333;
+  color: #181717;
 `;
 
 const SubTitle = styled.p`
-  font-size: 14px;
-  color: #888;
+  font-size: 16px;
+  color: #adadad;
   margin-bottom: 30px;
 `;
 
@@ -119,17 +167,28 @@ const CheckboxContainer = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  border-radius: 2px;
+  border: 1px solid #EBEBEB;
+  padding: 18px;
+}
 `;
 
-const Checkbox = styled.input.attrs({ type: "checkbox" })`
+const AllCheckbox = styled.input.attrs({ type: "checkbox" })`
+  display: none;
   width: 20px;
   height: 20px;
-  cursor: pointer;
+`;
+
+const HiddenCheckbox = styled.input.attrs({ type: "checkbox" })`
+  opacity: 0;
+  position: absolute,
+  width: 20px;
+  height: 20px;
 `;
 
 const Label = styled.label`
   margin-left: 10px;
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
   cursor: pointer;
 `;
@@ -152,7 +211,7 @@ const TermsList = styled.ul`
 
     span {
       font-size: 14px;
-      color: #555;
+      color: #181717;
     }
   }
 `;
@@ -163,15 +222,6 @@ const TermItem = styled.li`
   margin-bottom: 15px;
 `;
 
-const AgreementBox = styled.div`
-  background-color: white;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-  width: 400px;
-  text-align: center;
-`;
-
 const Logo = styled.div`
   text-align: left;
   margin-bottom: 20px;
@@ -180,10 +230,10 @@ const Logo = styled.div`
     width: 150px;
   }
 `;
-const SubmitButton = styled.button`
+const SubmitButton = styled.button<{ isvalid: boolean }>`
   width: 100%;
   padding: 15px;
-  background-color: #ff6f3c;
+  background-color: ${(props) => (props.isvalid ? "#FF6632" : "#EBEBEB")};
   color: white;
   border: none;
   border-radius: 5px;
