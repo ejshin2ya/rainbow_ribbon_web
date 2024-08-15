@@ -78,9 +78,10 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
             type="checkbox"
             checked={TermsAgreedInfoData.allAgreed}
             onChange={handleAgreeAllChange}
+            required
           />
           <label htmlFor="checkbox" style={{ cursor: "pointer" }}>
-            <StyledCheckbox isChecked={TermsAgreedInfoData.allAgreed}>
+            <StyledCheckbox Checked={TermsAgreedInfoData.allAgreed}>
               <FaCheck color="#FFFFFF" display="relative" />
             </StyledCheckbox>
           </label>
@@ -93,6 +94,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
                 id={`checkbox-${index}`}
                 checked={TermsAgreedInfoData.agreements[index]}
                 onChange={() => handleIndividualChange(index)}
+                required
               />
               <label
                 htmlFor={`checkbox-${index}`}
@@ -111,7 +113,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
             </TermItem>
           ))}
         </TermsList>
-        <SubmitButton type="submit" isvalid={TermsAgreedInfoData.allAgreed}>
+        <SubmitButton type="submit" disabled={!TermsAgreedInfoData.allAgreed}>
           시작하기
         </SubmitButton>
       </AgreementBox>
@@ -119,28 +121,22 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
   );
 };
 
-const StyledCheckbox = styled.div<{ isChecked: boolean }>`
+const StyledCheckbox = styled.div<{ Checked: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  ${(props) => (props.isChecked ? "width: 21px;" : "width: 20px;")}
-  ${(props) => (props.isChecked ? "height: 21px;" : "height: 20px;")}
-  ${(props) =>
-    props.isChecked
-      ? "background-color: #ff6632;"
-      : "background-color: #FFFFFF;"}
+  ${(props) => (props.Checked ? "width: 21px;" : "width: 20px;")}
+  ${(props) => (props.Checked ? "height: 21px;" : "height: 20px;")}
+  background-color: ${(props) => (props.Checked ? " #ff6632;" : "#FFFFFF;")}
   border-radius: 4px;
-  ${(props) =>
-    props.isChecked
-      ? "border: 0px solid #ebebeb;"
-      : "border: 2px solid #ebebeb;"}
+  border: ${(props) =>
+    props.Checked ? "0px solid #ebebeb;" : "2px solid #ebebeb;"};
 `;
 
 const Container = styled.form`
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
 `;
 
 const AgreementBox = styled.div`
@@ -230,19 +226,18 @@ const Logo = styled.div`
     width: 150px;
   }
 `;
-const SubmitButton = styled.button<{ isvalid: boolean }>`
+const SubmitButton = styled.button<{ disabled: boolean }>`
   width: 100%;
   padding: 15px;
-  background-color: ${(props) => (props.isvalid ? "#FF6632" : "#EBEBEB")};
+  background-color: ${(props) => (!props.disabled ? "#FF6632" : "#EBEBEB")};
   color: white;
   border: none;
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
 
-  &:hover {
-    background-color: #e65c2d;
-  }
+  &:hover { 
+  background-color:${(props) => (!props.disabled ? " #e65c2d" : "#EBEBEB")}
 `;
 
 export default TermsAgreement;
