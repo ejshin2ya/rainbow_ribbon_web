@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { GoArrowLeft } from "react-icons/go";
+import Input from "../common/Input";
+import Button from "../common/Button";
+import InputWithLabel from "../common/InputWithLabel";
+
 import { usePhoneVerification } from "../../hooks/PhoneVeritication";
 import useModal from "../../hooks/useModal";
 import Modal from "../common/Modal";
@@ -9,7 +12,6 @@ interface UserInfoProps {
   onNext: () => void;
   onPrev: () => void;
   updateFormData: (data: { userInfo: UserInfoData }) => void;
-  currentStep: number;
 }
 
 interface UserInfoData {
@@ -18,12 +20,7 @@ interface UserInfoData {
   verificationCode: string;
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({
-  onNext,
-  onPrev,
-  updateFormData,
-  currentStep,
-}) => {
+const UserInfo: React.FC<UserInfoProps> = ({ onNext, updateFormData }) => {
   const [userData, setUserData] = useState<UserInfoData>({
     name: "",
     phone: "",
@@ -92,56 +89,40 @@ const UserInfo: React.FC<UserInfoProps> = ({
         onClose={closeModal}
         message="입력시간을 초과했습니다.다시 인증해 주세요."
       />
-      <HeadBox>
-        <IconWrapper>
-          <GoArrowLeft size="2rem" type="button" onClick={onPrev}>
-            이전
-          </GoArrowLeft>
-        </IconWrapper>
-        <TextWrapper>
-          <Title>회원가입</Title>
-        </TextWrapper>
-      </HeadBox>
 
-      <ProgressBox>
-        <span>{currentStep}/3</span>
-        <ProgressBar
-          id="progress"
-          value={(currentStep / 3) * 100}
-          max="100"
-        ></ProgressBar>
-      </ProgressBox>
-
-      <SubTitle>회원 정보를 작성해 주세요.</SubTitle>
-
-      <Input
+      <InputWithLabel
+        label="이름"
+        htmlFor="name-input"
         type="text"
         name="name"
         value={userData.name}
         onChange={handleChange}
-        placeholder="이름"
+        placeholder="이름을 입력해 주세요."
         required
         disabled={isCodeVerified !== null && isCodeVerified}
       />
       <InputWrapper>
-        <Input
+        <InputWithLabel
+          label="휴대폰번호"
+          htmlFor="phone-input"
           type="tel"
           name="phone"
           value={userData.phone}
           onChange={handleChange}
-          placeholder="휴대폰번호"
+          placeholder="-없이 입력해 주세요."
           required
           disabled={isCodeVerified !== null && isCodeVerified}
         />
-        <VerificationButton
+        <Button
           type="button"
           onClick={handleVerificationRequest}
           disabled={
             mutation.isPending || (isCodeVerified !== null && isCodeVerified)
           }
+          addTopMargin={true}
         >
           {countdown !== null && countdown > 0 ? "다시받기" : "인증요청"}
-        </VerificationButton>
+        </Button>
       </InputWrapper>
       {mutation.isPending && <p>인증번호를 전송중입니다.</p>}
       {mutation.isError && <p>Error: {mutation.error?.message}</p>}
@@ -157,13 +138,13 @@ const UserInfo: React.FC<UserInfoProps> = ({
               required
               disabled={isCodeVerified !== null && isCodeVerified}
             />
-            <VerificationButton
+            <Button
               type="button"
               onClick={handleVerificationConfirm}
               disabled={isCodeVerified !== null && isCodeVerified}
             >
               확인
-            </VerificationButton>
+            </Button>
           </InputWrapper>
           {countdown !== null && countdown > 0 && (
             <Timer>남은시간: {formatTime(countdown)}</Timer>
@@ -182,86 +163,22 @@ const UserInfo: React.FC<UserInfoProps> = ({
         인증번호 문자는 발송되지 않습니다.
       </InfoText>
 
-      <NextButton type="submit" disabled={!isCodeVerified}>
+      <Button type="submit" disabled={!isCodeVerified}>
         다음
-      </NextButton>
+      </Button>
     </Form>
   );
 };
-
-const IconWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const TextWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 80%;
-`;
-
-const HeadBox = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
-
-const ProgressBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`;
-
-const ProgressBar = styled.progress`
-  width: 440px;
-  background-color: 10px;
-  color: #ff6632;
-`;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-`;
-
-const Title = styled.h1`
-  font-size: 1.5rem;
-  color: #333;
-`;
-
-const SubTitle = styled.h2`
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 1rem;
-`;
-
-const Input = styled.input`
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  flex: 1;
 `;
 
 const InputWrapper = styled.div`
   display: flex;
-  gap: 0.5rem;
-`;
-
-const VerificationButton = styled.button`
-  padding: 0.75rem 1rem;
-  background-color: #ff6f3d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
+  flex-direction: row;
 `;
 
 const Timer = styled.div`
@@ -276,17 +193,6 @@ const InfoText = styled.p`
   color: #888;
   line-height: 1.5;
   margin-top: -0.5rem;
-`;
-
-const NextButton = styled.button<{ disabled: boolean }>`
-  padding: 0.75rem;
-  background-color: ${(props) => (!props.disabled ? "#ff6f3d" : "#EBEBEB")};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
 `;
 
 export default UserInfo;

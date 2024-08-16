@@ -5,7 +5,6 @@ interface BusinessInfoProps {
   onSubmit: () => void;
   onPrev: () => void;
   updateFormData: (data: { businessInfo: BusinessInfoData }) => void;
-  currentStep: number;
 }
 
 interface BusinessInfoData {
@@ -18,7 +17,6 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({
   onSubmit,
   onPrev,
   updateFormData,
-  currentStep,
 }) => {
   const [businessData, setBusinessData] = useState<BusinessInfoData>({
     companyName: "",
@@ -39,7 +37,6 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h2>사업자 정보</h2>
       <Input
         type="text"
         name="companyName"
