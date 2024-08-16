@@ -5,6 +5,7 @@ interface AccountInfoProps {
   onNext: () => void;
   onPrev: () => void;
   updateFormData: (data: { accountInfo: AccountInfoData }) => void;
+  currentStep: number;
 }
 
 interface AccountInfoData {
@@ -17,6 +18,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   onNext,
   onPrev,
   updateFormData,
+  currentStep,
 }) => {
   const [accountData, setAccountData] = useState<AccountInfoData>({
     username: "",
