@@ -166,9 +166,6 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
       />
       {passwordError && <ErrorText>{passwordError.passwordcheck}</ErrorText>}
       <ButtonGroup>
-        <Button type="button" onClick={onPrev}>
-          이전
-        </Button>
         <Button
           type="submit"
           disabled={
@@ -192,7 +189,7 @@ const Form = styled.form`
 
 const ButtonGroup = styled.div`
   display: flex;
-  justify-content: space-between;
+  align-self: end;
   margin-top: 1rem;
 `;
 
