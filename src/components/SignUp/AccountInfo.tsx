@@ -1,34 +1,123 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import Button from "../common/Button";
+import InputWithLabel from "../common/InputWithLabel";
 
 interface AccountInfoProps {
+  //SignUpForm 상위 컴포넌트로부터 받은 props 데이터
   onNext: () => void;
   onPrev: () => void;
   updateFormData: (data: { accountInfo: AccountInfoData }) => void;
-  currentStep: number;
 }
 
 interface AccountInfoData {
-  username: string;
+  //계정정보 관련 데이터 타입 설정
+  email: string;
   password: string;
   confirmPassword: string;
+}
+
+interface PasswordErrorData {
+  passwordvalid: string; //패스워드 유효성 검사 실패시 에러 메시지 문구
+  passwordcheck: string; //패스워드 확인시 불일치시 에러 메시지 문구
 }
 
 const AccountInfo: React.FC<AccountInfoProps> = ({
   onNext,
   onPrev,
   updateFormData,
-  currentStep,
 }) => {
   const [accountData, setAccountData] = useState<AccountInfoData>({
-    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
 
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<PasswordErrorData>({
+    passwordvalid: "",
+    passwordcheck: "",
+  });
+
+  const validateEmail = (email: string) => {
+    // 이메일 유효성 검사
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    // 비밀번호 유효성 검사: 최소 8자리, 영문 및 숫자 포함
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  // 비밀번호와 비밀번호 확인의 상태를 업데이트하는 useEffect
+  useEffect(() => {
+    let passwordValid = "";
+    let passwordCheck = "";
+
+    if (accountData.password && !validatePassword(accountData.password)) {
+      passwordValid =
+        "비밀번호는 최소 8자리이며 영문과 숫자를 포함해야 합니다.";
+    }
+
+    if (
+      accountData.confirmPassword &&
+      accountData.password !== accountData.confirmPassword
+    ) {
+      passwordCheck = "비밀번호가 일치하지 않습니다.";
+    }
+
+    setPasswordError({
+      passwordvalid: passwordValid,
+      passwordcheck: passwordCheck,
+    });
+  }, [accountData.password, accountData.confirmPassword]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setAccountData((prev) => ({ ...prev, [name]: value }));
+
+    // 이메일 유효성 검사
+    if (name === "username") {
+      if (!validateEmail(value)) {
+        setEmailError("유효한 이메일 주소를 입력해 주세요.");
+      } else {
+        setEmailError(null); // 이메일이 유효하면 오류 초기화
+      }
+    }
+
+    if (name === "password" || name === "confirmPassword") {
+      let passwordValid = "";
+      let passwordCheck = "";
+
+      // 비밀번호 유효성 검사
+      if (name === "password") {
+        if (!validatePassword(value)) {
+          passwordValid =
+            "비밀번호는 최소 8자리이며 영문과 숫자를 포함해야 합니다.";
+        }
+      }
+
+      // 비밀번호 확인 로직
+      if (name === "confirmPassword") {
+        if (value !== accountData.password) {
+          passwordCheck = "비밀번호가 일치하지 않습니다.";
+        }
+      }
+
+      // 비밀번호와 비밀번호 확인을 동시에 검사
+      if (name === "password" || name === "confirmPassword") {
+        if (passwordValid === "" && passwordCheck === "") {
+          setPasswordError({ passwordvalid: "", passwordcheck: "" });
+        } else {
+          setPasswordError({
+            passwordvalid: passwordValid,
+            passwordcheck: passwordCheck,
+          });
+        }
+      }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,36 +132,50 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h2>계정 정보</h2>
-      <Input
-        type="text"
-        name="username"
-        value={accountData.username}
+      <InputWithLabel
+        label="이메일"
+        htmlFor="input-email"
+        type="email"
+        name="email"
+        value={accountData.email}
         onChange={handleChange}
-        placeholder="사용자 이름"
+        placeholder="이메일을 입력해 주세요."
         required
       />
-      <Input
+      {emailError && <ErrorText>{emailError}</ErrorText>}
+      <InputWithLabel
+        label="비밀번호"
+        htmlFor="input-password"
         type="password"
         name="password"
         value={accountData.password}
         onChange={handleChange}
-        placeholder="비밀번호"
+        placeholder="비밀번호를 입력해 주세요."
         required
       />
-      <Input
+      {passwordError && <ErrorText>{passwordError.passwordvalid}</ErrorText>}
+      <InputWithLabel
+        label="비밀번호 확인"
+        htmlFor="input-again-password"
         type="password"
         name="confirmPassword"
         value={accountData.confirmPassword}
         onChange={handleChange}
-        placeholder="비밀번호 확인"
+        placeholder="비밀번호를 다시 입력해 주세요."
         required
       />
+      {passwordError && <ErrorText>{passwordError.passwordcheck}</ErrorText>}
       <ButtonGroup>
-        <Button type="button" onClick={onPrev}>
-          이전
+        <Button
+          type="submit"
+          disabled={
+            !validateEmail(accountData.email) ||
+            !validatePassword(accountData.password) ||
+            accountData.password !== accountData.confirmPassword
+          }
+        >
+          다음
         </Button>
-        <Button type="submit">다음</Button>
       </ButtonGroup>
     </Form>
   );
@@ -84,25 +187,16 @@ const Form = styled.form`
   gap: 1rem;
 `;
 
-const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
 const ButtonGroup = styled.div`
   display: flex;
-  justify-content: space-between;
+  align-self: end;
   margin-top: 1rem;
 `;
 
-const Button = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const ErrorText = styled.p`
+  color: red;
+  font-size: 0.875rem;
+  margin-top: -0.5rem;
 `;
 
 export default AccountInfo;

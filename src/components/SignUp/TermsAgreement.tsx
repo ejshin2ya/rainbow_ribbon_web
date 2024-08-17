@@ -63,60 +63,53 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
 
   return (
     <Container onSubmit={handleSubmit}>
-      <AgreementBox>
-        <Logo>
-          <img src="path_to_logo" alt="Logo" />
-        </Logo>
-        <Title>무지개리본 파트너 회원가입을 시작합니다.</Title>
-        <SubTitle>
-          무지개리본 파트너가 되시면 모든 서비스를 편하게 이용하실 수 있어요.
-          진행하시기 전에 내용을 검토하고 동의해 주세요.
-        </SubTitle>
-        <CheckboxContainer>
-          <AllCheckbox
-            id="checkbox"
-            type="checkbox"
-            checked={TermsAgreedInfoData.allAgreed}
-            onChange={handleAgreeAllChange}
-            required
-          />
-          <label htmlFor="checkbox" style={{ cursor: "pointer" }}>
-            <StyledCheckbox Checked={TermsAgreedInfoData.allAgreed}>
-              <FaCheck color="#FFFFFF" display="relative" />
-            </StyledCheckbox>
-          </label>
-          <Label>모든 약관에 동의합니다</Label>
-        </CheckboxContainer>
-        <TermsList>
-          {terms.map((term, index) => (
-            <TermItem key={index}>
-              <HiddenCheckbox
-                id={`checkbox-${index}`}
-                checked={TermsAgreedInfoData.agreements[index]}
-                onChange={() => handleIndividualChange(index)}
-                required
+      <Logo>
+        <img src="path_to_logo" alt="Logo" />
+      </Logo>
+      <Title>무지개리본 파트너 회원가입을 시작합니다.</Title>
+      <SubTitle>
+        무지개리본 파트너가 되시면 모든 서비스를 편하게 이용하실 수 있어요.
+        진행하시기 전에 내용을 검토하고 동의해 주세요.
+      </SubTitle>
+      <CheckboxContainer>
+        <AllCheckbox
+          id="checkbox"
+          type="checkbox"
+          checked={TermsAgreedInfoData.allAgreed}
+          onChange={handleAgreeAllChange}
+          required
+        />
+        <label htmlFor="checkbox" style={{ cursor: "pointer" }}>
+          <StyledCheckbox Checked={TermsAgreedInfoData.allAgreed}>
+            <FaCheck color="#FFFFFF" display="relative" />
+          </StyledCheckbox>
+        </label>
+        <Label>모든 약관에 동의합니다</Label>
+      </CheckboxContainer>
+      <TermsList>
+        {terms.map((term, index) => (
+          <TermItem key={index}>
+            <HiddenCheckbox
+              id={`checkbox-${index}`}
+              checked={TermsAgreedInfoData.agreements[index]}
+              onChange={() => handleIndividualChange(index)}
+              required
+            />
+            <label htmlFor={`checkbox-${index}`} style={{ cursor: "pointer" }}>
+              <FaCheck
+                color={
+                  TermsAgreedInfoData.agreements[index] ? "#FF6632" : "#EBEBEB"
+                }
               />
-              <label
-                htmlFor={`checkbox-${index}`}
-                style={{ cursor: "pointer" }}
-              >
-                <FaCheck
-                  color={
-                    TermsAgreedInfoData.agreements[index]
-                      ? "#FF6632"
-                      : "#EBEBEB"
-                  }
-                />
-              </label>
+            </label>
 
-              <span>{term}</span>
-            </TermItem>
-          ))}
-        </TermsList>
-        <SubmitButton type="submit" disabled={!TermsAgreedInfoData.allAgreed}>
-          시작하기
-        </SubmitButton>
-      </AgreementBox>
+            <span>{term}</span>
+          </TermItem>
+        ))}
+      </TermsList>
+      <SubmitButton type="submit" disabled={!TermsAgreedInfoData.allAgreed}>
+        시작하기
+      </SubmitButton>
     </Container>
   );
 };
@@ -135,16 +128,8 @@ const StyledCheckbox = styled.div<{ Checked: boolean }>`
 
 const Container = styled.form`
   display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const AgreementBox = styled.div`
-  background-color: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-  text-align: left;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const Title = styled.h1`

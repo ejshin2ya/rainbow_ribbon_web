@@ -4,6 +4,7 @@ import TermsAgreement from "./TermsAgreement";
 import UserInfo from "./UserInfo";
 import AccountInfo from "./AccountInfo";
 import BusinessInfo from "./BusinessInfo";
+import { GoArrowLeft } from "react-icons/go";
 
 //회원가입 컴포넌트들을 통합하여 관리하는 컴포넌트입니다.
 
@@ -26,6 +27,8 @@ const SignUpForm: React.FC = () => {
     accountInfo: {},
     businessInfo: {},
   });
+
+  const stepName = ["회원", "계정", "사업자"];
 
   const handleNextStep = () => {
     //컴포넌트 스텝 다음 단계로 이동하는 함수
@@ -62,7 +65,6 @@ const SignUpForm: React.FC = () => {
             onNext={handleNextStep}
             onPrev={handlePrevStep}
             updateFormData={updateFormData}
-            currentStep={currentStep}
           />
         );
       case SignUpStep.AccountInfo: //세번째 컴포넌트에 해당할 경우, AccountInfo 컴포넌트를 보여줍니다.
@@ -71,7 +73,6 @@ const SignUpForm: React.FC = () => {
             onNext={handleNextStep}
             onPrev={handlePrevStep}
             updateFormData={updateFormData}
-            currentStep={currentStep}
           />
         );
       case SignUpStep.BusinessInfo: //네번째 컴포넌트에 해당할 경우, BusinessInfo 컴포넌트를 보여줍니다.
@@ -80,7 +81,6 @@ const SignUpForm: React.FC = () => {
             onSubmit={handleSubmit}
             onPrev={handlePrevStep}
             updateFormData={updateFormData}
-            currentStep={currentStep}
           />
         );
       default:
@@ -88,7 +88,34 @@ const SignUpForm: React.FC = () => {
     }
   };
 
-  return <FormContainer>{renderCurrentStep()}</FormContainer>;
+  return currentStep === SignUpStep.termsAgreedInfo ? (
+    <FormContainer>{renderCurrentStep()}</FormContainer>
+  ) : (
+    <FormContainer>
+      <HeadBox>
+        <IconWrapper>
+          <GoArrowLeft size="2rem" type="button" onClick={handlePrevStep}>
+            이전
+          </GoArrowLeft>
+        </IconWrapper>
+        <TextWrapper>
+          <Title>회원가입</Title>
+        </TextWrapper>
+      </HeadBox>
+
+      <ProgressBox>
+        <span>{currentStep}/3</span>
+        <ProgressBar
+          id="progress"
+          value={(currentStep / 3) * 100}
+          max="100"
+        ></ProgressBar>
+      </ProgressBox>
+
+      <SubTitle>{stepName[currentStep - 1]} 정보를 작성해 주세요.</SubTitle>
+      {renderCurrentStep()}
+    </FormContainer>
+  );
 };
 
 const FormContainer = styled.div`
@@ -96,6 +123,55 @@ const FormContainer = styled.div`
   margin: 0 auto;
   padding: 20px;
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+`;
+
+const IconWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const TextWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+`;
+
+const HeadBox = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const ProgressBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ProgressBar = styled.progress`
+  width: 440px;
+  background-color: 10px;
+  color: #ff6632;
+`;
+
+const Title = styled.h1`
+  font-size: 1.5rem;
+  color: #333;
+`;
+
+const SubTitle = styled.h2`
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
 `;
 
 export default SignUpForm;
