@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import KakaoMap from "./KakaoMap";
 import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
+import RegistrationPage from "./pages/registraiton";
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
         <Route path="/kakao-map" element={<KakaoMap />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/registration" element={<RegistrationPage />} />
         <Route
           path="/"
           element={
