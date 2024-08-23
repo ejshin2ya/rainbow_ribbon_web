@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import { ENDPOINT_AUTH } from "../api/endpoints";
+import { ENDPOINT_USER_AUTH } from "../api/endpoints";
 
 // API 요청, 응답 인터페이스
 export interface PhoneVerificationRequest {
@@ -24,7 +24,7 @@ const requestVerification = async (
   phoneNumber: string
 ): Promise<PhoneVerificationResponse> => {
   const { data } = await axios.post<PhoneVerificationResponse>(
-    `${ENDPOINT_AUTH}/phone/verify`,
+    `${ENDPOINT_USER_AUTH}/phone/verify`,
     { to: phoneNumber }
   );
   return data;
