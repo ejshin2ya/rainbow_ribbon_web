@@ -1,14 +1,50 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useLoginMutation } from "../hooks/useLoginMutation";
+import { useRecoilState } from "recoil";
+import { authState } from "../atoms/authState";
+import { useNavigate } from "react-router-dom";
+import Button from "../components/common/Button";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [, setAuth] = useRecoilState(authState);
+  const navigate = useNavigate();
 
+  const {
+    mutate: login,
+    // isPending,
+    // isError,
+    // isSuccess,
+    // data,
+    // error,
+  } = useLoginMutation();
+
+  //login mutation 하는 함수
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
+    login(
+      {
+        loginId: email,
+        password: password,
+      },
+      {
+        onSuccess: (data) => {
+          setAuth({
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
+            isAuthenticated: true,
+          });
+
+          navigate("/registration");
+        },
+        onError: (error) => {
+          console.log("로그인 실패", error);
+        },
+      }
+    );
     console.log("Login submitted", { email, password, rememberMe });
   };
 
@@ -33,7 +69,9 @@ const LoginPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <LoginButton type="submit">로그인</LoginButton>
+          <LoginButton type="submit" disabled={!email || !password}>
+            로그인
+          </LoginButton>
           <CheckboxContainer>
             <Checkbox
               type="checkbox"
@@ -104,23 +142,8 @@ const Input = styled.input`
   border-radius: 8px;
 `;
 
-const LoginButton = styled.button`
+const LoginButton = styled(Button)`
   width: 412px;
-  height: 56px;
-  padding: 5px 10px 5px 10px;
-  border-radius: 8px;
-  background-color: #ebebeb;
-  color: #adadad;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 22px;
-  margin-bottom: 15px;
-
-  &:hover {
-    background-color: #e64a19;
-  }
 `;
 
 const CheckboxContainer = styled.div`
