@@ -1,19 +1,25 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import styled from "styled-components";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  message: string;
+  message?: string;
+  children?: ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, message }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  message,
+  children,
+}) => {
   if (!isOpen) return null;
 
   return (
     <Overlay>
       <ModalContainer>
-        <Message>{message}</Message>
+        {message ? <Message>{message}</Message> : children}
         <ConfirmButton onClick={onClose}>확인</ConfirmButton>
       </ModalContainer>
     </Overlay>

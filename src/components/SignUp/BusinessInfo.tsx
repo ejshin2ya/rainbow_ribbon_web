@@ -34,8 +34,12 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   });
   //recoil로 관리되는 회원가입시 요청 데이터
   const [, setFormData] = useRecoilState(signUpFormState);
+
   //모달창 hook
   const { isOpen, openModal, closeModal } = useModal();
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  //파일크기 초과 또는 지원하지 않는 파일 업로드시 에러 메세지 상태값
+  const [errorMessage, setErrorMessage] = useState("");
 
   // 숨겨진 file input에 대한 참조
   const businessProofInputRef = useRef<HTMLInputElement>(null);
@@ -66,7 +70,24 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
     if (files && files.length > 0) {
-      setBusinessData((prev) => ({ ...prev, [name]: files[0] }));
+      const file = files[0];
+      const fileSize = file.size / 1024 / 1024; // Convert to MB
+      const fileType = file.type;
+      console.log("파일업로드 완료");
+
+      if (fileSize > 10) {
+        setErrorMessage("최대 10MB 크기의 파일만 업로드할 수 있습니다.");
+        setIsErrorModalOpen(true);
+        return;
+      }
+
+      if (!["image/jpeg", "image/png", "application/pdf"].includes(fileType)) {
+        setErrorMessage("JPG, PNG, PDF 형식의 파일만 업로드할 수 있습니다.");
+        setIsErrorModalOpen(true);
+        console.log("지원하지 않는 파일형식");
+        return;
+      }
+      setBusinessData((prev) => ({ ...prev, [name]: file }));
     }
   };
 
@@ -74,6 +95,21 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   const triggerFileInput = (inputRef: React.RefObject<HTMLInputElement>) => {
     if (inputRef.current) {
       inputRef.current.click();
+    }
+  };
+
+  const renderFilePreview = (file: File | null) => {
+    if (!file) return null;
+
+    if (file.type === "application/pdf") {
+      return (
+        <FileInfo>
+          <p>{file.name}</p>
+          <p>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        </FileInfo>
+      );
+    } else {
+      return <PreviewImage src={URL.createObjectURL(file)} alt="Preview" />;
     }
   };
 
@@ -181,12 +217,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
             ref={businessProofInputRef}
             required
           />
-          {businessData.businessProof && (
-            <PreviewImage
-              src={URL.createObjectURL(businessData.businessProof)}
-              alt="Preview"
-            />
-          )}
+          {renderFilePreview(businessData.businessProof)}
         </FileInputWrapper>
         {businessData.businessProof && (
           <FileName>{businessData.businessProof.name}</FileName>
@@ -207,12 +238,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
             ref={licenseProofInputRef}
             required
           />
-          {businessData.licenseProof && (
-            <PreviewImage
-              src={URL.createObjectURL(businessData.licenseProof)}
-              alt="Preview"
-            />
-          )}
+          {renderFilePreview(businessData.licenseProof)}
         </FileInputWrapper>
         {businessData.licenseProof && (
           <FileName>{businessData.licenseProof.name}</FileName>
@@ -233,6 +259,11 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
         isOpen={isOpen}
         onClose={closeModal}
         onComplete={handleAddressComplete}
+      />
+      <Modal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        message={errorMessage}
       />
     </Form>
   );
@@ -296,6 +327,21 @@ const FileInputWrapper = styled.div<{ hasFile: boolean }>`
     transform: translate(-50%, 10%);
     color: #999;
     display: ${(props) => (props.hasFile ? "none" : "block")};
+  }
+`;
+
+const FileInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+
+  p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #333;
   }
 `;
 
