@@ -5,6 +5,9 @@ import SignupPage from './pages/signup';
 import RegistrationPage from './pages/registraiton';
 import { Reservation } from './pages/Reservation';
 import { CommonRoute } from './components/CommonRoute';
+import { CompanyManagement } from './pages/CompanyManagement';
+import { BusinessManagement } from './pages/BusinessManagement';
+import { Chat } from './pages/Chat';
 
 declare global {
   interface Window {
@@ -21,8 +24,11 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
-        <Route path="/reservation" element={<CommonRoute />}>
+        <Route path="/partners" element={<CommonRoute />}>
           <Route index element={<Reservation />} />
+          <Route path="company" element={<CompanyManagement />} />
+          <Route path="business" element={<BusinessManagement />} />
+          <Route path="chat" element={<Chat />} />
         </Route>
         <Route
           index
