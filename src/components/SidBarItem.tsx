@@ -4,12 +4,19 @@ interface Props {
   icon: ReactNode;
   title: string;
   subTitle?: string;
+  onClick: () => void;
 }
 
-export const SideBarItem = function ({ icon, title, subTitle }: Props) {
+export const SideBarItem = function ({
+  icon,
+  title,
+  subTitle,
+  onClick,
+}: Props) {
   return (
     <div
       className={`min-h-[52px] w-full py-[14px] px-[30px] flex flex-row  gap-[4px] cursor-pointer`}
+      onClick={onClick}
     >
       <div className={`w-[18px] h-[18px] flex-shrink-0 pt-[4px]`}>
         {typeof icon === 'string' ? (
