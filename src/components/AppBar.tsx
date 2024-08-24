@@ -13,7 +13,7 @@ export const AppBar = function ({
   clientName,
 }: Props) {
   return (
-    <AppBarContainer className="border-b-reborn-gray2 border-b-[1px]">
+    <AppBarContainer className="border-b-reborn-gray2 border-b-[1px] bg-reborn-white">
       <div className="app-bar__logo-box">
         <img src="/assets/images/ic_logo_white.png" alt="reborn" />
         <img src="/assets/images/partners.png" alt="partners" />

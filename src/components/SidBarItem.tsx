@@ -15,7 +15,7 @@ export const SideBarItem = function ({
 }: Props) {
   return (
     <div
-      className={`min-h-[52px] w-full py-[14px] px-[30px] flex flex-row  gap-[4px] cursor-pointer`}
+      className={`min-h-[52px] w-full py-[14px] px-[30px] flex flex-row  gap-[4px] cursor-pointer hover:bg-reborn-gray1 active:bg-reborn-gray2 duration-[0.2s]`}
       onClick={onClick}
     >
       <div className={`w-[18px] h-[18px] flex-shrink-0 pt-[4px]`}>
