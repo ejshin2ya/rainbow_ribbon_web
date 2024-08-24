@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { ENDPOINT_USER_AUTH } from "../api/endpoints";
 
@@ -30,13 +30,18 @@ const requestVerification = async (
   return data;
 };
 
-// 핸드폰 인증 API함수를 react-query의 useMutation를 이용하여 데이터를 가져오는 Custom Hook
 export const usePhoneVerification = (): UseMutationResult<
   PhoneVerificationResponse,
-  Error,
+  AxiosError,
   string
 > => {
-  return useMutation<PhoneVerificationResponse, Error, string>({
+  return useMutation<PhoneVerificationResponse, AxiosError, string>({
     mutationFn: requestVerification,
+    onSuccess: (data) => {
+      console.log("핸드폰 인증 요청 성공", data);
+    },
+    onError: (error) => {
+      console.log("핸드폰 인증 요청 실패", error);
+    },
   });
 };
