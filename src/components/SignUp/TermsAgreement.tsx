@@ -2,20 +2,18 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { FaCheck } from "react-icons/fa";
 
+//부모 컴포넌트인 SignUpForm으로 부터 다음페이지로 이동하도록 전달 받은 props
 interface TermsAgreementProps {
   onNext: () => void;
-  updateFormData: (data: { termsAgreedInfo: TermsAgreedInfoData }) => void;
 }
 
+// 전체동의, 선택 동의 타입 지정
 interface TermsAgreedInfoData {
   allAgreed: boolean;
   agreements: boolean[];
 }
-
-const TermsAgreement: React.FC<TermsAgreementProps> = ({
-  onNext,
-  updateFormData,
-}) => {
+//선택값 내용
+const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
   const terms = [
     "계약서의 정보 작성에 대한 확인",
     "사업자 변경 불가 동의",
@@ -57,7 +55,6 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     //전체동의 완료 후 제출 버튼 선택시 상위 컴포넌트인 SignUpForm 컴포넌트로 값을 보내주는 함수
     e.preventDefault();
-    updateFormData({ termsAgreedInfo: TermsAgreedInfoData });
     onNext();
   };
 

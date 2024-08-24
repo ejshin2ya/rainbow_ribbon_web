@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Button from "../common/Button";
 import InputWithLabel from "../common/InputWithLabel";
+import { useRecoilState } from "recoil";
+import { signUpFormState } from "../../atoms/signupFormState";
 
 interface AccountInfoProps {
   //SignUpForm 상위 컴포넌트로부터 받은 props 데이터
   onNext: () => void;
-  onPrev: () => void;
-  updateFormData: (data: { accountInfo: AccountInfoData }) => void;
 }
 
 interface AccountInfoData {
@@ -22,11 +22,8 @@ interface PasswordErrorData {
   passwordcheck: string; //패스워드 확인시 불일치시 에러 메시지 문구
 }
 
-const AccountInfo: React.FC<AccountInfoProps> = ({
-  onNext,
-  onPrev,
-  updateFormData,
-}) => {
+const AccountInfo: React.FC<AccountInfoProps> = ({ onNext }) => {
+  //계정 정보 입력값 데이터
   const [accountData, setAccountData] = useState<AccountInfoData>({
     email: "",
     password: "",
@@ -38,6 +35,9 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
     passwordvalid: "",
     passwordcheck: "",
   });
+
+  //recoil로 관리되는 회원가입시 요청값 데이터
+  const [, setFormData] = useRecoilState(signUpFormState);
 
   const validateEmail = (email: string) => {
     // 이메일 유효성 검사
@@ -79,7 +79,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
     setAccountData((prev) => ({ ...prev, [name]: value }));
 
     // 이메일 유효성 검사
-    if (name === "username") {
+    if (name === "email") {
       if (!validateEmail(value)) {
         setEmailError("유효한 이메일 주소를 입력해 주세요.");
       } else {
@@ -126,8 +126,15 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    updateFormData({ accountInfo: accountData });
     onNext();
+    setFormData((prev) => ({
+      ...prev,
+      companySignUpReq: {
+        ...prev.companySignUpReq,
+        email: accountData.email,
+        password: accountData.password,
+      },
+    }));
   };
 
   return (

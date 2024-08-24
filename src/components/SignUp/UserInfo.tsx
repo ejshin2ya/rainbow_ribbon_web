@@ -3,31 +3,39 @@ import styled from "styled-components";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import InputWithLabel from "../common/InputWithLabel";
-
 import { usePhoneVerification } from "../../hooks/PhoneVeritication";
 import useModal from "../../hooks/useModal";
 import Modal from "../common/Modal";
+import { useRecoilState } from "recoil";
+import { signUpFormState } from "../../atoms/signupFormState";
 
+//부모 컴포넌트인 SignUpForm으로 부터 다음페이지로 이동하도록 전달 받은 props
 interface UserInfoProps {
   onNext: () => void;
-  onPrev: () => void;
-  updateFormData: (data: { userInfo: UserInfoData }) => void;
 }
 
+// 사용자 정보 입력값 타입 지정
 interface UserInfoData {
   name: string;
   phone: string;
   verificationCode: string;
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({ onNext, updateFormData }) => {
+const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
+  //사용자 정보 입력값 상태 관리
   const [userData, setUserData] = useState<UserInfoData>({
     name: "",
     phone: "",
     verificationCode: "",
   });
+  //인증요청 후 작동되는 타이머의 카운트다운 상태값
   const [countdown, setCountdown] = useState<number | null>(null);
+
+  //서버에서 가져온 핸드폰 인증번호와 고객이 입력한 인증번호의 일치여부를 관리하는 상태값
   const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
+
+  //recoil에서 관리되는 회원가입 요청값을 가져오는 함수
+  const [, setFormData] = useRecoilState(signUpFormState);
   const { isOpen, openModal, closeModal } = useModal();
   const mutation = usePhoneVerification(); //핸드폰인증 hook을 실행(axios 요청)하는 함수 선언
 
@@ -55,8 +63,15 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext, updateFormData }) => {
   const nextHandleSubmit = (e: React.FormEvent) => {
     //다음 버튼 선택시 AccountInfo.tsx 컴포넌트를 보여줍니다.
     e.preventDefault();
-    updateFormData({ userInfo: userData });
     onNext();
+    setFormData((prev) => ({
+      ...prev,
+      companySignUpReq: {
+        ...prev.companySignUpReq,
+        name: userData.name,
+        phone: userData.phone,
+      },
+    }));
   };
 
   useEffect(() => {

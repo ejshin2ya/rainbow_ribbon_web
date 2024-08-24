@@ -1,14 +1,24 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { signUpFormState } from "../../atoms/signupFormState";
+import { authState } from "../../atoms/authState";
+import {
+  signUpUser,
+  loginUser,
+  SignUpFormData,
+  LoginReq,
+  ApiResponse,
+} from "../../services/apiService";
 import TermsAgreement from "./TermsAgreement";
 import UserInfo from "./UserInfo";
 import AccountInfo from "./AccountInfo";
 import BusinessInfo from "./BusinessInfo";
 import { GoArrowLeft } from "react-icons/go";
+import { useNavigate } from "react-router-dom";
 
-//회원가입 컴포넌트들을 통합하여 관리하는 컴포넌트입니다.
-
-//회원가입 컴포넌트 스텝을 enum 형태로 저장하여 순서를 숫자로 인식합니다.
+// 회원가입 컴포넌트 스텝을 enum 형태로 저장하여 순서를 숫자로 인식합니다.
 enum SignUpStep {
   termsAgreedInfo,
   UserInfo,
@@ -17,72 +27,86 @@ enum SignUpStep {
 }
 
 const SignUpForm: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<SignUpStep>( //컴포넌트 스텝 순서 데이터 저장
+  //회원가입 진행 단계의 컴포넌트 순서를 관리하는 상태값
+  const [currentStep, setCurrentStep] = useState<SignUpStep>(
     SignUpStep.termsAgreedInfo
   );
-  const [formData, setFormData] = useState({
-    //회원가입 컴포넌트별 데이터 관리
-    termsAgreedInfo: {},
-    userInfo: {},
-    accountInfo: {},
-    businessInfo: {},
-  });
+  //recoil로 관리되는 회원가입 모든 정보를 가져와서 상태를 관리하는 함수
+  const [formData] = useRecoilState<SignUpFormData>(signUpFormState);
+  //recoil로 관리되는 로그인 응답값 상태를 관리하는 함수
+  const [, setAuth] = useRecoilState(authState);
+  //router를 통해 화면 전환하는 함수
+  const navigate = useNavigate();
+
+  //react-query의 mutation 기능으로 회원가입 axios 요청 진행
+  const signUpMutation: UseMutationResult<ApiResponse, Error, SignUpFormData> =
+    useMutation({
+      mutationFn: (data: SignUpFormData) => signUpUser(data),
+      onSuccess: (data) => {
+        console.log("회원가입 성공", data);
+
+        const loginData: LoginReq = {
+          loginId: formData.companySignUpReq.email,
+          password: formData.companySignUpReq.password,
+        };
+
+        loginMutation.mutate(loginData);
+      },
+      onError: (error) => {
+        console.error("회원가입 실패", error);
+      },
+    });
+  //react-query의 mutation 기능으로 로그인 axios 요청 진행
+  const loginMutation: UseMutationResult<ApiResponse, Error, LoginReq> =
+    useMutation({
+      mutationFn: (data: LoginReq) => loginUser(data),
+      onSuccess: (data) => {
+        console.log("로그인 성공", data);
+
+        // Recoil 로그인 키에 저장할 데이터
+        setAuth({
+          accessToken: data.data.accessToken,
+          refreshToken: data.data.refreshToken,
+          isAuthenticated: true,
+        });
+
+        // 정보 등록 페이지로 이동
+        navigate("/registration");
+      },
+      onError: (error) => {
+        console.error("로그인 실패", error);
+        // 로그인 에러시 구현 부분
+      },
+    });
 
   const stepName = ["회원", "계정", "사업자"];
 
   const handleNextStep = () => {
-    //컴포넌트 스텝 다음 단계로 이동하는 함수
+    // 컴포넌트 스텝 다음 단계로 이동하는 함수
     setCurrentStep((prevStep) => prevStep + 1);
   };
 
   const handlePrevStep = () => {
-    //컴포넌트 스텝 이전 단계로 이동하는 함수
+    // 컴포넌트 스텝 이전 단계로 이동하는 함수
     setCurrentStep((prevStep) => prevStep - 1);
-  };
-
-  const updateFormData = (stepData: Partial<typeof formData>) => {
-    //하위 컴포넌트들로부터 데이터를 받아오는 함수
-    setFormData((prevData) => ({ ...prevData, ...stepData }));
   };
 
   const handleSubmit = () => {
     // 회원가입 요청 버튼
     console.log("회원가입 요청", formData);
+    signUpMutation.mutate(formData);
   };
-
+  //컴포넌트 순서에 따라 화면을 전환해주는 함수
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case SignUpStep.termsAgreedInfo: //첫번째 컴포넌트에 해당할 경우, TermsAgreement 컴포넌트를 보여줍니다.
-        return (
-          <TermsAgreement
-            onNext={handleNextStep}
-            updateFormData={updateFormData}
-          />
-        );
-      case SignUpStep.UserInfo: //두번째 컴포넌트에 해당할 경우, UserInfo 컴포넌트를 보여줍니다.
-        return (
-          <UserInfo
-            onNext={handleNextStep}
-            onPrev={handlePrevStep}
-            updateFormData={updateFormData}
-          />
-        );
-      case SignUpStep.AccountInfo: //세번째 컴포넌트에 해당할 경우, AccountInfo 컴포넌트를 보여줍니다.
-        return (
-          <AccountInfo
-            onNext={handleNextStep}
-            onPrev={handlePrevStep}
-            updateFormData={updateFormData}
-          />
-        );
-      case SignUpStep.BusinessInfo: //네번째 컴포넌트에 해당할 경우, BusinessInfo 컴포넌트를 보여줍니다.
-        return (
-          <BusinessInfo
-            onSubmit={handleSubmit}
-            onPrev={handlePrevStep}
-            updateFormData={updateFormData}
-          />
-        );
+      case SignUpStep.termsAgreedInfo:
+        return <TermsAgreement onNext={handleNextStep} />;
+      case SignUpStep.UserInfo:
+        return <UserInfo onNext={handleNextStep} />;
+      case SignUpStep.AccountInfo:
+        return <AccountInfo onNext={handleNextStep} />;
+      case SignUpStep.BusinessInfo:
+        return <BusinessInfo onSubmit={handleSubmit} />;
       default:
         return null;
     }
@@ -136,6 +160,7 @@ const IconWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 `;
 
 const TextWrapper = styled.div`
