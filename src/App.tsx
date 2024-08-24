@@ -1,13 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import KakaoMap from "./KakaoMap";
-import LoginPage from "./pages/login";
-import SignupPage from "./pages/signup";
-import RegistrationPage from "./pages/registraiton";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import KakaoMap from './KakaoMap';
+import LoginPage from './pages/login';
+import SignupPage from './pages/signup';
+import RegistrationPage from './pages/registraiton';
+import { Reservation } from './pages/Reservation';
+import { CommonRoute } from './components/CommonRoute';
 
 declare global {
   interface Window {
-    kakao: any
-    updateLocation: any
+    kakao: any;
+    updateLocation: any;
   }
 }
 
@@ -19,8 +21,8 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
-        <Route path="/reservation">
-          <Route index element/>
+        <Route path="/reservation" element={<CommonRoute />}>
+          <Route index element={<Reservation />} />
         </Route>
         <Route
           index
