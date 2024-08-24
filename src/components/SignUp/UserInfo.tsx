@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import InputWithLabel from "../common/InputWithLabel";
-import { usePhoneVerification } from "../../hooks/PhoneVeritication";
+import { usePhoneVerification } from "../../hooks/usePhoneVerification";
 import useModal from "../../hooks/useModal";
 import Modal from "../common/Modal";
 import { useRecoilState } from "recoil";
@@ -28,6 +28,9 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
     phone: "",
     verificationCode: "",
   });
+  const [smsConfirmCode, setSmsConfirmCode] = useState<string | null>(null);
+  const { mutate, isPending, isError, isSuccess, data, error } =
+    usePhoneVerification();
   //인증요청 후 작동되는 타이머의 카운트다운 상태값
   const [countdown, setCountdown] = useState<number | null>(null);
 
@@ -37,16 +40,21 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
   //recoil에서 관리되는 회원가입 요청값을 가져오는 함수
   const [, setFormData] = useRecoilState(signUpFormState);
   const { isOpen, openModal, closeModal } = useModal();
-  const mutation = usePhoneVerification(); //핸드폰인증 hook을 실행(axios 요청)하는 함수 선언
 
   const handleVerificationRequest = () => {
-    mutation.mutate(userData.phone); //핸드폰 인증 hook을 실행시키는 트리거
+    mutate(userData.phone); //핸드폰 인증 hook을 실행시키는 트리거
     setCountdown(300); // 5분(300초) 타이머 시작
   };
 
+  useEffect(() => {
+    if (isSuccess && data) {
+      setSmsConfirmCode(data.data.smsConfirmCode);
+    }
+  }, [isSuccess, data]);
+
   const handleVerificationConfirm = () => {
     // 실제로는 백엔드에서 인증 코드 일치 여부를 확인해야 합니다.
-    if (userData.verificationCode === mutation.data?.data.smsConfirmCode) {
+    if (userData.verificationCode === smsConfirmCode) {
       setIsCodeVerified(true);
       setCountdown(null); // 타이머 종료
     } else {
@@ -131,17 +139,15 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
         <Button
           type="button"
           onClick={handleVerificationRequest}
-          disabled={
-            mutation.isPending || (isCodeVerified !== null && isCodeVerified)
-          }
+          disabled={isPending || (isCodeVerified !== null && isCodeVerified)}
           addTopMargin={true}
         >
           {countdown !== null && countdown > 0 ? "다시받기" : "인증요청"}
         </Button>
       </InputWrapper>
-      {mutation.isPending && <p>인증번호를 전송중입니다.</p>}
-      {mutation.isError && <p>Error: {mutation.error?.message}</p>}
-      {mutation.isSuccess && mutation.data && (
+      {isPending && <p>인증번호를 전송중입니다.</p>}
+      {isError && <p>Error: {error?.message}</p>}
+      {isSuccess && data && (
         <>
           <InputWrapper>
             <Input

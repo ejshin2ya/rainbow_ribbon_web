@@ -1,22 +1,17 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { signUpFormState } from "../../atoms/signupFormState";
 import { authState } from "../../atoms/authState";
-import {
-  signUpUser,
-  loginUser,
-  SignUpFormData,
-  LoginReq,
-  ApiResponse,
-} from "../../services/apiService";
+import { SignUpFormData, LoginReq } from "../../services/apiService";
 import TermsAgreement from "./TermsAgreement";
 import UserInfo from "./UserInfo";
 import AccountInfo from "./AccountInfo";
 import BusinessInfo from "./BusinessInfo";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
+import { useSignUpMutation } from "../../hooks/useSignUpMutation";
+import { useLoginMutation } from "../../hooks/useLoginMutation";
 
 // 회원가입 컴포넌트 스텝을 enum 형태로 저장하여 순서를 숫자로 인식합니다.
 enum SignUpStep {
@@ -38,46 +33,23 @@ const SignUpForm: React.FC = () => {
   //router를 통해 화면 전환하는 함수
   const navigate = useNavigate();
 
-  //react-query의 mutation 기능으로 회원가입 axios 요청 진행
-  const signUpMutation: UseMutationResult<ApiResponse, Error, SignUpFormData> =
-    useMutation({
-      mutationFn: (data: SignUpFormData) => signUpUser(data),
-      onSuccess: (data) => {
-        console.log("회원가입 성공", data);
+  const {
+    mutate: signUp,
+    // isPending: isSignUpPending,
+    // isError: isSignUpError,
+    // isSuccess: isSignUpSuccess,
+    // data: signUpData,
+    // error: signUpError,
+  } = useSignUpMutation();
 
-        const loginData: LoginReq = {
-          loginId: formData.companySignUpReq.email,
-          password: formData.companySignUpReq.password,
-        };
-
-        loginMutation.mutate(loginData);
-      },
-      onError: (error) => {
-        console.error("회원가입 실패", error);
-      },
-    });
-  //react-query의 mutation 기능으로 로그인 axios 요청 진행
-  const loginMutation: UseMutationResult<ApiResponse, Error, LoginReq> =
-    useMutation({
-      mutationFn: (data: LoginReq) => loginUser(data),
-      onSuccess: (data) => {
-        console.log("로그인 성공", data);
-
-        // Recoil 로그인 키에 저장할 데이터
-        setAuth({
-          accessToken: data.data.accessToken,
-          refreshToken: data.data.refreshToken,
-          isAuthenticated: true,
-        });
-
-        // 정보 등록 페이지로 이동
-        navigate("/registration");
-      },
-      onError: (error) => {
-        console.error("로그인 실패", error);
-        // 로그인 에러시 구현 부분
-      },
-    });
+  const {
+    mutate: login,
+    // isPending: isLoginPending,
+    // isError: isLoginError,
+    // isSuccess: isLoginSuccess,
+    // data: loginData,
+    // error: loginError,
+  } = useLoginMutation();
 
   const stepName = ["회원", "계정", "사업자"];
 
@@ -92,9 +64,34 @@ const SignUpForm: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    // 회원가입 요청 버튼
+    // 회원가입 요청 성공시 로그인 요청
     console.log("회원가입 요청", formData);
-    signUpMutation.mutate(formData);
+    signUp(formData, {
+      onSuccess: (data) => {
+        const loginData: LoginReq = {
+          loginId: formData.companySignUpReq.email,
+          password: formData.companySignUpReq.password,
+        };
+
+        login(loginData, {
+          onSuccess: (data) => {
+            setAuth({
+              accessToken: data.data.accessToken,
+              refreshToken: data.data.refreshToken,
+              isAuthenticated: true,
+            });
+
+            navigate("/registration");
+          },
+          onError: (error) => {
+            console.log("로그인 실패", error);
+          },
+        });
+      },
+      onError: (error) => {
+        console.error("회원가입 실패", error);
+      },
+    });
   };
   //컴포넌트 순서에 따라 화면을 전환해주는 함수
   const renderCurrentStep = () => {
