@@ -49,3 +49,21 @@ a:active,
 a:hover {
   outline: 0;
 }
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #ebebeb;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #cecece;
+  border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #adadad;
+}
