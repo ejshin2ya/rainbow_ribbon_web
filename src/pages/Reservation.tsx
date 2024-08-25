@@ -2,7 +2,7 @@ import { Calendar } from 'src/components/calendar/Calendar';
 
 export const Reservation = function () {
   return (
-    <div className="w-full h-full flex-1 overflow-y-scroll">
+    <div className="w-full h-full flex-1 overflow-scroll">
       <Calendar />
     </div>
   );
