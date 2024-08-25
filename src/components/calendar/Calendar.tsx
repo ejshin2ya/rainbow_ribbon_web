@@ -98,6 +98,8 @@ const CalendarContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: 32px 30px 22px 17px;
+  /* flex: 1; */
+  /* overflow: scroll; */
 
   .selected-date {
     .fc-daygrid-day-number {
