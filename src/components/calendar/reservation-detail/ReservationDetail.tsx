@@ -1,6 +1,9 @@
 import styled from 'styled-components';
 import { Footer } from './Footer';
 import { PersonalInfo } from './PersonalInfo';
+import { ReservationInfo } from './ReservationInfo';
+import { PetInfo } from './PetInfo';
+import { Memo } from './Memo';
 
 export const ReservationDetail = function () {
   return (
@@ -13,7 +16,15 @@ export const ReservationDetail = function () {
           <section className="left__personal">
             <PersonalInfo />
           </section>
-          <section className="right__reservation-info">ㅎㅇ2</section>
+          <section className="right__reservation-info">
+            <ReservationInfo />
+            <PetInfo />
+            <Memo />
+          </section>
+          <div className="water-mark">
+            예약 대기 중
+            <img src="" alt="" width={36} height={36} />
+          </div>
         </main>
         <Footer />
       </ReservationContainer>
@@ -32,6 +43,27 @@ const ReservationContainer = styled.article`
     height: 767px;
     display: flex;
     flex-direction: row;
+    position: relative;
+
+    .water-mark {
+      position: absolute;
+      bottom: 36px;
+      right: 30px;
+      font-weight: 700;
+      font-size: 33px;
+      line-height: 49px;
+      text-align: right;
+      color: #d6d6d6;
+
+      display: flex;
+      flex-direction: row;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      cursor: default;
+
+      /* TODO: zIndex 추후 조절 */
+    }
 
     .left__personal {
       width: 225px;
@@ -41,6 +73,16 @@ const ReservationContainer = styled.article`
     .right__reservation-info {
       flex: 1;
       height: 100%;
+      flex-direction: column;
+      > div {
+        padding: 30px 31px 36px;
+        border-bottom: solid 4px #f7f7f7;
+        flex-shrink: 0;
+      }
+      > div:last-child {
+        border-bottom: none;
+        flex: 1;
+      }
     }
   }
 
