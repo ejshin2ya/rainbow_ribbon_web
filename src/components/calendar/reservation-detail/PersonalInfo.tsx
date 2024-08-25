@@ -1,5 +1,6 @@
 interface InputProps {
   label?: string;
+  placeholder?: string;
 }
 
 interface RecordInfoProps {
@@ -9,13 +10,16 @@ interface RecordInfoProps {
   status: '완료';
 }
 
-const InputInfo = function ({ label }: InputProps) {
+const InputInfo = function ({ label, placeholder }: InputProps) {
   return (
     <div className={`flex flex-col gap-[8px] ${label ? '' : 'mt-[-16px]'}`}>
       {label && (
         <label className="font-medium text-reborn-gray4">{label}</label>
       )}
-      <input className="rounded-[4px] border-[1.26px] border-reborn-gray1 w-full outline-none py-[6px] px-[12px] text-[12px]" />
+      <input
+        className="rounded-[4px] border-[1.26px] border-reborn-gray1 w-full outline-none py-[6px] px-[12px] text-[12px]"
+        placeholder={placeholder}
+      />
     </div>
   );
 };
@@ -42,13 +46,13 @@ export const PersonalInfo = function () {
         <img width={16} height={16} src="" alt="아이콘" />
         예약자
       </div>
-      <InputInfo label="아이디" />
-      <InputInfo label="이름" />
-      <InputInfo label="연락처" />
-      <InputInfo label="주소" />
-      <InputInfo label="" />
-      <InputInfo label="" />
-      <div className="overflow-y-scroll w-full">
+      <InputInfo label="아이디" placeholder="아이디" />
+      <InputInfo label="이름" placeholder="이름" />
+      <InputInfo label="연락처" placeholder="연락처" />
+      <InputInfo label="주소" placeholder="12345" />
+      <InputInfo label="" placeholder="OO시 OO동 1234" />
+      <InputInfo label="" placeholder="OO동 OO호" />
+      <div className="overflow-y-auto w-full">
         <h3 className="flex flex-row gap-[4px] text-reborn-gray8 text-[14px] leading-[17px] font-semibold mb-[12px]">
           지난 내역 (2)
         </h3>
