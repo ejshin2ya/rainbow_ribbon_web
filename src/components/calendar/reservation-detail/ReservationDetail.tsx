@@ -7,7 +7,7 @@ import { Memo } from './Memo';
 
 export const ReservationDetail = function () {
   return (
-    <div className="flex flex-shrink-0 flex-col gap-[12px]">
+    <div className="flex w-[50%] h-auto flex-shrink-0 flex-col gap-[12px] py-[30px] px-[30px]">
       <div className="font-semibold text-[14px] leading-[21px] text-reborn-gray3">
         예약 상세
       </div>
