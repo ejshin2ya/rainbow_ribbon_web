@@ -65,12 +65,14 @@ const SignUpForm: React.FC = () => {
 
   const handleSubmit = () => {
     // 회원가입 요청 성공시 로그인 요청
-    console.log("회원가입 요청", formData);
-    signUp(formData, {
+    // 최신 formData를 가져오기 위해 Recoil state를 다시 가져옵니다
+    const latestFormData = formData;
+
+    signUp(latestFormData, {
       onSuccess: (data) => {
         const loginData: LoginReq = {
-          loginId: formData.companySignUpReq.email,
-          password: formData.companySignUpReq.password,
+          loginId: latestFormData.companySignUpReq.email,
+          password: latestFormData.companySignUpReq.password,
         };
 
         login(loginData, {
@@ -78,7 +80,9 @@ const SignUpForm: React.FC = () => {
             setAuth({
               accessToken: data.data.accessToken,
               refreshToken: data.data.refreshToken,
-              isAuthenticated: true,
+              userType: data.data.userType,
+              name: data.data.name,
+              phone: data.data.phone,
             });
 
             navigate("/registration");
