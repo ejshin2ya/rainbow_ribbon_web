@@ -3,7 +3,10 @@ import styled from "styled-components";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import InputWithLabel from "../common/InputWithLabel";
-import { usePhoneVerification } from "../../hooks/usePhoneVerification";
+import {
+  PhoneVerificationResponse,
+  usePhoneVerification,
+} from "../../hooks/usePhoneVerification";
 import useModal from "../../hooks/useModal";
 import Modal from "../common/Modal";
 import { useRecoilState } from "recoil";
@@ -29,7 +32,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
     verificationCode: "",
   });
   const [smsConfirmCode, setSmsConfirmCode] = useState<string | null>(null);
-  const { mutate, isPending, isError, isSuccess, data, error } =
+  const { mutate, isPending, isError, isSuccess, error } =
     usePhoneVerification();
   //인증요청 후 작동되는 타이머의 카운트다운 상태값
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -42,15 +45,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
   const { isOpen, openModal, closeModal } = useModal();
 
   const handleVerificationRequest = () => {
-    mutate(userData.phone); //핸드폰 인증 hook을 실행시키는 트리거
+    //핸드폰 인증 hook을 실행시키는 트리거
+    mutate(userData.phone, {
+      onSuccess: (data: PhoneVerificationResponse) => {
+        setSmsConfirmCode(data.data.smsConfirmCode);
+      },
+    });
     setCountdown(300); // 5분(300초) 타이머 시작
   };
-
-  useEffect(() => {
-    if (isSuccess && data) {
-      setSmsConfirmCode(data.data.smsConfirmCode);
-    }
-  }, [isSuccess, data]);
 
   const handleVerificationConfirm = () => {
     // 실제로는 백엔드에서 인증 코드 일치 여부를 확인해야 합니다.
@@ -147,7 +149,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
       </InputWrapper>
       {isPending && <p>인증번호를 전송중입니다.</p>}
       {isError && <p>Error: {error?.message}</p>}
-      {isSuccess && data && (
+      {isSuccess && (
         <>
           <InputWrapper>
             <Input
