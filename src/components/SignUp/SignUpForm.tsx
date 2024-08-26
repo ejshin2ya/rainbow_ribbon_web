@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 import { signUpFormState } from "../../atoms/signupFormState";
