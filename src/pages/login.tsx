@@ -1,18 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import styled from "styled-components";
 import { useLoginMutation } from "../hooks/useLoginMutation";
 import { useRecoilState } from "recoil";
 import { authState } from "../atoms/authState";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
+import { LoginReq } from "../services/apiService";
+import Modal from "../components/common/Modal";
+import useModal from "../hooks/useModal";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>(""); // 에러 메시지 상태 추가
   const [, setAuth] = useRecoilState(authState);
   const navigate = useNavigate();
-
+  const { isOpen, openModal, closeModal } = useModal();
   const {
     mutate: login,
     // isPending,
@@ -22,9 +27,26 @@ const LoginPage: React.FC = () => {
     // error,
   } = useLoginMutation();
 
+  // 페이지가 로드될 때 localStorage에서 저장된 이메일을 가져옵니다.
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("savedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true); // Remember Me 체크박스를 체크 상태로 만듭니다.
+    }
+  }, []);
+
   //login mutation 하는 함수
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Remember Me가 체크되어 있으면 이메일을 localStorage에 저장합니다.
+    if (rememberMe) {
+      localStorage.setItem("savedEmail", email);
+    } else {
+      localStorage.removeItem("savedEmail");
+    }
+
     login(
       {
         loginId: email,
@@ -35,13 +57,21 @@ const LoginPage: React.FC = () => {
           setAuth({
             accessToken: data.data.accessToken,
             refreshToken: data.data.refreshToken,
-            isAuthenticated: true,
+            userType: data.data.userType,
+            name: data.data.name,
+            phone: data.data.phone,
           });
 
           navigate("/registration");
         },
-        onError: (error) => {
-          console.log("로그인 실패", error);
+        onError: (error: Error, variables: LoginReq, context: unknown) => {
+          if (axios.isAxiosError(error)) {
+            const msg = error.response?.data?.msg;
+            setErrorMessage(msg);
+            openModal();
+          } else {
+            setErrorMessage("알 수 없는 오류가 발생했습니다.");
+          }
         },
       }
     );
@@ -80,6 +110,11 @@ const LoginPage: React.FC = () => {
             />
             <label>아이디 저장</label>
           </CheckboxContainer>
+          <Modal
+            isOpen={isOpen}
+            onClose={closeModal}
+            message={errorMessage}
+          ></Modal>
         </FormBox>
         <LinkContainer>
           <Link href="/signup">회원가입</Link>
@@ -112,7 +147,7 @@ const InnerContainer = styled.div`
   width: 500px;
   height: 500px;
 `;
-const FormBox = styled.div`
+const FormBox = styled.form`
   display: flex;
   flex-direction: column;
   align-items: center;

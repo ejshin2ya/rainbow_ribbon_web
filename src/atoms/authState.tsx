@@ -6,6 +6,8 @@ export const authState = atom({
   default: {
     accessToken: "",
     refreshToken: "",
-    isAuthenticated: false,
+    userType: "",
+    name: "",
+    phone: "",
   },
 });
