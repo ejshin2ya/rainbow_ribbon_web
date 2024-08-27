@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import styled from "styled-components";
 import InputWithLabel from "../common/InputWithLabel";
 import Button from "../common/Button";
@@ -73,7 +73,6 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
       const file = files[0];
       const fileSize = file.size / 1024 / 1024; // Convert to MB
       const fileType = file.type;
-      console.log("파일업로드 완료");
 
       if (fileSize > 10) {
         setErrorMessage("최대 10MB 크기의 파일만 업로드할 수 있습니다.");
@@ -127,6 +126,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   //recoil로 관리되는 회원가입 요청 정보 데이터를 보내고, 제출함수를 불러와서 회원가입 요청을 진행
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     setFormData((prev) => ({
       ...prev,
       businessRegCertificateImage: businessData.businessProof,
@@ -138,6 +138,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
         addressDetail: businessData.detailedAdress,
       },
     }));
+    console.log(businessData);
     onSubmit();
   };
 
@@ -164,7 +165,9 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
                 onChange={handleChange}
                 disabled
               ></Input>
-              <Button onClick={openModal}>주소 찾기</Button>
+              <Button onClick={openModal} type="button">
+                주소 찾기
+              </Button>
             </InputBox>
             <InputWithLabel
               label="주소"
@@ -197,7 +200,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
               required
               disabled
             />
-            <Button addTopMargin={true} onClick={openModal}>
+            <Button addTopMargin={true} type="button" onClick={openModal}>
               주소 찾기
             </Button>
           </InputBox>
