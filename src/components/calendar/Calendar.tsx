@@ -51,7 +51,9 @@ const events = [
 
 export const Calendar = function () {
   const today = new Date();
-  const [selectedDate, setSelectedDate] = useState(today.toLocaleDateString());
+  const [selectedDate, setSelectedDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+  );
 
   return (
     <CalendarContainer>
@@ -70,11 +72,12 @@ export const Calendar = function () {
         }}
         dayMaxEventRows={3}
         dateClick={args => {
-          setSelectedDate(args.date.toLocaleDateString());
-          console.log(selectedDate);
+          setSelectedDate(args.date);
         }}
         dayCellClassNames={args => {
-          if (args.date.toLocaleDateString() === selectedDate) {
+          const eventDate = `${args.date.getFullYear()}${args.date.getMonth()}${args.date.getDate()}`;
+          const stateDate = `${selectedDate.getFullYear()}${selectedDate.getMonth()}${selectedDate.getDate()}`;
+          if (eventDate === stateDate) {
             return ['text-ellipsis bg-reborn-orange0 selected-date'];
           }
           return 'text-ellipsis';
@@ -83,7 +86,7 @@ export const Calendar = function () {
         dayCellContent={args => args.date.getDate()}
       />
       <BottomContainer>
-        <CalendarDetail />
+        <CalendarDetail selectedDate={selectedDate} />
         <ReservationDetail />
       </BottomContainer>
     </CalendarContainer>
@@ -269,5 +272,5 @@ const BottomContainer = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: start;
+  justify-content: center;
 `;
