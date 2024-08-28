@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useState } from 'react';
 import { CalendarDetail } from './CalendarDetail';
 import { ReservationDetail } from './reservation-detail/ReservationDetail';
+import { FuneralEventProvider } from './store/event-store';
 
 const events = [
   {
@@ -85,10 +86,105 @@ export const Calendar = function () {
         events={events}
         dayCellContent={args => args.date.getDate()}
       />
-      <BottomContainer>
-        <CalendarDetail selectedDate={selectedDate} />
-        <ReservationDetail />
-      </BottomContainer>
+      <FuneralEventProvider
+        events={[
+          {
+            status: '확정',
+            subTitle: '아롱이 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              10,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              11,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '나비 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              13,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              30,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '으악 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              16,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              15,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              17,
+              0,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              20,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              0,
+            ),
+          },
+        ]}
+      >
+        <BottomContainer>
+          <CalendarDetail selectedDate={selectedDate} />
+          <ReservationDetail />
+        </BottomContainer>
+      </FuneralEventProvider>
     </CalendarContainer>
   );
 };
