@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useFuneralEventStore } from './store/event-store';
 
 interface Props {
@@ -10,11 +10,11 @@ export interface EventProps {
   // TODO: maxWidth, width, height, top, right, left, startDate, endDate는 필수값으로 변경
   maxWidth?: number | string;
   width?: number | string;
-  height?: number;
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
+  height?: number | string;
+  top?: number | string;
+  bottom?: number | string;
+  left?: number | string;
+  right?: number | string;
   subTitle: string;
   status: '확정' | '요청';
   startDate: Date;
@@ -64,15 +64,15 @@ const EventItem = function ({
       }}
     >
       <div className="flex flex-row h-[23px] px-[3px] items-center">
-        <div className="flex-1">{timeString}</div>
+        <div className="flex-1 truncate">{timeString}</div>
         <div
           className={`rounded-[4px] px-[6px] py-[2px] w-[32px] h-[19px] text-[10px] font-medium leading-[18px] flex-shrink-0 text-center ${buttonColor}`}
         >
           {status}
         </div>
       </div>
-      <div className={`flex flex-row h-[23px] px-[3px] items-center`}>
-        {subTitle}
+      <div className={`flex flex-row h-[23px] px-[3px] items-center w-full`}>
+        <div className="flex-1 truncate">{subTitle}</div>
       </div>
     </div>
   );
@@ -111,13 +111,15 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
         {/* 이벤트 영역은 위에 */}
         {/* 이벤트 들어갈 것임. 높이랑 top은 inline style로, width는 left right로 */}
         {processedEvents.map((td, idx) => {
+          // TODO: maxCount는 fetch해서 받아와야 함.
+          const maxCount = 5;
           const diffDate = td.endDate.getTime() - td.startDate.getTime();
           const diffHours = diffDate / (1000 * 60 * 60);
           const height = diffHours * 46;
           const top = (td.startDate.getHours() - 7) * 46;
-          const left = 55;
-          const width = `calc((100% - 55px) / ${td.overlapCount ?? 1})`;
-          console.log(td.subTitle, td.overlapCount, td.overlapIndex);
+          const width = `calc((100% - 55px) / ${maxCount})`;
+          const left = `calc(55px + (100% - 55px) / ${maxCount} * ${td.layer})`;
+          console.log(td.layer, left);
           // if (idx > 0 && (td.dupCount ?? 1) > 1) {
           //   let cnt = td.dupCount as number;
           //   while (cnt) {}

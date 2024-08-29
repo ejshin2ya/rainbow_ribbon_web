@@ -143,6 +143,42 @@ export const Calendar = function () {
             ),
           },
           {
+            status: '확정',
+            subTitle: '으악2 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              16,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '으악3 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              21,
+              0,
+            ),
+          },
+          {
             status: '요청',
             subTitle: '헉 (고양이) / 기본패키지',
             startDate: new Date(
@@ -157,6 +193,24 @@ export const Calendar = function () {
               today.getMonth(),
               today.getDate(),
               17,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              15,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              21,
               0,
             ),
           },
