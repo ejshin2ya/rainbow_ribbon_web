@@ -79,9 +79,12 @@ export const Calendar = function () {
           const eventDate = `${args.date.getFullYear()}${args.date.getMonth()}${args.date.getDate()}`;
           const stateDate = `${selectedDate.getFullYear()}${selectedDate.getMonth()}${selectedDate.getDate()}`;
           if (eventDate === stateDate) {
-            return ['text-ellipsis bg-reborn-orange0 selected-date'];
+            return ['truncate bg-reborn-orange0 selected-date'];
           }
-          return 'text-ellipsis';
+          if ([0, 6].includes(args.date.getDay())) {
+            return 'truncate bg-reborn-blue3 weekend-date';
+          }
+          return 'truncate bg-reborn-white weekday-date';
         }}
         events={events}
         dayCellContent={args => args.date.getDate()}
@@ -291,11 +294,18 @@ const CalendarContainer = styled.div`
   /* overflow: scroll; */
 
   .selected-date {
+    background-color: #fff9f7 !important;
     .fc-daygrid-day-number {
       border-radius: 100%;
       background-color: rgba(255, 102, 50, 1);
       color: rgba(255, 255, 255, 1);
     }
+  }
+  .weekend-date {
+    background-color: #f7f7f7 !important;
+  }
+  .weekday-date {
+    background-color: #fff !important;
   }
 
   .fc {
@@ -372,7 +382,7 @@ const CalendarContainer = styled.div`
   }
 
   .fc-daygrid-day.fc-day-today {
-    background-color: rgba(255, 249, 247, 1);
+    background-color: unset;
   }
 
   .fc-day-sun,
