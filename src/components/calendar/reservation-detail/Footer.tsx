@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { ButtonGroup } from 'src/components/common/ButtonGroup';
+import { useConfirmDialog } from 'src/components/confirm-dialog/confitm-dialog-store';
 
 export const Footer = function () {
+  const { openHandler, closeHandler, setContent } = useConfirmDialog();
   const [sendTalk, setSendTalk] = useState(false);
   const toggleSwitch = function () {
     setSendTalk(prev => !prev);
@@ -31,12 +33,51 @@ export const Footer = function () {
       <div className="w-[50%] h-full">
         <ButtonGroup
           cancelButtonOptions={{
-            onClick: () => {},
+            onClick: () => {
+              setContent({
+                header: '정말 거절하시겠어요?',
+                paragraph:
+                  '거절 후에는 복구할 수 없습니다. 신중히 선택해주세요.',
+              });
+              openHandler(
+                {
+                  text: '거절 하기',
+                  onClick: () => {
+                    closeHandler();
+                  },
+                },
+                {
+                  text: '아니요',
+                  onClick: () => {
+                    closeHandler();
+                  },
+                },
+              );
+            },
             className: '',
             text: '예약 거절',
           }}
           confirmButtonOptions={{
-            onClick: () => {},
+            onClick: () => {
+              setContent({
+                header: '이후 예약을 제한하시겠어요?',
+                paragraph: '최대 예약 3건으로, 이후 예약을 제한해 드립니다.',
+              });
+              openHandler(
+                {
+                  text: '예약 제한',
+                  onClick: () => {
+                    closeHandler();
+                  },
+                },
+                {
+                  text: '아니요',
+                  onClick: () => {
+                    closeHandler();
+                  },
+                },
+              );
+            },
             className: '',
             text: '예약확정',
           }}

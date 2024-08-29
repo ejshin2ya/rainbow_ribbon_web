@@ -4,8 +4,8 @@ interface ButtonOptions {
   className?: string;
 }
 interface Props {
-  cancelButtonOptions: ButtonOptions;
-  confirmButtonOptions: ButtonOptions;
+  cancelButtonOptions?: ButtonOptions;
+  confirmButtonOptions?: ButtonOptions;
 }
 export const ButtonGroup = function ({
   cancelButtonOptions,
