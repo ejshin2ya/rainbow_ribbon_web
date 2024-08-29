@@ -232,6 +232,42 @@ export const Calendar = function () {
               0,
             ),
           },
+          {
+            status: '확정',
+            subTitle: '헉헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              20,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              0,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '헉헉헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              20,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              0,
+            ),
+          },
         ]}
       >
         <BottomContainer>
