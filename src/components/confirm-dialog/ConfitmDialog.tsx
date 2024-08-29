@@ -6,9 +6,9 @@ export const ConfirmDialog = function () {
     useConfirmDialog();
   return (
     <div
-      className={`w-full h-full absolute flex items-center justify-center z-[1000] bg-[#000000] bg-opacity-50 duration-200 ${open ? 'visible' : 'hidden'}`}
+      className={`w-full h-full absolute flex items-center justify-center z-[1000] bg-[#000000] bg-opacity-50 duration-200 ${open ? 'visible' : 'hidden'} animate-fadeIn`}
     >
-      <div className="rounded-[10px] flex flex-col gap-[14px] py-[20px] px-[22px] bg-reborn-white w-[314px] h-[190px] items-center justify-center">
+      <div className="rounded-[10px] flex flex-col gap-[14px] py-[20px] px-[22px] bg-reborn-white w-[314px] h-[190px] items-center justify-center animate-fadeIn">
         {customNode ? (
           customNode
         ) : (
