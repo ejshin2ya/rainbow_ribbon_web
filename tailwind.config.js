@@ -5,6 +5,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        pretendard: ['Pretendard', 'Roboto'],
+        roboto: ['Roboto', 'Roboto'],
+      },
       colors: {
         reborn: {
           white: '#fff',
