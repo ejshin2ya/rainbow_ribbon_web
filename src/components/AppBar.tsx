@@ -20,8 +20,8 @@ export const AppBar = function ({
       </div>
       <div className="app-bar__client-box">
         <div className="client-box__desc-box">
-          <div className="desc-box__title">포포즈 경기 김포점</div>
-          <div className="desc-box__id">ID: 2347329347</div>
+          <div className="desc-box__title font-roboto">포포즈 경기 김포점</div>
+          <div className="desc-box__id font-roboto">ID: 2347329347</div>
         </div>
         <div className="client-box__img">
           <img

@@ -1,88 +1,98 @@
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
 import styled from 'styled-components';
-import { EventContentArg, EventSourceInput } from '@fullcalendar/core';
+import { useMemo } from 'react';
+import { useFuneralEventStore } from './store/event-store';
 
-const events: EventSourceInput = [
-  {
-    title: '초롱이 (강아지) / 간단패키지',
-    start: '2024-08-25T10:00:00',
-    end: '2024-08-25T11:00:00',
-    status: '확정',
-  },
-  {
-    title: '나비 (고양이) / 기본패키지',
-    start: '2024-08-25T11:00:00',
-    end: '2024-08-25T12:00:00',
-    status: '확정',
-  },
-  {
-    title: '아롱이 (강아지) / 기본패키지',
-    start: '2024-08-25T13:00:00',
-    end: '2024-08-25T14:30:00',
-    status: '요청',
-  },
-  {
-    title: '샴1 (고양이) / 간단패키지',
-    start: '2024-08-25T22:00:00',
-    end: '2024-08-25T24:00:00',
-    status: '확정',
-  },
-  {
-    title: '샴2 (고양이) / 보통패키지',
-    start: '2024-08-25T22:00:00',
-    end: '2024-08-26T1:00:00',
-    status: '확정',
-  },
-  {
-    title: '으아악 (강아지) / 기본패키지',
-    start: '2024-08-25T22:00:00',
-    end: '2024-08-25T24:30:00',
-    status: '요청',
-  },
-];
-
-interface EventProps {
-  args: EventContentArg & { [key: string]: any };
+interface Props {
+  selectedDate: Date;
 }
 
-const EventComponent = function ({ args }: EventProps) {
-  const status = args.event.extendedProps.status;
-  const strongColor =
-    status === '확정' ? 'bg-reborn-blue2' : 'bg-reborn-orange2_4';
+export interface EventProps {
+  // TODO: maxWidth, width, height, top, right, left, startDate, endDate는 필수값으로 변경
+  maxWidth?: number | string;
+  width?: number | string;
+  height?: number | string;
+  top?: number | string;
+  bottom?: number | string;
+  left?: number | string;
+  right?: number | string;
+  subTitle: string;
+  status: '확정' | '요청';
+  startDate: Date;
+  endDate: Date;
+}
+
+const EventItem = function ({
+  status,
+  subTitle,
+  bottom,
+  height,
+  left = 55,
+  maxWidth = '100%',
+  right = 0,
+  top = 0,
+  width,
+  startDate,
+  endDate,
+}: EventProps) {
+  // 이름 / 패키지 배경  폰트  왼쪽 보더
+  const boxColor =
+    status === '요청'
+      ? 'bg-reborn-yellow1 text-reborn-orange2_4 border-reborn-orange5'
+      : 'bg-reborn-blue0 border-l-reborn-blue1 text-reborn-blue2';
+  const buttonColor =
+    status === '요청'
+      ? 'bg-reborn-yellow2 text-reborn-orange2_4'
+      : 'bg-reborn-blue0_1 text-reborn-blue2';
+  const timeString = useMemo(() => {
+    const startHour = ('0' + startDate?.getHours()).slice(-2);
+    const startMinutes = ('0' + startDate?.getMinutes()).slice(-2);
+    const endHour = ('0' + endDate?.getHours()).slice(-2);
+    const endMinutes = ('0' + endDate?.getMinutes()).slice(-2);
+    return `${startHour}:${startMinutes} ~ ${endHour}:${endMinutes}`;
+  }, [startDate, endDate]);
   return (
     <div
-      className={`w-full h-full relative rounded-[4px] flex flex-col py-[4px] pr-[6px] pl-[9px] ${status === '확정' ? 'bg-reborn-blue0 text-reborn-blue2' : 'bg-reborn-yellow1 text-reborn-orange2_4'}`}
+      className={`absolute min-h-[23px] z-[2] left-[55px] right-0 top-[23px] opacity-100 rounded-[4px] border-l-[3px] font-medium text-[12px] leading-[18px] cursor-pointer ${boxColor}`}
+      style={{
+        top,
+        left,
+        right,
+        bottom,
+        height,
+        width,
+        maxWidth,
+      }}
     >
-      <div className={`absolute left-0 top-0 h-full w-[3px] ${strongColor}`} />
-      <div className="w-full flex flex-row text-[12px] leading-[18px] font-medium gap-[4px] content-between">
-        <div className="flex-1">시간</div>
+      <div className="flex flex-row h-[23px] px-[3px] items-center">
+        <div className="flex-1 truncate">{timeString}</div>
         <div
-          className={`w-[30px] h-[19px] text-[10px] leading-[18px] font-medium rounded-4px px-[6px] py-[2px] ${status === '확정' ? 'bg-reborn-blue0_1' : 'bg-reborn-yellow2'}`}
+          className={`rounded-[4px] px-[6px] py-[2px] w-[32px] h-[19px] text-[10px] font-medium leading-[18px] flex-shrink-0 text-center ${buttonColor}`}
         >
           {status}
         </div>
       </div>
-      <div className="w-full text-ellipsis">{args.event.title}</div>
+      <div className={`flex flex-row h-[23px] px-[3px] items-center w-full`}>
+        <div className="flex-1 truncate">{subTitle}</div>
+      </div>
     </div>
   );
 };
 
-export const CalendarDetail = function () {
+export const CalendarDetail = function ({ selectedDate }: Props) {
+  const { processedEvents } = useFuneralEventStore();
+
   return (
     <CalendarContainer>
-      <div className="w-full h-full font-semibold text-[14px] leading-[21px] text-reborn-gray3 mb-[12px]">
+      <div className="w-full font-semibold text-[14px] leading-[21px] text-reborn-gray3 mb-[12px] flex-shrink-0">
         오늘의 일정
       </div>
       <div className="w-full flex-shrink-0 flex flex-row justify-between">
         <div className="flex flex-row gap-[8px] items-end">
           <h1 className="font-semibold text-[28px] leading-[42px] text-reborn-gray8">
-            4일
+            {`${selectedDate.getDate()}일`}
           </h1>
           <h2 className="font-semibold text-[13px] leading-[20px] text-reborn-gray4 align-text-bottom">
-            목요일
+            {['일', '월', '화', '수', '목', '금', '토'][selectedDate.getDay()]}
           </h2>
         </div>
         <div className="h-full flex flex-row gap-[12px]">
@@ -96,123 +106,104 @@ export const CalendarDetail = function () {
           </div>
         </div>
       </div>
-      <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridDay"
-        locale="ko"
-        events={events}
-        headerToolbar={{
-          left: '',
-          center: '',
-          right: '',
-        }}
-        slotMinTime="07:00:00"
-        slotMaxTime="25:00:00"
-        dayHeaders={false}
-        allDaySlot={false}
-        height={1000}
-        eventContent={args => {
-          return <EventComponent args={args} />;
-        }}
-        eventOverlap={false}
-        slotMinWidth={50}
-        eventMaxStack={5}
-      />
+
+      <div className="grid__container grid grid-rows-36 grid-cols-[55px_1fr]">
+        {/* 이벤트 영역은 위에 */}
+        {/* 이벤트 들어갈 것임. 높이랑 top은 inline style로, width는 left right로 */}
+        {processedEvents.map((td, idx) => {
+          // TODO: maxCount는 fetch해서 받아와야 함.
+          const maxCount = 5;
+          const diffDate = td.endDate.getTime() - td.startDate.getTime();
+          const diffHours = diffDate / (1000 * 60 * 60);
+          const height = diffHours * 46;
+          const top = (td.startDate.getHours() - 7) * 46;
+          const width = `calc((100% - 55px) / ${maxCount})`;
+          const left = `calc(55px + (100% - 55px) / ${maxCount} * ${td.layer})`;
+          console.log(td.layer, left);
+          // if (idx > 0 && (td.dupCount ?? 1) > 1) {
+          //   let cnt = td.dupCount as number;
+          //   while (cnt) {}
+          // }
+
+          return (
+            <EventItem
+              key={`event-${idx}`}
+              status={td.status}
+              subTitle={td.subTitle}
+              startDate={td.startDate}
+              endDate={td.endDate}
+              height={height}
+              top={top}
+              left={left}
+              width={width}
+            />
+          );
+        })}
+
+        {[
+          '오전 7시',
+          '오전 8시',
+          '오전 9시',
+          '오전 10시',
+          '오전 11시',
+          '오후 12시',
+          '오후 1시',
+          '오후 2시',
+          '오후 3시',
+          '오후 4시',
+          '오후 5시',
+          '오후 6시',
+          '오후 7시',
+          '오후 8시',
+          '오후 9시',
+          '오후 10시',
+          '오후 11시',
+          '오전 12시',
+        ].map(title => {
+          return (
+            <>
+              <div className="cell border-none pr-[8px] py-[4px]">{title}</div>
+              <div className="cell right-cell border-t-[1px] border-t-reborn-gray1 border-b-reborn-gray0 border-b-[1px] border-r-[1px] border-r-reborn-gray1 border-l-[1px] border-l-reborn-gray1"></div>
+              <div className="cell"></div>
+              <div className="cell right-cell border-r-[1px] border-r-reborn-gray1 border-l-[1px] border-l-reborn-gray1"></div>
+            </>
+          );
+        })}
+      </div>
     </CalendarContainer>
   );
 };
 
 const CalendarContainer = styled.div`
   flex: 1;
+  min-width: 400px;
   width: 50%;
-  height: 900px;
-  min-height: 710px;
+  height: 973px;
+  min-height: 973px;
   max-height: 100%;
   display: flex;
   flex-direction: column;
   padding: 32px 0px 22px 17px;
 
-  .fc.fc-media-screen.fc-direction-ltr.fc-theme-standard {
+  .grid__container {
     width: 100%;
-    height: 50%;
-    min-height: 850px;
-    min-width: 80px;
-    background-color: transparent;
-  }
-
-  .fc-scrollgrid {
-    /* height: 2000px; */
-    border: none;
-  }
-
-  .fc-timegrid-slot-label {
-    font-weight: 500;
-    font-size: 10px;
-    line-height: 12px;
-    text-align: right;
-    color: #71717a;
-    border: none;
-    min-width: 55px;
-  }
-
-  colgroup > col {
-    min-width: 55px;
-    border-top: none;
-  }
-
-  td {
-    border: none;
-  }
-
-  .fc-timegrid-slot-lane {
-    background-color: #fff;
-    border: 1px solid #ebebeb;
-    height: 23px;
-  }
-
-  .fc-timegrid-slot-minor {
-    border-top: 1px solid #f7f7f7 !important;
-  }
-
-  td {
-    border-right: 1px solid #ebebeb;
-  }
-
-  .fc-timegrid-slot.fc-timegrid-slot-label.fc-timegrid-slot-minor {
-    border-top: none !important;
-  }
-
-  .fc-timegrid-col-frame {
-    border-top: none;
-  }
-
-  .fc-timegrid-slot.fc-timegrid-slot-label.fc-timegrid-slot-minor::before {
-    visibility: none;
-    width: 0;
-    height: 0;
-  }
-  .fc-timegrid-col-bg {
-    border-top: 1px solid #ebebeb;
-  }
-  .fc-timegrid-slot.fc-timegrid-slot-lane.fc-timegrid-slot-minor::before {
-    visibility: none;
-    width: 0 !important;
-    height: 0 !important;
-    position: absolute;
-  }
-
-  .fc-event-main,
-  .fc-timegrid-event-harness {
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  a.fc-event {
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
+    height: 1;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-top: 16px;
+    /* background-color: red; */
+    position: relative;
+    > .cell {
+      height: 23px;
+      color: #71717a;
+      font-weight: 500;
+      font-size: 10px;
+      line-height: 12px;
+      text-align: right;
+    }
+    > .right-cell:last-child {
+      border-bottom: 1px solid #ebebeb;
+    }
   }
 `;

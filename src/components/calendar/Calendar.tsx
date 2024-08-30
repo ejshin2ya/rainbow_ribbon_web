@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useState } from 'react';
 import { CalendarDetail } from './CalendarDetail';
 import { ReservationDetail } from './reservation-detail/ReservationDetail';
+import { FuneralEventProvider } from './store/event-store';
 
 const events = [
   {
@@ -51,7 +52,9 @@ const events = [
 
 export const Calendar = function () {
   const today = new Date();
-  const [selectedDate, setSelectedDate] = useState(today.toLocaleDateString());
+  const [selectedDate, setSelectedDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+  );
 
   return (
     <CalendarContainer>
@@ -70,22 +73,211 @@ export const Calendar = function () {
         }}
         dayMaxEventRows={3}
         dateClick={args => {
-          setSelectedDate(args.date.toLocaleDateString());
-          console.log(selectedDate);
+          setSelectedDate(args.date);
         }}
         dayCellClassNames={args => {
-          if (args.date.toLocaleDateString() === selectedDate) {
-            return ['text-ellipsis bg-reborn-orange0 selected-date'];
+          const eventDate = `${args.date.getFullYear()}${args.date.getMonth()}${args.date.getDate()}`;
+          const stateDate = `${selectedDate.getFullYear()}${selectedDate.getMonth()}${selectedDate.getDate()}`;
+          if (eventDate === stateDate) {
+            return ['truncate bg-reborn-orange0 selected-date'];
           }
-          return 'text-ellipsis';
+          if ([0, 6].includes(args.date.getDay())) {
+            return 'truncate bg-reborn-blue3 weekend-date';
+          }
+          return 'truncate bg-reborn-white weekday-date';
         }}
         events={events}
         dayCellContent={args => args.date.getDate()}
       />
-      <BottomContainer>
-        <CalendarDetail />
-        <ReservationDetail />
-      </BottomContainer>
+      <FuneralEventProvider
+        events={[
+          {
+            status: '확정',
+            subTitle: '아롱이 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              10,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              11,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '나비 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              13,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              30,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '으악 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              16,
+              0,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '으악2 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              16,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '으악3 (강아지) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              14,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              21,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              15,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              17,
+              0,
+            ),
+          },
+          {
+            status: '요청',
+            subTitle: '헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              15,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              21,
+              0,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              20,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              0,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '헉헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              20,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              0,
+            ),
+          },
+          {
+            status: '확정',
+            subTitle: '헉헉헉 (고양이) / 기본패키지',
+            startDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              20,
+              0,
+            ),
+            endDate: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              0,
+            ),
+          },
+        ]}
+      >
+        <BottomContainer>
+          <CalendarDetail selectedDate={selectedDate} />
+          <ReservationDetail />
+        </BottomContainer>
+      </FuneralEventProvider>
     </CalendarContainer>
   );
 };
@@ -102,11 +294,18 @@ const CalendarContainer = styled.div`
   /* overflow: scroll; */
 
   .selected-date {
+    background-color: #fff9f7 !important;
     .fc-daygrid-day-number {
       border-radius: 100%;
       background-color: rgba(255, 102, 50, 1);
       color: rgba(255, 255, 255, 1);
     }
+  }
+  .weekend-date {
+    background-color: #f7f7f7 !important;
+  }
+  .weekday-date {
+    background-color: #fff !important;
   }
 
   .fc {
@@ -183,7 +382,7 @@ const CalendarContainer = styled.div`
   }
 
   .fc-daygrid-day.fc-day-today {
-    background-color: rgba(255, 249, 247, 1);
+    background-color: unset;
   }
 
   .fc-day-sun,
@@ -269,5 +468,5 @@ const BottomContainer = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: start;
+  justify-content: center;
 `;
