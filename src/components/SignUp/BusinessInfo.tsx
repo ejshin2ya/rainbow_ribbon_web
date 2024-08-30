@@ -1,13 +1,18 @@
-import { useState, useRef } from "react";
-import styled from "styled-components";
-import InputWithLabel from "../common/InputWithLabel";
-import Button from "../common/Button";
-import AddressModal from "../common/AddressModal";
-import Modal from "../common/Modal";
-import useModal from "../../hooks/useModal";
-import Input from "../common/Input";
-import { useRecoilState } from "recoil";
-import { signUpFormState } from "../../atoms/signupFormState";
+import { useState, useRef } from 'react';
+import styled from 'styled-components';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import InputWithLabel from '../common/InputWithLabel';
+import Button from '../common/Button';
+import AddressModal from '../common/AddressModal';
+import Modal from '../common/Modal';
+import useModal from '../../hooks/useModal';
+import Input from '../common/Input';
+import { useRecoilState } from 'recoil';
+import { signUpFormState } from '../../atoms/signupFormState';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+
+// pdf API 버전과 동일한 워커 파일 버전을 사용하도록 설정
+const workerUrl = `https://unpkg.com/pdfjs-dist@3.6.172/build/pdf.worker.min.js`;
 
 interface BusinessInfoProps {
   onSubmit: () => void;
@@ -25,10 +30,10 @@ interface BusinessInfoData {
 const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   //사업정보 입력값 데이터
   const [businessData, setBusinessData] = useState<BusinessInfoData>({
-    businessNumber: "",
-    address: "",
-    zonecode: "",
-    detailedAdress: "",
+    businessNumber: '',
+    address: '',
+    zonecode: '',
+    detailedAdress: '',
     businessProof: null,
     licenseProof: null,
   });
@@ -39,7 +44,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   const { isOpen, openModal, closeModal } = useModal();
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   //파일크기 초과 또는 지원하지 않는 파일 업로드시 에러 메세지 상태값
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
   // 숨겨진 file input에 대한 참조
   const businessProofInputRef = useRef<HTMLInputElement>(null);
@@ -55,16 +60,16 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
 
   //사업자 등록번호 입력에 대한 유효성 검사 및 숫자만 입력 가능하도록 설정
   const handleBusinessNumberChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const { name, value } = e.target;
-    const numericValue = value.replace(/\D/g, "").slice(0, 10);
-    setBusinessData((prev) => ({ ...prev, [name]: numericValue }));
+    const numericValue = value.replace(/\D/g, '').slice(0, 10);
+    setBusinessData(prev => ({ ...prev, [name]: numericValue }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setBusinessData((prev) => ({ ...prev, [name]: value }));
+    setBusinessData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,18 +80,18 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
       const fileType = file.type;
 
       if (fileSize > 10) {
-        setErrorMessage("최대 10MB 크기의 파일만 업로드할 수 있습니다.");
+        setErrorMessage('최대 10MB 크기의 파일만 업로드할 수 있습니다.');
         setIsErrorModalOpen(true);
         return;
       }
 
-      if (!["image/jpeg", "image/png", "application/pdf"].includes(fileType)) {
-        setErrorMessage("JPG, PNG, PDF 형식의 파일만 업로드할 수 있습니다.");
+      if (!['image/jpeg', 'image/png', 'application/pdf'].includes(fileType)) {
+        setErrorMessage('JPG, PNG, PDF 형식의 파일만 업로드할 수 있습니다.');
         setIsErrorModalOpen(true);
-        console.log("지원하지 않는 파일형식");
+        console.log('지원하지 않는 파일형식');
         return;
       }
-      setBusinessData((prev) => ({ ...prev, [name]: file }));
+      setBusinessData(prev => ({ ...prev, [name]: file }));
     }
   };
 
@@ -100,12 +105,13 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   const renderFilePreview = (file: File | null) => {
     if (!file) return null;
 
-    if (file.type === "application/pdf") {
+    if (file.type === 'application/pdf') {
       return (
-        <FileInfo>
-          <p>{file.name}</p>
-          <p>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-        </FileInfo>
+        <PdfPreviewWrapper>
+          <Worker workerUrl={workerUrl}>
+            <Viewer fileUrl={URL.createObjectURL(file)} />
+          </Worker>
+        </PdfPreviewWrapper>
       );
     } else {
       return <PreviewImage src={URL.createObjectURL(file)} alt="Preview" />;
@@ -117,7 +123,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
     address: string;
     zonecode: string;
   }) => {
-    setBusinessData((prev) => ({
+    setBusinessData(prev => ({
       ...prev,
       address: data.address,
       zonecode: data.zonecode,
@@ -127,7 +133,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       businessRegCertificateImage: businessData.businessProof,
       animalBurialPermitImage: businessData.licenseProof,
@@ -138,7 +144,6 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
         addressDetail: businessData.detailedAdress,
       },
     }));
-    console.log(businessData);
     onSubmit();
   };
 
@@ -307,44 +312,40 @@ const FileInputWrapper = styled.div<{ hasFile: boolean }>`
   font-size: 1rem;
   position: relative;
 
-  input[type="file"] {
+  input[type='file'] {
     display: none;
   }
 
   &::before {
-    content: "${(props) => (!props.hasFile ? "+" : "")}";
+    content: '${props => (!props.hasFile ? '+' : '')}';
     font-size: 2rem;
     color: #999;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -60%);
-    display: ${(props) => (props.hasFile ? "none" : "block")};
+    display: ${props => (props.hasFile ? 'none' : 'block')};
   }
 
   &::after {
-    content: "${(props) => (!props.hasFile ? "이미지 추가" : "")}";
+    content: '${props => (!props.hasFile ? '이미지 추가' : '')}';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, 10%);
     color: #999;
-    display: ${(props) => (props.hasFile ? "none" : "block")};
+    display: ${props => (props.hasFile ? 'none' : 'block')};
   }
 `;
 
-const FileInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+const PdfPreviewWrapper = styled.div`
   width: 100%;
   height: 100%;
+  border-radius: 10px;
 
-  p {
-    margin: 5px 0;
-    font-size: 0.9rem;
-    color: #333;
+  canvas {
+    width: 100%;
+    height: auto;
   }
 `;
 
