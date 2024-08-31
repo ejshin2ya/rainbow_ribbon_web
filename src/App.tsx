@@ -39,6 +39,7 @@ const App = () => {
             </>
           }
         />
+        <Route path="*" element={<>Not found</>} />
       </Routes>
     </Router>
   );
