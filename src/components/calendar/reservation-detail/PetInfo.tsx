@@ -1,9 +1,11 @@
 import { SubtitleAndDesc } from './SubtitleAndDesc';
+import { ReactComponent as FootPrintIcon } from '../../../assets/FootPrint.svg';
 
 export const PetInfo = function () {
   return (
     <div className="w-full">
-      <h3 className="font-semibold text-[14px] leading-[17px] mb-[23px]">
+      <h3 className="font-semibold text-[14px] leading-[17px] mb-[23px] flex flex-row gap-[4px]">
+        <FootPrintIcon />
         반려동물 정보
       </h3>
       <div className="flex flex-col gap-[8px]">

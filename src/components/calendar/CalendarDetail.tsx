@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import { useMemo } from 'react';
 import { useFuneralEventStore } from './store/event-store';
+import { ReactComponent as PlusIcon } from '../../assets/Plus.svg';
+import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
 
 interface Props {
   selectedDate: Date;
@@ -96,14 +98,22 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           </h2>
         </div>
         <div className="h-full flex flex-row gap-[12px]">
-          <button className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4">
-            <img width={15} height={15} alt="" src="" />
+          <button className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1">
+            <PlusIcon
+              width={15}
+              height={15}
+              className="flex items-center justify-center"
+            />
             예약 추가
           </button>
-          <div className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4">
-            <img width={15} height={15} alt="" src="" />
+          <button className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1 items-center justify-center">
+            <ClockIcon
+              width={17}
+              height={17}
+              className="flex items-center justify-center"
+            />
             예약 제한
-          </div>
+          </button>
         </div>
       </div>
 

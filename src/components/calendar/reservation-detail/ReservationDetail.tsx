@@ -4,6 +4,7 @@ import { PersonalInfo } from './PersonalInfo';
 import { ReservationInfo } from './ReservationInfo';
 import { PetInfo } from './PetInfo';
 import { Memo } from './Memo';
+import { ReactComponent as GrayLogoIcon } from '../../../assets/GrayLogo.svg';
 
 export const ReservationDetail = function () {
   return (
@@ -23,7 +24,7 @@ export const ReservationDetail = function () {
           </section>
           <div className="water-mark">
             예약 대기 중
-            <img src="" alt="" width={36} height={36} />
+            <GrayLogoIcon width={36} height={36} />
           </div>
         </main>
         <Footer />
@@ -57,7 +58,7 @@ const ReservationContainer = styled.article`
 
       display: flex;
       flex-direction: row;
-      gap: 14px;
+      gap: 8px;
       justify-content: center;
       align-items: center;
       cursor: default;
