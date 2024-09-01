@@ -10,28 +10,38 @@ import { GetRoomListRes } from 'src/queries/chat/types';
 
 interface ChatStoreType {
   selectedRoomId?: string | number;
+  selectedUserId?: string | number;
   changeRoom: (roomId: string | number) => void;
+  changeUser: (userId: string | number) => void;
 }
 
 const ChatStore = createContext<Partial<ChatStoreType>>({});
 
 export const ChatProvider = function ({ children }: PropsWithChildren) {
   const { data, isLoading } = useChatList();
-  const { data: roomList } = data as GetRoomListRes;
   const [selectedRoomId, setSelectedRoomId] = useState<
+    string | number | undefined
+  >();
+  const [selectedUserId, setSelectedUserId] = useState<
     string | number | undefined
   >();
   const changeRoom = function (roomId: string | number) {
     setSelectedRoomId(roomId);
   };
+  const changeUser = function (userId: string | number) {
+    setSelectedUserId(userId);
+  };
   useEffect(() => {
-    if (roomList.length) {
-      setSelectedRoomId(roomList[0].roomId);
+    if (data?.data.length) {
+      setSelectedRoomId(data?.data[0].roomId);
+      setSelectedUserId(data?.data[0].userId);
     }
-  }, []);
-  if (isLoading) return null;
+  }, [isLoading]);
+  // if (isLoading) return null;
   return (
-    <ChatStore.Provider value={{ selectedRoomId, changeRoom }}>
+    <ChatStore.Provider
+      value={{ selectedRoomId, changeRoom, selectedUserId, changeUser }}
+    >
       {children}
     </ChatStore.Provider>
   );
