@@ -29,14 +29,14 @@ export const AppBar = function ({
       </div>
       <div className="app-bar__client-box">
         {isChat ? (
-          <div className="relative flex items-center justify-center flex-shrink-0 h-full w-[42px]">
+          <button className="relative flex items-center justify-center flex-shrink-0 h-full w-[42px] cursor-pointer">
             <AlarmIcon />
             <div className="min-w-[18px] h-[18px] absolute top-[4px] right-0 rounded-[30px] text-reborn-white bg-reborn-orange3 flex items-center justify-center text-[12px] border-[1px] border-reborn-white p-[4px]">
               2{/* if (count < 10) return 'right-0'*/}
               {/* if (count > 10) return 'right-[-4px]'*/}
               {/* if (count > 99) return 'right-[-12px]'*/}
             </div>
-          </div>
+          </button>
         ) : (
           <>
             <div className="client-box__desc-box">
