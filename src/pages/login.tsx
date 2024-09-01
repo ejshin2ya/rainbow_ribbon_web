@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import styled from "styled-components";
-import { useLoginMutation } from "../hooks/useLoginMutation";
-import { useRecoilState } from "recoil";
-import { authState } from "../atoms/authState";
-import { useNavigate } from "react-router-dom";
-import Button from "../components/common/Button";
-import { LoginReq } from "../services/apiService";
-import Modal from "../components/common/Modal";
-import useModal from "../hooks/useModal";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import styled from 'styled-components';
+import { useLoginMutation } from '../hooks/useLoginMutation';
+import { useRecoilState } from 'recoil';
+import { authState } from '../atoms/authState';
+import { useNavigate } from 'react-router-dom';
+import Button from '../components/common/Button';
+import { LoginReq } from '../services/apiService';
+import Modal from '../components/common/Modal';
+import useModal from '../hooks/useModal';
+import api from 'src/api/axios';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>(""); // 에러 메시지 상태 추가
+  const [errorMessage, setErrorMessage] = useState<string>(''); // 에러 메시지 상태 추가
   const [, setAuth] = useRecoilState(authState);
   const navigate = useNavigate();
   const { isOpen, openModal, closeModal } = useModal();
@@ -29,7 +30,7 @@ const LoginPage: React.FC = () => {
 
   // 페이지가 로드될 때 localStorage에서 저장된 이메일을 가져옵니다.
   useEffect(() => {
-    const savedEmail = localStorage.getItem("savedEmail");
+    const savedEmail = localStorage.getItem('savedEmail');
     if (savedEmail) {
       setEmail(savedEmail);
       setRememberMe(true); // Remember Me 체크박스를 체크 상태로 만듭니다.
@@ -42,9 +43,9 @@ const LoginPage: React.FC = () => {
 
     // Remember Me가 체크되어 있으면 이메일을 localStorage에 저장합니다.
     if (rememberMe) {
-      localStorage.setItem("savedEmail", email);
+      localStorage.setItem('savedEmail', email);
     } else {
-      localStorage.removeItem("savedEmail");
+      localStorage.removeItem('savedEmail');
     }
 
     login(
@@ -53,7 +54,7 @@ const LoginPage: React.FC = () => {
         password: password,
       },
       {
-        onSuccess: (data) => {
+        onSuccess: data => {
           setAuth({
             accessToken: data.data.accessToken,
             refreshToken: data.data.refreshToken,
@@ -62,7 +63,9 @@ const LoginPage: React.FC = () => {
             phone: data.data.phone,
           });
 
-          navigate("/registration");
+          api.defaults.headers.common.Authorization = data.data.accessToken;
+
+          navigate('/registration');
         },
         onError: (error: Error, variables: LoginReq, context: unknown) => {
           if (axios.isAxiosError(error)) {
@@ -70,12 +73,12 @@ const LoginPage: React.FC = () => {
             setErrorMessage(msg);
             openModal();
           } else {
-            setErrorMessage("알 수 없는 오류가 발생했습니다.");
+            setErrorMessage('알 수 없는 오류가 발생했습니다.');
           }
         },
-      }
+      },
     );
-    console.log("Login submitted", { email, password, rememberMe });
+    console.log('Login submitted', { email, password, rememberMe });
   };
 
   return (
@@ -83,20 +86,20 @@ const LoginPage: React.FC = () => {
       <InnerContainer>
         <LogoBox>
           <Logo>REBORN </Logo>
-          <Logo style={{ fontSize: "30px", color: "#181717" }}>partners</Logo>
+          <Logo style={{ fontSize: '30px', color: '#181717' }}>partners</Logo>
         </LogoBox>
         <FormBox onSubmit={handleSubmit}>
           <Input
             type="email"
             placeholder="아이디(이메일)"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
           />
           <Input
             type="password"
             placeholder="비밀번호"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
           />
 
           <LoginButton type="submit" disabled={!email || !password}>
@@ -106,7 +109,7 @@ const LoginPage: React.FC = () => {
             <Checkbox
               type="checkbox"
               checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+              onChange={e => setRememberMe(e.target.checked)}
             />
             <label>아이디 저장</label>
           </CheckboxContainer>
