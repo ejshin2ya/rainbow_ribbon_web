@@ -1,4 +1,4 @@
-import { chatDomain } from './chat-domain';
+import { chatDomain } from '../queries/chat/chat-domain';
 import api from 'src/api/axios';
 import {
   StartChatRes,
@@ -6,7 +6,7 @@ import {
   SendMessageRes,
   GetAllMessage,
   GetUnreadMessageRes,
-} from './types';
+} from '../queries/chat/types';
 
 export const getChatList = async function () {
   return (

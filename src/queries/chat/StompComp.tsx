@@ -3,6 +3,8 @@ import { Client, Message } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Domain } from 'src/api/endpoints';
 import { useQueryClient } from '@tanstack/react-query';
+import { useLoginMutation } from 'src/hooks/useLoginMutation';
+import api from 'src/api/axios';
 
 interface StompContextProps {
   client: Client | null;
@@ -17,59 +19,81 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
   const queryClient = useQueryClient();
   // TODO: messages는 추후 삭제해야 함
   const [messages, setMessages] = useState<string[]>([]);
+  // TODO: 로그인 mutation 삭제해야 함
+  const { mutateAsync, isSuccess } = useLoginMutation();
   const [client, setClient] = useState<Client | null>(null);
 
   useEffect(() => {
-    const socketUrl = Domain.getPath('/chatting');
-    const socket = new SockJS(socketUrl);
-
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      debug: str => {
-        console.warn(str);
-      },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    });
-
+    let stompClient: undefined | Client;
     let heartbeatInterval;
-    stompClient.onConnect = () => {
-      console.log('WebSocket Connected');
+    mutateAsync({ loginId: 'test1@naver.com', password: 'test1234' }).then(
+      res => {
+        const socketUrl = Domain.getPath('/chatting');
+        const socket = new SockJS(socketUrl);
+        // console.log('socketUrl', socketUrl);
 
-      stompClient.subscribe('/user/queue/notifications', (message: Message) => {
-        if (message.body) {
-          setMessages(prevMessages => [...prevMessages, message.body]);
-          console.log('메세지 수신', message.body);
-          // TODO: 메세지에 따라 세세하게 refetch
-          queryClient.invalidateQueries({ queryKey: ['chat'] });
-        }
-      });
+        api.defaults.headers.common.Authorization =
+          'Bearer ' + res.data.accessToken;
 
-      heartbeatInterval = setInterval(() => {
-        if (stompClient.connected) {
-          stompClient.publish({
-            destination: '/heartbeat',
-            body: 'Heartbeat',
-          });
-        }
-      }, 25000);
+        stompClient = new Client({
+          webSocketFactory: () => socket,
+          // brokerURL: socketUrl,
+          debug: str => {
+            console.warn(str);
+          },
+          reconnectDelay: 5000,
+          heartbeatIncoming: 4000,
+          heartbeatOutgoing: 4000,
+          connectHeaders: {
+            Authorization: `Bearer ${res.data.accessToken}`,
+          },
+        });
+        console.log('stompClient', stompClient);
 
-      setClient(stompClient);
-    };
+        stompClient.onConnect = () => {
+          console.log('WebSocket Connected');
 
-    stompClient.onStompError = frame => {
-      console.error('Broker reported error: ' + frame.headers['message']);
-      console.error('Additional details: ' + frame.body);
-    };
+          stompClient?.subscribe(
+            '/user/queue/notifications',
+            (message: Message) => {
+              if (message.body) {
+                setMessages(prevMessages => [...prevMessages, message.body]);
+                console.log('Received', message.body);
+                // TODO: 메세지에 따라 세세하게 refetch
+                queryClient.invalidateQueries({ queryKey: ['chat'] });
+              }
+            },
+          );
 
-    stompClient.activate();
+          heartbeatInterval = setInterval(() => {
+            if (stompClient?.connected) {
+              stompClient.publish({
+                destination: '/heartbeat',
+                body: 'Heartbeat',
+              });
+            }
+          }, 25000);
+
+          setClient(stompClient as Client);
+        };
+
+        stompClient.onStompError = frame => {
+          console.error('Broker reported error: ' + frame.headers['message']);
+          console.error('Additional details: ' + frame.body);
+        };
+
+        stompClient.activate();
+      },
+    );
 
     return () => {
-      stompClient.deactivate();
+      stompClient?.deactivate();
       clearInterval(heartbeatInterval);
     };
   }, []);
+
+  // TODO: 로그인 뮤테이션 빼면 지워줘야함
+  if (!isSuccess) return null;
 
   return (
     <StompContext.Provider value={{ client, messages }}>

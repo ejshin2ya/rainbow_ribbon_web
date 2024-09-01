@@ -1,15 +1,19 @@
+export interface RoomListDto {
+  roomId: string;
+  userId: string;
+  companyId: string;
+  imgUrl: string;
+  companyName: string;
+  companyAddress: string;
+  isReserved: boolean;
+  unreadCount: number;
+  lastMessage: string;
+}
+
 export interface GetRoomListRes {
-  chatRoomList: {
-    roomId: string;
-    userId: string;
-    companyId: string;
-    imgUrl: string;
-    companyName: string;
-    companyAddress: string;
-    isReserved: boolean;
-    unreadCount: number;
-    lastMessage: string;
-  }[];
+  data: RoomListDto[];
+  msg: string;
+  statusCode: string;
 }
 
 export interface StartChatRes {

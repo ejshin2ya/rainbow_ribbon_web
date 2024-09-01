@@ -6,7 +6,7 @@ import {
   readMessage,
   sendMessage,
   startChat,
-} from './queryFn';
+} from '../../services/chatService';
 import { chatQueryKey } from './queryKey';
 
 export const useChatList = function () {
