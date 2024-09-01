@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useFuneralEventStore } from './store/event-store';
 import { ReactComponent as PlusIcon } from '../../assets/Plus.svg';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
+import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 
 interface Props {
   selectedDate: Date;
@@ -82,6 +83,19 @@ const EventItem = function ({
 
 export const CalendarDetail = function ({ selectedDate }: Props) {
   const { processedEvents } = useFuneralEventStore();
+  const { closeHandler, openBlockHandler } = useConfirmDialog();
+
+  const openConfirmBlockDialogHandler = function () {
+    openBlockHandler(
+      { text: '확인', onClick: () => closeHandler() },
+      {
+        text: '취소',
+        onClick: () => {
+          closeHandler();
+        },
+      },
+    );
+  };
 
   return (
     <CalendarContainer>
@@ -106,7 +120,10 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
             />
             예약 추가
           </button>
-          <button className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1 items-center justify-center">
+          <button
+            className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1 items-center justify-center"
+            onClick={openConfirmBlockDialogHandler}
+          >
             <ClockIcon
               width={17}
               height={17}

@@ -14,18 +14,25 @@ interface ButtonOptions {
 
 interface ConfirmDialogProps {
   open: boolean;
+  dialogType: 'confirm' | 'reservationBlock';
   header: string;
   paragraph: string;
   customNode: ReactNode;
   confirmOption: ButtonOptions;
   cancelOption?: ButtonOptions;
   closeHandler: () => void;
-  openHandler: (
+  openConfirmHandler: (
+    confirmOptions?: ButtonOptions,
+    cancelOptions?: ButtonOptions,
+  ) => void;
+  openBlockHandler: (
     confirmOptions?: ButtonOptions,
     cancelOptions?: ButtonOptions,
   ) => void;
   setContent: (content: { header: string; paragraph: string }) => void;
   setCustomContent: (content: ReactNode) => void;
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
 }
 
 const ConfirmDialogStore = createContext<Partial<ConfirmDialogProps>>({});
@@ -34,6 +41,10 @@ export const ConfirmDialogProvider = function ({
   children,
 }: PropsWithChildren) {
   const [open, setOpen] = useState<boolean>(false);
+  const [dialogType, setDialogType] = useState<'confirm' | 'reservationBlock'>(
+    'confirm',
+  );
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [confirmOption, setConfirmOption] = useState<ButtonOptions>({
     onClick: () => closeHandler(),
     text: '확인',
@@ -45,7 +56,7 @@ export const ConfirmDialogProvider = function ({
   const closeHandler = function () {
     setOpen(false);
   };
-  const openHandler = (
+  const openConfirmHandler = (
     confirmOptions?: ButtonOptions,
     cancelOptions?: ButtonOptions,
   ) => {
@@ -55,6 +66,20 @@ export const ConfirmDialogProvider = function ({
     if (cancelOptions) {
       setCancelOption(cancelOptions);
     }
+    setDialogType('confirm');
+    setOpen(true);
+  };
+  const openBlockHandler = (
+    confirmOptions?: ButtonOptions,
+    cancelOptions?: ButtonOptions,
+  ) => {
+    if (confirmOptions) {
+      setConfirmOption(confirmOptions);
+    }
+    if (cancelOptions) {
+      setCancelOption(cancelOptions);
+    }
+    setDialogType('reservationBlock');
     setOpen(true);
   };
   const setContent = (content: { header: string; paragraph: string }) => {
@@ -64,13 +89,17 @@ export const ConfirmDialogProvider = function ({
   const setCustomContent = (content: ReactNode) => {
     setCustomNode(content);
   };
+  const changeSelectedDate = (date: Date) => {
+    setSelectedDate(date);
+  };
 
   return (
     <ConfirmDialogStore.Provider
       value={{
         open,
         closeHandler,
-        openHandler,
+        openConfirmHandler,
+        openBlockHandler,
         cancelOption,
         confirmOption,
         header,
@@ -78,6 +107,9 @@ export const ConfirmDialogProvider = function ({
         customNode,
         setContent,
         setCustomContent,
+        dialogType,
+        selectedDate,
+        setSelectedDate: changeSelectedDate,
       }}
     >
       {children}
