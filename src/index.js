@@ -22,7 +22,8 @@ const queryClient = new QueryClient({
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <React.StrictMode>
+  <>
+    {/* <React.StrictMode> */}
     {/* QueryClientProvider로 전체 애플리케이션을 감쌉니다. */}
     <QueryClientProvider client={queryClient}>
       <RecoilRoot>
@@ -31,7 +32,8 @@ root.render(
       {/* ReactQueryDevtools는 QueryClientProvider 내부에 위치해야 합니다. */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  </React.StrictMode>,
+    {/* </React.StrictMode> */}
+  </>,
 );
 
 reportWebVitals();
