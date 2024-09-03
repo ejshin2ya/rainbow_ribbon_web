@@ -2,10 +2,11 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CalendarDetail } from './CalendarDetail';
 import { ReservationDetail } from './reservation-detail/ReservationDetail';
 import { FuneralEventProvider } from './store/event-store';
+import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 
 const events = [
   {
@@ -55,6 +56,11 @@ export const Calendar = function () {
   const [selectedDate, setSelectedDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), today.getDate()),
   );
+  const { setSelectedDate: updateDialogDate } = useConfirmDialog();
+
+  useEffect(() => {
+    updateDialogDate(selectedDate);
+  }, [selectedDate]);
 
   return (
     <CalendarContainer>
@@ -272,6 +278,7 @@ export const Calendar = function () {
             ),
           },
         ]}
+        selectedDate={selectedDate}
       >
         <BottomContainer>
           <CalendarDetail selectedDate={selectedDate} />
@@ -311,7 +318,7 @@ const CalendarContainer = styled.div`
   .fc {
     width: 100%;
     height: 100%;
-    min-height: 850px;
+    min-height: 1050px;
     min-width: 1133px;
   }
   .fc-toolbar-chunk {

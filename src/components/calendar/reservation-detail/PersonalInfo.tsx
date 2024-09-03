@@ -1,3 +1,5 @@
+import { ReactComponent as FaceIcon } from '../../../assets/Person.svg';
+
 interface InputProps {
   label?: string;
   placeholder?: string;
@@ -16,6 +18,7 @@ const InputInfo = function ({ label, placeholder }: InputProps) {
       {label && (
         <label className="font-medium text-reborn-gray4">{label}</label>
       )}
+      {/* TODO: input이 아니라 일반 Box라고 함 */}
       <input
         className="rounded-[4px] border-[1.26px] border-reborn-gray1 w-full outline-none py-[6px] px-[12px] text-[12px]"
         placeholder={placeholder}
@@ -43,7 +46,7 @@ export const PersonalInfo = function () {
   return (
     <div className="flex flex-col w-full h-full pt-[31px] pl-[30px] pr-[27px] gap-[20px]">
       <div className="flex flex-row gap-[4px] text-reborn-gray8 text-[14px] leading-[17px] font-semibold mb-[-4px]">
-        <img width={16} height={16} src="" alt="아이콘" />
+        <FaceIcon width={16} height={16} />
         예약자
       </div>
       <InputInfo label="아이디" placeholder="아이디" />
