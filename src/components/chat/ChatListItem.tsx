@@ -33,8 +33,10 @@ export const ChatListItem = function ({ roomInfo }: Props) {
           오후 22:44
         </div>
       </div>
-      <div className="flex-1 w-full flex flex-row items-center justify-center">
-        <div className="line-clamp-2 flex-1">{roomInfo.lastMessage}</div>
+      <div className="flex-1 w-full flex flex-row items-center justify-center gap-[8px]">
+        <div className="line-clamp-2 flex-1 break-all">
+          {roomInfo.lastMessage}
+        </div>
         <div
           className={`min-w-[29px] h-[29px] flex items-center justify-center rounded-full font-medium text-[14px] ${roomInfo.unreadCount ? 'bg-reborn-orange3 text-reborn-white' : ''}`}
         >
