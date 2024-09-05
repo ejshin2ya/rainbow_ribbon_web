@@ -14,6 +14,7 @@ interface FuneralStore {
   changeSelectedEvent: (event: any) => void;
   events: EventProps[];
   processedEvents: EventArrTypes[];
+  selectedDate: Date;
 }
 
 const FuneralEventStore = createContext<FuneralStore>({
@@ -21,15 +22,18 @@ const FuneralEventStore = createContext<FuneralStore>({
   events: [],
   selectedEvent: null,
   processedEvents: [],
+  selectedDate: new Date(),
 });
 
 interface Props {
   events: EventArrTypes[];
+  selectedDate: Date;
 }
 
 export const FuneralEventProvider = function ({
   children,
   events,
+  selectedDate,
 }: PropsWithChildren<Props>) {
   const [selectedEvent, setSelectedEvent] = useState();
   const [processedEvents, setProcessedEvents] = useState<EventArrTypes[]>([]);
@@ -85,6 +89,7 @@ export const FuneralEventProvider = function ({
         changeSelectedEvent,
         events,
         processedEvents,
+        selectedDate,
       }}
     >
       {children}

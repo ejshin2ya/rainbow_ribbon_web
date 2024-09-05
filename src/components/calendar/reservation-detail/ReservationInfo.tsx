@@ -1,9 +1,11 @@
 import { SubtitleAndDesc } from './SubtitleAndDesc';
+import { ReactComponent as BoardIcon } from '../../../assets/Board.svg';
 
 export const ReservationInfo = function () {
   return (
     <div className="w-full">
-      <h3 className="font-semibold text-[14px] leading-[17px] mb-[23px]">
+      <h3 className="font-semibold text-[14px] leading-[17px] mb-[23px] flex flex-row gap-[4px]">
+        <BoardIcon />
         예약 정보
       </h3>
       <div className="flex flex-col gap-[8px]">
