@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useMemo } from 'react';
+import { createElement, Fragment, useMemo } from 'react';
 import { useFuneralEventStore } from './store/event-store';
 import { ReactComponent as PlusIcon } from '../../assets/Plus.svg';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
@@ -146,11 +146,6 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           const top = (td.startDate.getHours() - 7) * 46;
           const width = `calc((100% - 55px) / ${maxCount})`;
           const left = `calc(55px + (100% - 55px) / ${maxCount} * ${td.layer})`;
-          console.log(td.layer, left);
-          // if (idx > 0 && (td.dupCount ?? 1) > 1) {
-          //   let cnt = td.dupCount as number;
-          //   while (cnt) {}
-          // }
 
           return (
             <EventItem
@@ -186,15 +181,20 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           '오후 10시',
           '오후 11시',
           '오전 12시',
-        ].map(title => {
-          return (
-            <>
-              <div className="cell border-none pr-[8px] py-[4px]">{title}</div>
-              <div className="cell right-cell border-t-[1px] border-t-reborn-gray1 border-b-reborn-gray0 border-b-[1px] border-r-[1px] border-r-reborn-gray1 border-l-[1px] border-l-reborn-gray1"></div>
-              <div className="cell"></div>
-              <div className="cell right-cell border-r-[1px] border-r-reborn-gray1 border-l-[1px] border-l-reborn-gray1"></div>
-            </>
-          );
+        ].map((title, idx) => {
+          return createElement(Fragment, {
+            children: (
+              <>
+                <div className="cell border-none pr-[8px] py-[4px]">
+                  {title}
+                </div>
+                <div className="cell right-cell border-t-[1px] border-t-reborn-gray1 border-b-reborn-gray0 border-b-[1px] border-r-[1px] border-r-reborn-gray1 border-l-[1px] border-l-reborn-gray1"></div>
+                <div className="cell"></div>
+                <div className="cell right-cell border-r-[1px] border-r-reborn-gray1 border-l-[1px] border-l-reborn-gray1"></div>
+              </>
+            ),
+            key: `${title}-idx`,
+          });
         })}
       </div>
     </CalendarContainer>

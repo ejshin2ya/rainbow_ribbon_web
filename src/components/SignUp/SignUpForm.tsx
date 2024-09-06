@@ -1,17 +1,18 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { useRecoilState } from "recoil";
-import { signUpFormState } from "../../atoms/signupFormState";
-import { authState } from "../../atoms/authState";
-import { SignUpFormData, LoginReq } from "../../services/apiService";
-import TermsAgreement from "./TermsAgreement";
-import UserInfo from "./UserInfo";
-import AccountInfo from "./AccountInfo";
-import BusinessInfo from "./BusinessInfo";
-import { GoArrowLeft } from "react-icons/go";
-import { useNavigate } from "react-router-dom";
-import { useSignUpMutation } from "../../hooks/useSignUpMutation";
-import { useLoginMutation } from "../../hooks/useLoginMutation";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { useRecoilState } from 'recoil';
+import { signUpFormState } from '../../atoms/signupFormState';
+import { authState } from '../../atoms/authState';
+import { SignUpFormData, LoginReq } from '../../services/apiService';
+import TermsAgreement from './TermsAgreement';
+import UserInfo from './UserInfo';
+import AccountInfo from './AccountInfo';
+import BusinessInfo from './BusinessInfo';
+import { GoArrowLeft } from 'react-icons/go';
+import { useNavigate } from 'react-router-dom';
+import { useSignUpMutation } from '../../hooks/useSignUpMutation';
+import { useLoginMutation } from '../../hooks/useLoginMutation';
+import api from 'src/api/axios';
 
 // 회원가입 컴포넌트 스텝을 enum 형태로 저장하여 순서를 숫자로 인식합니다.
 enum SignUpStep {
@@ -24,7 +25,7 @@ enum SignUpStep {
 const SignUpForm: React.FC = () => {
   //회원가입 진행 단계의 컴포넌트 순서를 관리하는 상태값
   const [currentStep, setCurrentStep] = useState<SignUpStep>(
-    SignUpStep.termsAgreedInfo
+    SignUpStep.termsAgreedInfo,
   );
   //recoil로 관리되는 회원가입 모든 정보를 가져와서 상태를 관리하는 함수
   const [formData] = useRecoilState<SignUpFormData>(signUpFormState);
@@ -51,16 +52,16 @@ const SignUpForm: React.FC = () => {
     // error: loginError,
   } = useLoginMutation();
 
-  const stepName = ["회원", "계정", "사업자"];
+  const stepName = ['회원', '계정', '사업자'];
 
   const handleNextStep = () => {
     // 컴포넌트 스텝 다음 단계로 이동하는 함수
-    setCurrentStep((prevStep) => prevStep + 1);
+    setCurrentStep(prevStep => prevStep + 1);
   };
 
   const handlePrevStep = () => {
     // 컴포넌트 스텝 이전 단계로 이동하는 함수
-    setCurrentStep((prevStep) => prevStep - 1);
+    setCurrentStep(prevStep => prevStep - 1);
   };
 
   const handleSubmit = () => {
@@ -69,14 +70,14 @@ const SignUpForm: React.FC = () => {
     const latestFormData = formData;
 
     signUp(latestFormData, {
-      onSuccess: (data) => {
+      onSuccess: data => {
         const loginData: LoginReq = {
           loginId: latestFormData.companySignUpReq.email,
           password: latestFormData.companySignUpReq.password,
         };
 
         login(loginData, {
-          onSuccess: (data) => {
+          onSuccess: data => {
             setAuth({
               accessToken: data.data.accessToken,
               refreshToken: data.data.refreshToken,
@@ -85,15 +86,17 @@ const SignUpForm: React.FC = () => {
               phone: data.data.phone,
             });
 
-            navigate("/registration");
+            api.defaults.headers.common.Authorization = data.data.accessToken;
+
+            navigate('/registration');
           },
-          onError: (error) => {
-            console.log("로그인 실패", error);
+          onError: error => {
+            console.log('로그인 실패', error);
           },
         });
       },
-      onError: (error) => {
-        console.error("회원가입 실패", error);
+      onError: error => {
+        console.error('회원가입 실패', error);
       },
     });
   };
