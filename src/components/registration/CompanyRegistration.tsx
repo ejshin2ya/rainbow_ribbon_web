@@ -3,13 +3,6 @@ import styled from 'styled-components';
 import { CompanyInfoModal } from './CompanyInfoModal';
 import { ParticipationRulesModal } from './ParticipationRulesModal';
 
-enum CompanyRegistraionStep {
-  CompanyInfo,
-  BusinessInfo,
-  SalesInfo,
-  DetailInfo,
-}
-
 const CompanyRegistration = () => {
   const [openModal, setOpenModal] = useState(false);
   const [modalType, setModalType] = useState(null);
