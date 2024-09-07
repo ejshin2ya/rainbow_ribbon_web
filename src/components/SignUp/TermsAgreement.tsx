@@ -1,6 +1,6 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { FaCheck } from "react-icons/fa";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { FaCheck } from 'react-icons/fa';
 
 //부모 컴포넌트인 SignUpForm으로 부터 다음페이지로 이동하도록 전달 받은 props
 interface TermsAgreementProps {
@@ -15,14 +15,14 @@ interface TermsAgreedInfoData {
 //선택값 내용
 const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
   const terms = [
-    "계약서의 정보 작성에 대한 확인",
-    "사업자 변경 불가 동의",
-    "셀프 서비스 이용 동의",
-    "광고 · 서비스 운영 원칙 동의",
-    "무지개리본 서비스 이용약관",
-    "고객 개인정보 보호 동의",
-    "개인정보 수집 및 이용 동의",
-    "서비스/이벤트 정보 수신 동의",
+    '계약서의 정보 작성에 대한 확인',
+    '사업자 변경 불가 동의',
+    '셀프 서비스 이용 동의',
+    '광고 · 서비스 운영 원칙 동의',
+    '무지개리본 서비스 이용약관',
+    '고객 개인정보 보호 동의',
+    '개인정보 수집 및 이용 동의',
+    '서비스/이벤트 정보 수신 동의',
   ];
 
   const [TermsAgreedInfoData, setTermsAgreedInfoData] = //전체동의 여부와, 개별항목 동의 여부 상태 저장
@@ -34,7 +34,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
   const handleAgreeAllChange = () => {
     //전체동의 선택시 useState 함수가 작동되어 값을 업데이트하고 렌더링 하는 함수
     const newState = TermsAgreedInfoData.allAgreed;
-    setTermsAgreedInfoData((prev) => ({
+    setTermsAgreedInfoData(prev => ({
       ...prev,
       allAgreed: !newState,
       agreements: Array(terms.length).fill(!newState),
@@ -45,7 +45,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
     //개별 항목 동의 선택시 useState 함수가 작동되어 값을 업데이트하고 렌더링하는 함수
     const newAgreements = [...TermsAgreedInfoData.agreements];
     newAgreements[index] = !newAgreements[index];
-    setTermsAgreedInfoData((prev) => ({
+    setTermsAgreedInfoData(prev => ({
       ...prev,
       allAgreed: newAgreements.every(Boolean),
       agreements: newAgreements,
@@ -60,9 +60,6 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
 
   return (
     <Container onSubmit={handleSubmit}>
-      <Logo>
-        <img src="path_to_logo" alt="Logo" />
-      </Logo>
       <Title>무지개리본 파트너 회원가입을 시작합니다.</Title>
       <SubTitle>
         무지개리본 파트너가 되시면 모든 서비스를 편하게 이용하실 수 있어요.
@@ -76,7 +73,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
           onChange={handleAgreeAllChange}
           required
         />
-        <label htmlFor="checkbox" style={{ cursor: "pointer" }}>
+        <label htmlFor="checkbox" style={{ cursor: 'pointer' }}>
           <StyledCheckbox Checked={TermsAgreedInfoData.allAgreed}>
             <FaCheck color="#FFFFFF" display="relative" />
           </StyledCheckbox>
@@ -92,10 +89,10 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
               onChange={() => handleIndividualChange(index)}
               required
             />
-            <label htmlFor={`checkbox-${index}`} style={{ cursor: "pointer" }}>
+            <label htmlFor={`checkbox-${index}`} style={{ cursor: 'pointer' }}>
               <FaCheck
                 color={
-                  TermsAgreedInfoData.agreements[index] ? "#FF6632" : "#EBEBEB"
+                  TermsAgreedInfoData.agreements[index] ? '#FF6632' : '#EBEBEB'
                 }
               />
             </label>
@@ -115,12 +112,12 @@ const StyledCheckbox = styled.div<{ Checked: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  ${(props) => (props.Checked ? "width: 21px;" : "width: 20px;")}
-  ${(props) => (props.Checked ? "height: 21px;" : "height: 20px;")}
-  background-color: ${(props) => (props.Checked ? " #ff6632;" : "#FFFFFF;")}
+  ${props => (props.Checked ? 'width: 21px;' : 'width: 20px;')}
+  ${props => (props.Checked ? 'height: 21px;' : 'height: 20px;')}
+  background-color: ${props => (props.Checked ? ' #ff6632;' : '#FFFFFF;')}
   border-radius: 4px;
-  border: ${(props) =>
-    props.Checked ? "0px solid #ebebeb;" : "2px solid #ebebeb;"};
+  border: ${props =>
+    props.Checked ? '0px solid #ebebeb;' : '2px solid #ebebeb;'};
 `;
 
 const Container = styled.form`
@@ -151,13 +148,13 @@ const CheckboxContainer = styled.div`
 }
 `;
 
-const AllCheckbox = styled.input.attrs({ type: "checkbox" })`
+const AllCheckbox = styled.input.attrs({ type: 'checkbox' })`
   display: none;
   width: 20px;
   height: 20px;
 `;
 
-const HiddenCheckbox = styled.input.attrs({ type: "checkbox" })`
+const HiddenCheckbox = styled.input.attrs({ type: 'checkbox' })`
   opacity: 0;
   position: absolute,
   width: 20px;
@@ -200,18 +197,10 @@ const TermItem = styled.li`
   margin-bottom: 15px;
 `;
 
-const Logo = styled.div`
-  text-align: left;
-  margin-bottom: 20px;
-
-  img {
-    width: 150px;
-  }
-`;
 const SubmitButton = styled.button<{ disabled: boolean }>`
   width: 100%;
   padding: 15px;
-  background-color: ${(props) => (!props.disabled ? "#FF6632" : "#EBEBEB")};
+  background-color: ${props => (!props.disabled ? '#FF6632' : '#EBEBEB')};
   color: white;
   border: none;
   border-radius: 5px;
@@ -219,7 +208,7 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
   cursor: pointer;
 
   &:hover { 
-  background-color:${(props) => (!props.disabled ? " #e65c2d" : "#EBEBEB")}
+  background-color:${props => (!props.disabled ? ' #e65c2d' : '#EBEBEB')}
 `;
 
 export default TermsAgreement;
