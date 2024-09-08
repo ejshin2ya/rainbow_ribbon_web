@@ -58,14 +58,11 @@ export const getUnreadMessage = async function (roomId: number | string) {
   ).data;
 };
 
-export const getAllMessage = async function (
-  roomId: number | string,
-  pageNo: number,
-) {
+export const getAllMessage = async function (roomId: string, pageNo: number) {
   return (
     await api<GetAllMessage>({
       method: 'get',
-      url: chatDomain.getAllMessage(roomId),
+      url: chatDomain.getAllMessage(roomId, pageNo),
     })
   ).data;
 };
