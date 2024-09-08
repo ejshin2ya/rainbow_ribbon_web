@@ -9,26 +9,22 @@ import { useChatList } from 'src/queries';
 import { GetRoomListRes } from 'src/queries/chat/types';
 
 interface ChatStoreType {
-  selectedRoomId?: string | number;
-  selectedUserId?: string | number;
-  changeRoom: (roomId: string | number) => void;
-  changeUser: (userId: string | number) => void;
+  selectedRoomId: string;
+  selectedUserId: string;
+  changeRoom: (roomId: string) => void;
+  changeUser: (userId: string) => void;
 }
 
 const ChatStore = createContext<Partial<ChatStoreType>>({});
 
 export const ChatProvider = function ({ children }: PropsWithChildren) {
   const { data, isLoading } = useChatList();
-  const [selectedRoomId, setSelectedRoomId] = useState<
-    string | number | undefined
-  >();
-  const [selectedUserId, setSelectedUserId] = useState<
-    string | number | undefined
-  >();
-  const changeRoom = function (roomId: string | number) {
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const changeRoom = function (roomId: string) {
     setSelectedRoomId(roomId);
   };
-  const changeUser = function (userId: string | number) {
+  const changeUser = function (userId: string) {
     setSelectedUserId(userId);
   };
   useEffect(() => {
@@ -36,7 +32,7 @@ export const ChatProvider = function ({ children }: PropsWithChildren) {
       setSelectedRoomId(data?.data[0].roomId);
       setSelectedUserId(data?.data[0].userId);
     }
-  }, [isLoading]);
+  }, [data]);
   // if (isLoading) return null;
   return (
     <ChatStore.Provider

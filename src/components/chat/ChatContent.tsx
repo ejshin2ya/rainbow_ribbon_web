@@ -1,15 +1,67 @@
 import { useChatStore } from './store/chat-store';
 import { ReactComponent as ImageIcon } from '../../assets/ImageIcon.svg';
 import { ReactComponent as SendIcon } from '../../assets/SendIcon.svg';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useAllMessage } from 'src/queries';
+
+interface MessageProps {
+  message: string;
+  messageDate: string;
+  isSend: boolean;
+}
+
+const Message = function ({ isSend, message, messageDate }: MessageProps) {
+  return (
+    <div
+      className={`w-full flex ${isSend ? 'flex-row-reverse' : 'flex-row'} items-end gap-[8px] mb-[30px]`}
+    >
+      <div
+        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal`}
+      >
+        {message}
+      </div>
+      <div className="h-full flex text-[14px] font-semibold text-reborn-gray3">
+        {messageDate}
+      </div>
+    </div>
+  );
+};
 
 export const ChatContent = function () {
   const { selectedRoomId, selectedUserId } = useChatStore();
   const [selectedFile, setSelectedFile] = useState<File[]>([]);
+  const [page, setPage] = useState(1);
+  // TODO: State로 채팅을 변경해야 할 것으로 보임.
+  const { data, isLoading } = useAllMessage(selectedRoomId, page);
+  const messageEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = () => {
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [data?.data]);
+
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop } = chatContainerRef.current;
+      // 스크롤이 위에 도달하면
+      if (scrollTop === 0 && !isLoading) {
+        // TODO: pagination 관련 쿼리
+        // setPage(prev => prev + 1);
+      }
+    }
+  };
 
   const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
     setSelectedFile(Array.from(e.target.files ?? []));
   };
+
+  if (!data) {
+    return <div>로딩 중입니다...</div>;
+  }
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
@@ -28,48 +80,42 @@ export const ChatContent = function () {
           {`>`}
         </span>
       </header>
-      <main className="w-full h-[1px] flex-1 px-[30px] overflow-y-auto">
-        <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
-          2024년 1월 2일
-        </div>
-        <div className="w-full flex flex-row items-end gap-[8px] mb-[30px]">
-          <div className="w-fit max-w-[45%] bg-reborn-white text-reborn-gray8 py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal">
-            추모식에서 미미의 사진을 함께 놓을 수 있을까요? 추모식에서 미미의
-            사진을 함께 놓을 수 있을까요? 추모식에서 미미의 사진을 함께 놓을 수
-            있을까요? 추모식에서 미미의 사진을 함께 놓을 수 있을까요? 추모식에서
-            미미의 사진을 함께 놓을 수 있을까요?
-          </div>
-          <div className="h-full flex text-[14px] font-semibold text-reborn-gray3">
-            오후 7:30
-          </div>
-        </div>
-        <div className="w-full flex flex-row-reverse items-end gap-[8px] mb-[30px]">
-          <div className="w-fit max-w-[45%] bg-reborn-orange3 text-reborn-white py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal">
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-          </div>
-          <div className="h-full flex text-[14px] font-semibold text-reborn-gray3">
-            오후 7:40
-          </div>
-        </div>
+      <main
+        ref={chatContainerRef}
+        className="w-full h-[1px] flex-1 px-[30px] overflow-y-auto"
+        onScroll={handleScroll}
+      >
+        {data?.data?.map((message, index) => {
+          const date = new Date(message.createAt);
+          const hours = date.getHours() % 12 || 12;
+          const minutes = date.getMinutes() || 0;
+          const ampm = date.getHours() >= 12 ? '오후' : '오전';
+          const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
+          const beforeDate =
+            index > 0 ? new Date(data?.data[index - 1].createAt) : date;
+          const showDate =
+            !index ||
+            date.getFullYear() !== beforeDate.getFullYear() ||
+            date.getMonth() !== beforeDate.getMonth() ||
+            date.getDate() !== beforeDate.getDate();
+
+          return (
+            <>
+              {showDate && (
+                <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
+                  2024년 1월 2일
+                </div>
+              )}
+              <Message
+                isSend={message.receiverId !== selectedUserId}
+                message={message.message}
+                messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+              />
+            </>
+          );
+        })}
+
+        <div ref={messageEndRef} />
       </main>
       {!!selectedFile.length && (
         <div className="h-[100px] absolute bottom-[95px] left-[30px] right-[30px] flex items-center">
