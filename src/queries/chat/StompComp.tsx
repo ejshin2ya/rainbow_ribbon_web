@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Client, Message } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import { Domain } from 'src/api/endpoints';
 import { useQueryClient } from '@tanstack/react-query';
 import api from 'src/api/axios';
@@ -35,12 +34,11 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
           };
         }>({
           method: 'post',
-          data: { loginId: 'test1@naver.com', password: 'test1234' },
+          data: { loginId: 'woooriii@naver.com', password: 'woooriii' },
           url: '/api/account/company/auth/login',
         })
       ).data;
     },
-    onSuccess: data1 => {},
   });
   const [client, setClient] = useState<Client | null>(null);
 

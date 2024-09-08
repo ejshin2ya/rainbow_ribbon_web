@@ -9,31 +9,43 @@ import {
 } from '../../services/chatService';
 import { chatQueryKey } from './queryKey';
 
-export const useChatList = function () {
+export const useChatList = function (options?: Parameters<typeof useQuery>) {
   const { key } = chatQueryKey.chatList();
   return useQuery({
+    ...options,
     queryFn: () => getChatList(),
     queryKey: key,
   });
 };
 
-export const useUnreadMessage = function (roomId: string) {
+export const useUnreadMessage = function (
+  roomId: string,
+  options?: Parameters<typeof useQuery>,
+) {
   const { key } = chatQueryKey.unreadMessage(roomId);
   return useQuery({
+    ...options,
     queryKey: key,
     queryFn: () => getUnreadMessage(roomId),
   });
 };
 
-export const useAllMessage = function (roomId: string, pageNo: number) {
+export const useAllMessage = function (
+  roomId: string,
+  pageNo: number,
+  options?: Parameters<typeof useQuery>,
+) {
   const { key } = chatQueryKey.roomMessage(roomId, pageNo);
   return useQuery({
+    ...options,
     queryKey: key,
     queryFn: () => getAllMessage(roomId, pageNo),
   });
 };
 
-export const useStartChat = function () {
+export const useStartChat = function (
+  options?: Parameters<typeof useMutation>,
+) {
   const queryClient = useQueryClient();
   const { initialize } = chatQueryKey.startChat();
   return useMutation({
@@ -45,10 +57,14 @@ export const useStartChat = function () {
   });
 };
 
-export const useSendMessage = function (roomId: number | string) {
+export const useSendMessage = function (
+  roomId: string,
+  options?: Parameters<typeof useMutation>,
+) {
   const queryClient = useQueryClient();
   const { initialize } = chatQueryKey.sendMessage(roomId);
   return useMutation({
+    ...options,
     mutationFn: ({
       roomId,
       message,
@@ -63,10 +79,14 @@ export const useSendMessage = function (roomId: number | string) {
   });
 };
 
-export const useReadMessage = function (roomId: number | string) {
+export const useReadMessage = function (
+  roomId: string,
+  options?: Parameters<typeof useMutation>,
+) {
   const queryClient = useQueryClient();
   const { initialize } = chatQueryKey.readMessage(roomId);
   return useMutation({
+    ...options,
     mutationFn: ({ roomId }: { roomId: string | number }) =>
       readMessage(roomId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
