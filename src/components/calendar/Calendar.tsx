@@ -2,11 +2,13 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarDetail } from './CalendarDetail';
 import { ReservationDetail } from './reservation-detail/ReservationDetail';
 import { FuneralEventProvider } from './store/event-store';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
+import { useCalendarBookingList } from 'src/queries/reservation';
+import { DatesSetArg } from '@fullcalendar/core';
 
 const events = [
   {
@@ -56,7 +58,29 @@ export const Calendar = function () {
   const [selectedDate, setSelectedDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), today.getDate()),
   );
+  const selectedMonth = useMemo(() => {
+    return `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}`;
+  }, [selectedDate]);
   const { setSelectedDate: updateDialogDate } = useConfirmDialog();
+  const { data } = useCalendarBookingList(selectedMonth);
+  data?.detail?.map(reservation => {
+    return {
+      status: reservation.bookingStatus,
+      subTitle: '',
+      startDate: new Date(reservation.funeralStartDate),
+      endDate: new Date(reservation.funeralEndDate),
+    };
+  });
+
+  const handleDateSet = function (dateInfo: DatesSetArg) {
+    setSelectedDate(
+      new Date(
+        dateInfo.view.currentStart.getFullYear(),
+        dateInfo.view.currentStart.getMonth(),
+        dateInfo.view.currentStart.getDate(),
+      ),
+    );
+  };
 
   useEffect(() => {
     updateDialogDate(selectedDate);
@@ -94,6 +118,7 @@ export const Calendar = function () {
         }}
         events={events}
         dayCellContent={args => args.date.getDate()}
+        datesSet={handleDateSet}
       />
       <FuneralEventProvider
         events={[
