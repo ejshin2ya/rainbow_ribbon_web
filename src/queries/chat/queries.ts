@@ -87,8 +87,7 @@ export const useReadMessage = function (
   const { initialize } = chatQueryKey.readMessage(roomId);
   return useMutation({
     ...options,
-    mutationFn: ({ roomId }: { roomId: string | number }) =>
-      readMessage(roomId),
+    mutationFn: ({ roomId }: { roomId: string }) => readMessage(roomId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => {
       console.error('Cannot Read Chat');

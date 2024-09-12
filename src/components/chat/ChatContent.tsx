@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useSendMessage } from 'src/queries';
+import { useReadMessage, useSendMessage } from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
 import { type Message } from 'src/queries/chat/types';
 
@@ -44,7 +44,9 @@ export const ChatContent = function () {
   >(new Map());
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const { mutateAsync, isPending } = useSendMessage(selectedRoomId);
+  const { mutateAsync: send, isPending: sendIsPending } =
+    useSendMessage(selectedRoomId);
+  const { mutateAsync: read } = useReadMessage(selectedRoomId);
   const fetchMore = async function () {
     if (!hasMore) return;
     if (selectedRoomId) {
@@ -69,7 +71,7 @@ export const ChatContent = function () {
   );
   const testSendMessage = async function (messageStr: string) {
     // todo: 선행으로 send가 성공해야함.
-    const res = await mutateAsync({
+    const res = await send({
       roomId: selectedRoomId,
       message: messageStr,
     });
@@ -92,6 +94,10 @@ export const ChatContent = function () {
     console.log(newMap.get(selectedRoomId)?.entries());
     setMessageMap(newMap);
   };
+
+  useEffect(() => {
+    read({ roomId: selectedRoomId });
+  }, [selectedRoomId]);
 
   useEffect(() => {
     fetchMore();
@@ -234,8 +240,11 @@ export const ChatContent = function () {
             className={`h-full flex-1 px-[10px] outline-none`}
             placeholder="메시지를 입력하세요."
           />
-          <button className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 cursor-pointer">
-            {isPending ? <div>로딩중</div> : <SendIcon />}
+          <button
+            className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
+            disabled={sendIsPending}
+          >
+            {sendIsPending ? <div>로딩중</div> : <SendIcon />}
           </button>
         </form>
       </footer>

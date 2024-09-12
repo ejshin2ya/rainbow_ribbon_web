@@ -40,7 +40,7 @@ export const sendMessage = async function (
   ).data;
 };
 
-export const readMessage = async function (roomId: number | string) {
+export const readMessage = async function (roomId: string) {
   return (
     await api({
       method: 'put',
