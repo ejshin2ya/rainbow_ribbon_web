@@ -3,6 +3,8 @@ import { ReactComponent as ImageIcon } from '../../assets/ImageIcon.svg';
 import { ReactComponent as SendIcon } from '../../assets/SendIcon.svg';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useAllMessage } from 'src/queries';
+import { getAllMessage } from 'src/services/chatService';
+import { type Message } from 'src/queries/chat/types';
 
 interface MessageProps {
   message: string;
@@ -30,9 +32,49 @@ const Message = function ({ isSend, message, messageDate }: MessageProps) {
 export const ChatContent = function () {
   const { selectedRoomId, selectedUserId } = useChatStore();
   const [selectedFile, setSelectedFile] = useState<File[]>([]);
-  const [page, setPage] = useState(1);
-  // TODO: State로 채팅을 변경해야 할 것으로 보임.
-  const { data, isLoading } = useAllMessage(selectedRoomId, page);
+  const [messageMap, setMessageMap] = useState<
+    Map<string, Map<string, Message>>
+  >(new Map());
+  const [page, setPage] = useState(0);
+  const fetchMore = async function () {
+    if (selectedRoomId) {
+      const { data } = await getAllMessage(selectedRoomId, page);
+      const newMap = new Map(messageMap);
+      const newRoomMessageMap = new Map(messageMap.get(selectedRoomId) ?? []);
+      data?.messages.forEach(msg => {
+        newRoomMessageMap.set(msg.messageId, msg);
+      });
+      newMap.set(selectedRoomId, newRoomMessageMap);
+      setMessageMap(newMap);
+    }
+  };
+  const messageArray = Array.from(
+    messageMap.get(selectedRoomId)?.values() ?? [],
+  );
+  const testSendMessage = function (messageStr: string) {
+    const newMap = new Map(messageMap);
+    const newRoomMessageMap = new Map([
+      [
+        `${Math.random()}`,
+        {
+          messageId: `${Math.random()}`,
+          receiverId: selectedUserId,
+          roomId: selectedRoomId,
+          senderType: 'CUSTOMER',
+          message: messageStr,
+          createAt: '2024-09-24T05:34:55.121547',
+        },
+      ],
+      ...(messageMap.get(selectedRoomId)?.entries() ?? []),
+    ]);
+    newMap.set(selectedRoomId, newRoomMessageMap);
+    setMessageMap(newMap);
+  };
+
+  useEffect(() => {
+    fetchMore();
+  }, [page, selectedRoomId]);
+
   const messageEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
@@ -42,16 +84,16 @@ export const ChatContent = function () {
   };
   useEffect(() => {
     scrollToBottom();
-  }, [data?.data]);
+  }, [messageArray.length]);
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
       const { scrollTop } = chatContainerRef.current;
       // 스크롤이 위에 도달하면
-      if (scrollTop === 0 && !isLoading) {
-        // TODO: pagination 관련 쿼리
-        // setPage(prev => prev + 1);
-      }
+      // if (scrollTop === 0 && !isLoading) {
+      //   // TODO: pagination 관련 쿼리
+      //   // setPage(prev => prev + 1);
+      // }
     }
   };
 
@@ -59,9 +101,9 @@ export const ChatContent = function () {
     setSelectedFile(Array.from(e.target.files ?? []));
   };
 
-  if (!data) {
-    return <div>로딩 중입니다...</div>;
-  }
+  // if (!data) {
+  //   return <div>로딩 중입니다...</div>;
+  // }
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
@@ -85,35 +127,36 @@ export const ChatContent = function () {
         className="w-full h-[1px] flex-1 px-[30px] overflow-y-auto"
         onScroll={handleScroll}
       >
-        {data?.data?.map((message, index) => {
-          const date = new Date(message.createAt);
-          const hours = date.getHours() % 12 || 12;
-          const minutes = date.getMinutes() || 0;
-          const ampm = date.getHours() >= 12 ? '오후' : '오전';
-          const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
-          const beforeDate =
-            index > 0 ? new Date(data?.data[index - 1].createAt) : date;
-          const showDate =
-            !index ||
-            date.getFullYear() !== beforeDate.getFullYear() ||
-            date.getMonth() !== beforeDate.getMonth() ||
-            date.getDate() !== beforeDate.getDate();
+        {!!selectedRoomId &&
+          messageArray.map((message, index) => {
+            const date = new Date(message.createAt);
+            const hours = date.getHours() % 12 || 12;
+            const minutes = date.getMinutes() || 0;
+            const ampm = date.getHours() >= 12 ? '오후' : '오전';
+            const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
+            const beforeDate =
+              index > 0 ? new Date(messageArray[index - 1].createAt) : date;
+            const showDate =
+              !index ||
+              date.getFullYear() !== beforeDate.getFullYear() ||
+              date.getMonth() !== beforeDate.getMonth() ||
+              date.getDate() !== beforeDate.getDate();
 
-          return (
-            <>
-              {showDate && (
-                <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
-                  2024년 1월 2일
-                </div>
-              )}
-              <Message
-                isSend={message.receiverId !== selectedUserId}
-                message={message.message}
-                messageDate={`${ampm} ${hours}:${minutesFormatted}`}
-              />
-            </>
-          );
-        })}
+            return (
+              <>
+                {showDate && (
+                  <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
+                    2024년 1월 2일
+                  </div>
+                )}
+                <Message
+                  isSend={message.receiverId !== selectedUserId}
+                  message={message.message}
+                  messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                />
+              </>
+            );
+          })}
 
         <div ref={messageEndRef} />
       </main>
@@ -136,7 +179,16 @@ export const ChatContent = function () {
         </div>
       )}
       <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
-        <div className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center">
+        <form
+          className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
+          onSubmit={e => {
+            e.preventDefault();
+            testSendMessage(
+              (e.currentTarget[1] as HTMLInputElement).value ?? '',
+            );
+            e.currentTarget.reset();
+          }}
+        >
           <label
             htmlFor="image-upload"
             className="w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center cursor-pointer"
@@ -155,10 +207,10 @@ export const ChatContent = function () {
             className="h-full flex-1 px-[10px] outline-none"
             placeholder="메시지를 입력하세요."
           />
-          <div className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 cursor-pointer">
+          <button className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 cursor-pointer">
             <SendIcon />
-          </div>
-        </div>
+          </button>
+        </form>
       </footer>
     </section>
   );
