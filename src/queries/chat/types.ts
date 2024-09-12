@@ -31,10 +31,9 @@ export interface StartChatRes {
 }
 
 export interface SendMessageRes {
-  roomId: string;
-  senderType: string;
-  message: string;
-  createdAt: string;
+  msg: string;
+  statusCode: string;
+  data: Message;
 }
 
 export interface GetUnreadMessageRes {

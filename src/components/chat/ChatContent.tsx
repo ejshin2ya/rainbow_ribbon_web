@@ -1,8 +1,15 @@
 import { useChatStore } from './store/chat-store';
 import { ReactComponent as ImageIcon } from '../../assets/ImageIcon.svg';
 import { ReactComponent as SendIcon } from '../../assets/SendIcon.svg';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { useAllMessage } from 'src/queries';
+import {
+  ChangeEvent,
+  createElement,
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useSendMessage } from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
 import { type Message } from 'src/queries/chat/types';
 
@@ -18,11 +25,11 @@ const Message = function ({ isSend, message, messageDate }: MessageProps) {
       className={`w-full flex ${isSend ? 'flex-row-reverse' : 'flex-row'} items-end gap-[8px] mb-[30px]`}
     >
       <div
-        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal`}
+        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal items-end`}
       >
         {message}
       </div>
-      <div className="h-full flex text-[14px] font-semibold text-reborn-gray3">
+      <div className="h-full flex text-[14px] font-semibold text-reborn-gray3 items-end">
         {messageDate}
       </div>
     </div>
@@ -36,38 +43,53 @@ export const ChatContent = function () {
     Map<string, Map<string, Message>>
   >(new Map());
   const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const { mutateAsync, isPending } = useSendMessage(selectedRoomId);
   const fetchMore = async function () {
+    if (!hasMore) return;
     if (selectedRoomId) {
       const { data } = await getAllMessage(selectedRoomId, page);
+      const newDatas: [string, Message][] = data.messages.map(msg => [
+        msg.messageId,
+        msg,
+      ]);
       const newMap = new Map(messageMap);
-      const newRoomMessageMap = new Map(messageMap.get(selectedRoomId) ?? []);
-      data?.messages.forEach(msg => {
-        newRoomMessageMap.set(msg.messageId, msg);
-      });
+      const newRoomMessageMap = new Map([
+        ...(messageMap.get(selectedRoomId) ?? []),
+        ...newDatas,
+      ]);
       newMap.set(selectedRoomId, newRoomMessageMap);
+      // setHasMore(data.hasMore);
       setMessageMap(newMap);
+      return data.hasMore;
     }
   };
   const messageArray = Array.from(
     messageMap.get(selectedRoomId)?.values() ?? [],
   );
-  const testSendMessage = function (messageStr: string) {
+  const testSendMessage = async function (messageStr: string) {
+    // todo: 선행으로 send가 성공해야함.
+    const res = await mutateAsync({
+      roomId: selectedRoomId,
+      message: messageStr,
+    });
+    const messageData = res.data;
     const newMap = new Map(messageMap);
+    const now = new Date(); // TODO: createAt도 보내달라 요청 후 제거
     const newRoomMessageMap = new Map([
       [
-        `${Math.random()}`,
+        messageData.messageId,
         {
-          messageId: `${Math.random()}`,
-          receiverId: selectedUserId,
-          roomId: selectedRoomId,
-          senderType: 'CUSTOMER',
-          message: messageStr,
-          createAt: '2024-09-24T05:34:55.121547',
+          ...messageData,
+          createAt: messageData.createAt ?? now.toISOString(),
+          message: messageData.message ?? messageStr,
         },
       ],
       ...(messageMap.get(selectedRoomId)?.entries() ?? []),
     ]);
+
     newMap.set(selectedRoomId, newRoomMessageMap);
+    console.log(newMap.get(selectedRoomId)?.entries());
     setMessageMap(newMap);
   };
 
@@ -122,43 +144,48 @@ export const ChatContent = function () {
           {`>`}
         </span>
       </header>
-      <main
-        ref={chatContainerRef}
-        className="w-full h-[1px] flex-1 px-[30px] overflow-y-auto"
-        onScroll={handleScroll}
-      >
-        {!!selectedRoomId &&
-          messageArray.map((message, index) => {
-            const date = new Date(message.createAt);
-            const hours = date.getHours() % 12 || 12;
-            const minutes = date.getMinutes() || 0;
-            const ampm = date.getHours() >= 12 ? '오후' : '오전';
-            const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
-            const beforeDate =
-              index > 0 ? new Date(messageArray[index - 1].createAt) : date;
-            const showDate =
-              !index ||
-              date.getFullYear() !== beforeDate.getFullYear() ||
-              date.getMonth() !== beforeDate.getMonth() ||
-              date.getDate() !== beforeDate.getDate();
+      <main className="w-full h-[1px] flex-1 px-[30px]" onScroll={handleScroll}>
+        <div
+          ref={chatContainerRef}
+          className="w-full h-full overflow-y-auto flex flex-col-reverse pt-[30px]"
+        >
+          <div ref={messageEndRef} />
+          {!!selectedRoomId &&
+            messageArray.map((message, index) => {
+              const date = new Date(message.createAt);
+              const hours = date.getHours() % 12 || 12;
+              const minutes = date.getMinutes() || 0;
+              const ampm = date.getHours() >= 12 ? '오후' : '오전';
+              const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
+              const beforeDate =
+                index < messageArray.length - 1
+                  ? new Date(messageArray[index + 1].createAt)
+                  : date;
+              const showDate =
+                index === messageArray.length - 1 ||
+                date.getFullYear() !== beforeDate.getFullYear() ||
+                date.getMonth() !== beforeDate.getMonth() ||
+                date.getDate() !== beforeDate.getDate();
 
-            return (
-              <>
-                {showDate && (
-                  <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
-                    2024년 1월 2일
-                  </div>
-                )}
-                <Message
-                  isSend={message.receiverId !== selectedUserId}
-                  message={message.message}
-                  messageDate={`${ampm} ${hours}:${minutesFormatted}`}
-                />
-              </>
-            );
-          })}
-
-        <div ref={messageEndRef} />
+              return createElement(Fragment, {
+                children: (
+                  <>
+                    <Message
+                      isSend={message.receiverId !== selectedUserId}
+                      message={message.message}
+                      messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                    />
+                    {showDate && (
+                      <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
+                        {`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`}
+                      </div>
+                    )}
+                  </>
+                ),
+                key: `${message.roomId}-${message.messageId}`,
+              });
+            })}
+        </div>
       </main>
       {!!selectedFile.length && (
         <div className="h-[100px] absolute bottom-[95px] left-[30px] right-[30px] flex items-center">
@@ -181,12 +208,12 @@ export const ChatContent = function () {
       <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
         <form
           className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
-          onSubmit={e => {
+          onSubmit={async e => {
             e.preventDefault();
-            testSendMessage(
+            await testSendMessage(
               (e.currentTarget[1] as HTMLInputElement).value ?? '',
             );
-            e.currentTarget.reset();
+            (e.target as typeof e.currentTarget).reset();
           }}
         >
           <label
@@ -204,11 +231,11 @@ export const ChatContent = function () {
             style={{ display: 'none' }}
           />
           <input
-            className="h-full flex-1 px-[10px] outline-none"
+            className={`h-full flex-1 px-[10px] outline-none`}
             placeholder="메시지를 입력하세요."
           />
           <button className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 cursor-pointer">
-            <SendIcon />
+            {isPending ? <div>로딩중</div> : <SendIcon />}
           </button>
         </form>
       </footer>
