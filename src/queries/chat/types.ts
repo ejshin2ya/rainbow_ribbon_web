@@ -46,15 +46,20 @@ export interface GetUnreadMessageRes {
   }[];
 }
 
+export interface Message {
+  createAt: string;
+  message: string;
+  messageId: string;
+  receiverId: string;
+  roomId: string;
+  senderType: string;
+}
+
 export interface GetAllMessage {
   data: {
-    createAt: string;
-    message: string;
-    messageId: string;
-    receiverId: string;
-    roomId: string;
-    senderType: string;
-  }[];
+    messages: Message[];
+    hasMore: boolean;
+  };
   msg: string;
   statusCode: string;
 }

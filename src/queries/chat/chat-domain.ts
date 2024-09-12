@@ -18,7 +18,7 @@ class ChatDomain {
   }
   getAllMessage(roomId: string, pageNo: number) {
     return Domain.getPath(
-      `/api/chatting/${roomId}/message/list?pageNo=${pageNo}`,
+      `/api/chatting/${roomId}/message/list/v2?pageNo=${pageNo}`,
     );
   }
 }
