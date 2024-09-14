@@ -7,54 +7,14 @@ import { CalendarDetail } from './CalendarDetail';
 import { ReservationDetail } from './reservation-detail/ReservationDetail';
 import { FuneralEventProvider } from './store/event-store';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
-import {
-  useCalendarBookingDetail,
-  useCalendarBookingList,
-} from 'src/queries/reservation';
+import { useCalendarBookingList } from 'src/queries/reservation';
 import { DatesSetArg } from '@fullcalendar/core';
 
-const events = [
-  {
-    title: '완료 건건',
-    start: '2024-08-01',
-    className: 'event-complete',
-  },
-  { title: '예약 건건', start: '2024-08-02', className: 'event-request' },
-  {
-    title: '예약 오전 3건',
-    start: '2024-08-04',
-    className: 'event-confirmed',
-  },
-  { title: '예약 건건', start: '2024-08-04', className: 'event-request' },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-09',
-    className: 'event-confirmed',
-  },
-  { title: '예약 2건', start: '2024-08-10', className: 'event-request' },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-11',
-    className: 'event-confirmed',
-  },
-  { title: '예약 2건', start: '2024-08-11', className: 'event-request' },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-14',
-    className: 'event-confirmed',
-  },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-22',
-    className: 'event-confirmed',
-  },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-25',
-    className: 'event-confirmed',
-  },
-  { title: '예약 2건', start: '2024-08-25', className: 'event-request' },
-];
+interface CalendarEvent {
+  title: string;
+  start: string;
+  className: string;
+}
 
 export const Calendar = function () {
   const today = new Date();
@@ -67,17 +27,45 @@ export const Calendar = function () {
   const { setSelectedDate: updateDialogDate } = useConfirmDialog();
   const { data: calendarEvents } = useCalendarBookingList(selectedMonth);
 
-  const events2 = useMemo(() => {
-    const generatedEvents: Map<string, { start: string; status: string }> =
-      new Map();
-    calendarEvents?.data.forEach(resv => {
-      const resvDate = new Date(resv.funeralStartDate);
-      const resvDateString = `${resvDate.getFullYear()}-${resvDate.getMonth() + 1}-${resvDate.getDate()}`;
-      generatedEvents.set(resvDateString, {
-        status: resv.bookingStatus,
-        start: resvDateString,
-      });
+  const events = useMemo(() => {
+    const reservations = calendarEvents?.data ?? [];
+    const eventMap: Record<string, { request: number; confirmed: number }> = {};
+
+    reservations.forEach(reservation => {
+      const { bookingStatus, bookingDate } = reservation;
+
+      if (!eventMap[bookingDate]) {
+        eventMap[bookingDate] = { request: 0, confirmed: 0 };
+      }
+
+      if (bookingStatus === '결제 완료') {
+        eventMap[bookingDate].confirmed += 1; // 예약 대기
+      } else if (bookingStatus === '예약 완료') {
+        eventMap[bookingDate].request += 1; // 예약 확정
+      }
     });
+
+    // 카운트된 데이터를 CalendarEvent 형식으로 변환
+    const results: CalendarEvent[] = [];
+
+    Object.entries(eventMap).forEach(([date, { request, confirmed }]) => {
+      if (request > 0) {
+        results.push({
+          title: `예약 요청 ${request}건`,
+          start: date,
+          className: 'event-request',
+        });
+      }
+      if (confirmed > 0) {
+        results.push({
+          title: `예약 ${confirmed}건`,
+          start: date,
+          className: 'event-confirmed',
+        });
+      }
+    });
+
+    return results;
   }, [calendarEvents]);
 
   const handleDateSet = function (dateInfo: DatesSetArg) {
@@ -127,6 +115,7 @@ export const Calendar = function () {
         events={events}
         dayCellContent={args => args.date.getDate()}
         datesSet={handleDateSet}
+        displayEventTime={false}
       />
       <FuneralEventProvider
         events={
