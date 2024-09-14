@@ -5,29 +5,52 @@ import { ReservationInfo } from './ReservationInfo';
 import { PetInfo } from './PetInfo';
 import { Memo } from './Memo';
 import { ReactComponent as GrayLogoIcon } from '../../../assets/GrayLogo.svg';
+import { useFuneralEventStore } from '../store/event-store';
+import { useCalendarBookingDetail } from 'src/queries/reservation';
+import { ReactComponent as ReservationIcon } from '../../../assets/Reservation.svg';
 
 export const ReservationDetail = function () {
+  const { selectedEvent } = useFuneralEventStore();
+  const { data } = useCalendarBookingDetail(selectedEvent);
+
   return (
     <div className="flex flex-shrink-0 h-auto flex-col gap-[12px] py-[30px] px-[30px]">
       <div className="font-semibold text-[14px] leading-[21px] text-reborn-gray3">
         예약 상세
       </div>
       <ReservationContainer className="rounded-[10px] border-[1px] border-reborn-gray2">
-        <main>
-          <section className="left__personal">
-            <PersonalInfo />
-          </section>
-          <section className="right__reservation-info">
-            <ReservationInfo />
-            <PetInfo />
-            <Memo />
-          </section>
-          <div className="water-mark">
-            예약 대기 중
-            <GrayLogoIcon width={36} height={36} />
+        {selectedEvent ? (
+          <>
+            <main>
+              <section className="left__personal">
+                <PersonalInfo />
+              </section>
+              <section className="right__reservation-info">
+                <ReservationInfo />
+                <PetInfo />
+                <Memo />
+              </section>
+              <div className="water-mark">
+                {data?.data.bookingInfo.bookingStatus}
+                <GrayLogoIcon width={36} height={36} />
+              </div>
+            </main>
+            <Footer />
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[20px] font-medium text-reborn-gray3 flex-col gap-[10px]">
+            <ReservationIcon
+              width={64}
+              height={64}
+              style={{
+                fill: '#ebebeb',
+              }}
+              fill="#ebebeb"
+              color="#ebebeb"
+            />
+            <span className="">선택된 예약이 없습니다.</span>
           </div>
-        </main>
-        <Footer />
+        )}
       </ReservationContainer>
     </div>
   );
