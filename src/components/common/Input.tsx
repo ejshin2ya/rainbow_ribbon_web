@@ -1,16 +1,17 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   disabled?: boolean;
 }
 
-const Input: React.FC<InputProps> = (props) => {
+const Input: React.FC<InputProps> = props => {
   return <StyledInput {...props} />;
 };
 
 export default Input;
 
 const StyledInput = styled.input`
+  width: 100%;
   padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 4px;
