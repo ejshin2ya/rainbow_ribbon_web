@@ -1,7 +1,7 @@
 export const reservationQueryKey = {
-  bookingList() {
+  bookingList(bookingMonth: string) {
     return {
-      key: ['calendar', 'list'],
+      key: ['calendar', 'list', bookingMonth],
       initialize: ['calendar', 'list'],
     };
   },

@@ -1,7 +1,7 @@
 export interface OutputDTO<T = any> {
-  code: string;
+  statusCode: string;
   msg: string;
-  detail: T;
+  data: T;
 }
 
 export interface GetReservationInputDTO {
@@ -18,6 +18,7 @@ interface Reservation {
   funeralStartDate: string;
   funeralEndDate: string;
   selectedFuneralId: string;
+  packageName: string;
 }
 
 interface CompanyBookingInfo {

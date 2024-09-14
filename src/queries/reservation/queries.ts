@@ -6,7 +6,7 @@ import {
 } from 'src/services/reservationService';
 
 export const useCalendarBookingList = function (month: string) {
-  const { key } = reservationQueryKey.bookingList();
+  const { key } = reservationQueryKey.bookingList(month);
   return useQuery({
     queryKey: key,
     queryFn: () => getCalendarBookingList(month),
