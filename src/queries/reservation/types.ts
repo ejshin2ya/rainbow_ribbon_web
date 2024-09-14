@@ -28,6 +28,7 @@ interface CompanyBookingInfo {
     paymentDate: string;
     packageName: string;
     bookingStatus: string;
+    totalFee: number;
     memo: string;
   };
   userInfo: {
@@ -41,7 +42,7 @@ interface CompanyBookingInfo {
       packageName: string;
       totalFee: number;
       bookingStatus: string;
-    };
+    }[];
   };
   petInfo: {
     type: string;
