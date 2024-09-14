@@ -1,10 +1,9 @@
 import { useChatList } from 'src/queries';
 import { ChatListItem } from './ChatListItem';
+import Loader from '../common/Loader';
 
 export const ChatList = function () {
   const { data: roomListData, isLoading } = useChatList();
-
-  if (isLoading) return <div>로딩중</div>;
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -33,14 +32,20 @@ export const ChatList = function () {
         />
       </header>
       <div className="w-full flex-1 flex flex-col overflow-y-auto">
-        {roomListData?.data.map(roomInfo => {
-          return (
-            <ChatListItem
-              roomInfo={roomInfo}
-              key={`${roomInfo.roomId}-${roomInfo.userId}`}
-            />
-          );
-        })}
+        {isLoading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <Loader />
+          </div>
+        ) : (
+          roomListData?.data.map(roomInfo => {
+            return (
+              <ChatListItem
+                roomInfo={roomInfo}
+                key={`${roomInfo.roomId}-${roomInfo.userId}`}
+              />
+            );
+          })
+        )}
       </div>
     </div>
   );
