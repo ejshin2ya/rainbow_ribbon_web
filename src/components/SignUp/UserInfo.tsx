@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import Input from "../common/Input";
-import Button from "../common/Button";
-import InputWithLabel from "../common/InputWithLabel";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import InputWithLabel from '../common/InputWithLabel';
 import {
   PhoneVerificationResponse,
   usePhoneVerification,
-} from "../../hooks/usePhoneVerification";
-import useModal from "../../hooks/useModal";
-import Modal from "../common/Modal";
-import { useRecoilState } from "recoil";
-import { signUpFormState } from "../../atoms/signupFormState";
+} from '../../hooks/usePhoneVerification';
+import useModal from '../../hooks/useModal';
+import Modal from '../common/Modal';
+import { useRecoilState } from 'recoil';
+import { signUpFormState } from '../../atoms/signupFormState';
 
 //부모 컴포넌트인 SignUpForm으로 부터 다음페이지로 이동하도록 전달 받은 props
 interface UserInfoProps {
@@ -27,9 +27,9 @@ interface UserInfoData {
 const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
   //사용자 정보 입력값 상태 관리
   const [userData, setUserData] = useState<UserInfoData>({
-    name: "",
-    phone: "",
-    verificationCode: "",
+    name: '',
+    phone: '',
+    verificationCode: '',
   });
   const [smsConfirmCode, setSmsConfirmCode] = useState<string | null>(null);
   const { mutate, isPending, isError, isSuccess, error } =
@@ -67,14 +67,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     //Input 입력값의 변화를 감지하여 데이터를 새로 저장해주는 함수
     const { name, value } = e.target;
-    setUserData((prev) => ({ ...prev, [name]: value }));
+    setUserData(prev => ({ ...prev, [name]: value }));
   };
 
   const nextHandleSubmit = (e: React.FormEvent) => {
     //다음 버튼 선택시 AccountInfo.tsx 컴포넌트를 보여줍니다.
     e.preventDefault();
     onNext();
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       companySignUpReq: {
         ...prev.companySignUpReq,
@@ -92,7 +92,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
     }
 
     const timer = setInterval(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : prev));
+      setCountdown(prev => (prev !== null ? prev - 1 : prev));
     }, 1000);
 
     return () => clearInterval(timer);
@@ -102,8 +102,8 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
     //5분이 카운트다운되는 것을 시각적으로 그려주는 함수
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
-    return `${minutes < 10 ? "0" : ""}${minutes}:${
-      seconds < 10 ? "0" : ""
+    return `${minutes < 10 ? '0' : ''}${minutes}:${
+      seconds < 10 ? '0' : ''
     }${seconds}`;
   };
 
@@ -144,7 +144,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
           disabled={isPending || (isCodeVerified !== null && isCodeVerified)}
           addTopMargin={true}
         >
-          {countdown !== null && countdown > 0 ? "다시받기" : "인증요청"}
+          {countdown !== null && countdown > 0 ? '다시받기' : '인증요청'}
         </Button>
       </InputWrapper>
       {isPending && <p>인증번호를 전송중입니다.</p>}
