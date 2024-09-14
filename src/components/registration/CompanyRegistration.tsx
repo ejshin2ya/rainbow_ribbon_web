@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { CompanyInfoModal } from './CompanyInfoModal';
+import { CompanyRegistrationModal } from './CompanyRegistraionModal';
 import { ParticipationRulesModal } from './ParticipationRulesModal';
 
 const CompanyRegistration = () => {
@@ -85,7 +85,7 @@ const CompanyRegistration = () => {
         </Form>
 
         {openModal && modalType === 'companyInfo' && (
-          <CompanyInfoModal onClose={handleCloseModal} />
+          <CompanyRegistrationModal onClose={handleCloseModal} />
         )}
         {openModal && modalType === 'participationRules' && (
           <ParticipationRulesModal onClose={handleCloseModal} />
