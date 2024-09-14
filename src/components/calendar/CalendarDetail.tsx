@@ -18,10 +18,11 @@ export interface EventProps {
   bottom?: number | string;
   left?: number | string;
   right?: number | string;
-  subTitle: string;
-  status: '확정' | '요청';
+  subTitle?: string;
+  status: string;
   startDate: Date;
   endDate: Date;
+  bookingId: string;
 }
 
 const EventItem = function ({
@@ -36,7 +37,9 @@ const EventItem = function ({
   width,
   startDate,
   endDate,
+  bookingId,
 }: EventProps) {
+  const { changeSelectedEvent } = useFuneralEventStore();
   // 이름 / 패키지 배경  폰트  왼쪽 보더
   const boxColor =
     status === '요청'
@@ -56,6 +59,7 @@ const EventItem = function ({
   return (
     <div
       className={`absolute min-h-[23px] z-[2] left-[55px] right-0 top-[23px] opacity-100 rounded-[4px] border-l-[3px] font-medium text-[12px] leading-[18px] cursor-pointer ${boxColor}`}
+      onClick={() => changeSelectedEvent(bookingId)}
       style={{
         top,
         left,
@@ -158,6 +162,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
               top={top}
               left={left}
               width={width}
+              bookingId={td.bookingId}
             />
           );
         })}
