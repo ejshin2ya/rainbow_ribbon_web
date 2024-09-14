@@ -12,7 +12,7 @@ export const SideBar = function () {
   };
 
   return (
-    <div className="w-full h-full bg-reborn-gray0">
+    <div className="w-full h-full bg-reborn-gray0 flex-shrink-0">
       <NavLink
         to={''}
         end

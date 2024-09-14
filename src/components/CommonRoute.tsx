@@ -10,7 +10,7 @@ export const CommonRoute = function () {
     <StompProvider>
       <ConfirmDialogProvider>
         <ReservationDialog />
-        <div className="w-full h-full flex flex-col bg-gradient-to-r from-reborn-gray0 to-reborn-white items-center">
+        <div className="w-full h-full flex flex-col bg-gradient-to-r from-reborn-gray0 to-reborn-white items-start">
           <AppBar />
           <main className="w-full h-1 flex-1 flex flex-row min-w-[1140px] max-w-[2440px] justify-center bg-reborn-white">
             <div className="flex flex-shrink-0 h-full w-[243px]">
