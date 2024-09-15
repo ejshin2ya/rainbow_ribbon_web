@@ -9,9 +9,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useReadMessage, useSendMessage } from 'src/queries';
+import { useChatList, useReadMessage, useSendMessage } from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
-import { type Message } from 'src/queries/chat/types';
+import { type Message as MessageDTO } from 'src/queries/chat/types';
+import Loader from '../common/Loader';
 
 interface MessageProps {
   message: string;
@@ -40,35 +41,55 @@ export const ChatContent = function () {
   const { selectedRoomId, selectedUserId } = useChatStore();
   const [selectedFile, setSelectedFile] = useState<File[]>([]);
   const [messageMap, setMessageMap] = useState<
-    Map<string, Map<string, Message>>
+    Map<string, Map<string, MessageDTO>>
   >(new Map());
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [pagingData, setPagingData] = useState<
+    Map<string, { page: number; hasMore: boolean }>
+  >(new Map());
+  const [changed, setChanged] = useState(true);
+
   const { mutateAsync: send, isPending: sendIsPending } =
     useSendMessage(selectedRoomId);
   const { mutateAsync: read } = useReadMessage(selectedRoomId);
+  const { data: chatListData } = useChatList();
+  const [isLoading, setIsLoading] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
   const fetchMore = async function () {
-    if (!hasMore) return;
-    if (selectedRoomId) {
-      const { data } = await getAllMessage(selectedRoomId, page);
-      const newDatas: [string, Message][] = data.messages.map(msg => [
-        msg.messageId,
-        msg,
-      ]);
-      const newMap = new Map(messageMap);
-      const newRoomMessageMap = new Map([
-        ...(messageMap.get(selectedRoomId) ?? []),
-        ...newDatas,
-      ]);
-      newMap.set(selectedRoomId, newRoomMessageMap);
-      // setHasMore(data.hasMore);
-      setMessageMap(newMap);
-      return data.hasMore;
-    }
+    const selectedPagingData = pagingData.get(selectedRoomId);
+    if (!selectedPagingData || !selectedPagingData.hasMore) return;
+    const { data } = await getAllMessage(
+      selectedRoomId,
+      selectedPagingData.page,
+    );
+    if (!data || !data.messages.length) return;
+    const sortedMessages = data.messages.sort(
+      (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime(),
+    );
+    const newDatas: [string, MessageDTO][] = sortedMessages.map(msg => [
+      msg.messageId,
+      msg,
+    ]);
+    setMessageMap(prevMap => {
+      const newMap = new Map(prevMap);
+      const existingRoomMessages = new Map(newMap.get(selectedRoomId) ?? []);
+      newDatas.forEach(([id, message]) => {
+        existingRoomMessages.set(id, message);
+      });
+      newMap.set(selectedRoomId, existingRoomMessages);
+      return newMap;
+    });
+    setPagingData(prevPagingData => {
+      const newPagingData = new Map(prevPagingData);
+      newPagingData.set(selectedRoomId, {
+        page: selectedPagingData.page + 1,
+        hasMore: data.hasMore,
+      });
+      return newPagingData;
+    });
+    return data;
   };
-  const messageArray = Array.from(
-    messageMap.get(selectedRoomId)?.values() ?? [],
-  );
+
   const testSendMessage = async function (messageStr: string) {
     // todo: 선행으로 send가 성공해야함.
     const res = await send({
@@ -91,47 +112,92 @@ export const ChatContent = function () {
     ]);
 
     newMap.set(selectedRoomId, newRoomMessageMap);
-    console.log(newMap.get(selectedRoomId)?.entries());
     setMessageMap(newMap);
   };
 
-  useEffect(() => {
-    read({ roomId: selectedRoomId });
-  }, [selectedRoomId]);
+  const messageArray = Array.from(
+    messageMap.get(selectedRoomId)?.values() ?? [],
+  ).reverse();
 
-  useEffect(() => {
-    fetchMore();
-  }, [page, selectedRoomId]);
-
-  const messageEndRef = useRef<HTMLDivElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
-    if (messageEndRef.current) {
-      messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   };
-  useEffect(() => {
-    scrollToBottom();
-  }, [messageArray.length]);
+
+  const loadMoreMessages = async () => {
+    if (!chatContainerRef.current || isLoading) return;
+    const previousScrollHeight =
+      chatContainerRef.current.scrollHeight -
+      chatContainerRef.current.scrollTop -
+      50;
+    setIsLoading(true);
+    const selectedPagingData = pagingData.get(selectedRoomId);
+    if (selectedPagingData && selectedPagingData.hasMore) {
+      await fetchMore();
+    }
+    setIsLoading(false);
+    const newScrollHeight = chatContainerRef.current.scrollHeight;
+    chatContainerRef.current.scrollTop = newScrollHeight - previousScrollHeight;
+  };
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
       const { scrollTop } = chatContainerRef.current;
-      // 스크롤이 위에 도달하면
-      // if (scrollTop === 0 && !isLoading) {
-      //   // TODO: pagination 관련 쿼리
-      //   // setPage(prev => prev + 1);
-      // }
+      if (
+        scrollTop <= 10 &&
+        !isLoading &&
+        pagingData.get(selectedRoomId)?.hasMore
+      ) {
+        loadMoreMessages();
+      }
     }
   };
+
+  // 첫 fetch 실행부
+  useEffect(() => {
+    const fetchInitialMessages = async () => {
+      if (!selectedRoomId) return;
+      if (!messageMap.has(selectedRoomId)) {
+        setMessageMap(prevMap =>
+          new Map(prevMap).set(selectedRoomId, new Map()),
+        );
+        setPagingData(prevData =>
+          new Map(prevData).set(selectedRoomId, { page: 0, hasMore: true }),
+        );
+      }
+      const selectedPagingData = pagingData.get(selectedRoomId);
+      if (selectedPagingData && selectedPagingData.page === 0) {
+        await fetchMore();
+      }
+    };
+    fetchInitialMessages();
+  }, [selectedRoomId, pagingData]);
+
+  // selectedRoomId로 만들어진 data들이 있는 경우 필요한 로직
+  useEffect(() => {
+    if (
+      chatListData?.data.find(room => room.roomId === selectedRoomId)
+        ?.unreadCount
+    ) {
+      read({ roomId: selectedRoomId });
+    }
+    if (!pagingData.get(selectedRoomId)) setChanged(true);
+    scrollToBottom();
+  }, [selectedRoomId]);
+
+  // initial fetch 이후 scroll을 위해 필요
+  useEffect(() => {
+    if (changed) {
+      scrollToBottom();
+      setChanged(false);
+    }
+  }, [messageArray.length]);
 
   const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
     setSelectedFile(Array.from(e.target.files ?? []));
   };
-
-  // if (!data) {
-  //   return <div>로딩 중입니다...</div>;
-  // }
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
@@ -150,12 +216,17 @@ export const ChatContent = function () {
           {`>`}
         </span>
       </header>
-      <main className="w-full h-[1px] flex-1 px-[30px]" onScroll={handleScroll}>
+      <main className="w-full h-[1px] flex-1">
         <div
           ref={chatContainerRef}
-          className="w-full h-full overflow-y-auto flex flex-col-reverse pt-[30px]"
+          className="w-full h-full overflow-y-auto flex flex-col pt-[30px] px-[30px]"
+          onScroll={handleScroll}
         >
-          <div ref={messageEndRef} />
+          {pagingData.get(selectedRoomId)?.hasMore && (
+            <div className="w-full mb-[30px]">
+              <Loader />
+            </div>
+          )}
           {!!selectedRoomId &&
             messageArray.map((message, index) => {
               const date = new Date(message.createAt);
@@ -164,28 +235,25 @@ export const ChatContent = function () {
               const ampm = date.getHours() >= 12 ? '오후' : '오전';
               const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
               const beforeDate =
-                index < messageArray.length - 1
-                  ? new Date(messageArray[index + 1].createAt)
-                  : date;
+                index > 0 ? new Date(messageArray[index - 1].createAt) : date;
               const showDate =
-                index === messageArray.length - 1 ||
+                index === 0 ||
                 date.getFullYear() !== beforeDate.getFullYear() ||
                 date.getMonth() !== beforeDate.getMonth() ||
                 date.getDate() !== beforeDate.getDate();
-
               return createElement(Fragment, {
                 children: (
                   <>
-                    <Message
-                      isSend={message.receiverId !== selectedUserId}
-                      message={message.message}
-                      messageDate={`${ampm} ${hours}:${minutesFormatted}`}
-                    />
                     {showDate && (
-                      <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
+                      <div className="h-[37px] flex items-center justify-center text-reborn-gray4 mb-[30px]">
                         {`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`}
                       </div>
                     )}
+                    <Message
+                      isSend={message.receiverId === selectedUserId}
+                      message={message.message}
+                      messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                    />
                   </>
                 ),
                 key: `${message.roomId}-${message.messageId}`,
@@ -220,13 +288,14 @@ export const ChatContent = function () {
               (e.currentTarget[1] as HTMLInputElement).value ?? '',
             );
             (e.target as typeof e.currentTarget).reset();
+            scrollToBottom();
           }}
         >
           <label
             htmlFor="image-upload"
             className="w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center cursor-pointer"
           >
-            <ImageIcon />
+            <ImageIcon color="#d6d6d6" />
           </label>
           <input
             type="file"
@@ -244,7 +313,11 @@ export const ChatContent = function () {
             className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
             disabled={sendIsPending}
           >
-            {sendIsPending ? <div>로딩중</div> : <SendIcon />}
+            {sendIsPending ? (
+              <div className="spinner" />
+            ) : (
+              <SendIcon style={{ color: '#fff' }} />
+            )}
           </button>
         </form>
       </footer>
