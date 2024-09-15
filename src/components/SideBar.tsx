@@ -13,6 +13,23 @@ export const SideBar = function () {
 
   return (
     <div className="w-full h-full bg-reborn-gray0 flex-shrink-0">
+      <div className="flex flex-row w-full h-[96px] items-center justify-center gap-[10px] px-[30px] border-b-[4px] border-b-reborn-gray1 flex-shrink-0">
+        <div className="w-[48px] h-[48px] rounded-[4px] flex-shrink-0">
+          <img
+            className="w-full h-full"
+            src={'/assets/images/icMapMarkerOrange.png'}
+            alt="no-image"
+          />
+        </div>
+        <div className="flex flex-col gap-[1px] flex-1 w-[1px]">
+          <div className="text-[14px] font-medium truncate text-reborn-gray8">
+            {'포포즈 경기 김포점'}
+          </div>
+          <div className="font-roboto text-[12px] font-medium truncate text-reborn-gray4">
+            ID: {'2347329347'}
+          </div>
+        </div>
+      </div>
       <NavLink
         to={''}
         end
