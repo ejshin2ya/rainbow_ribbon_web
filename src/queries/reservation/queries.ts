@@ -10,6 +10,7 @@ export const useCalendarBookingList = function (month: string) {
   return useQuery({
     queryKey: key,
     queryFn: () => getCalendarBookingList(month),
+    enabled: !!month,
   });
 };
 
@@ -18,5 +19,6 @@ export const useCalendarBookingDetail = function (bookingId: string) {
   return useQuery({
     queryKey: key,
     queryFn: () => getBookingDetail(bookingId),
+    enabled: !!bookingId,
   });
 };
