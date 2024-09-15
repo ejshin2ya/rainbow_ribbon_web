@@ -25,7 +25,8 @@ export const Calendar = function () {
     return `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}`;
   }, [selectedDate]);
   const { setSelectedDate: updateDialogDate } = useConfirmDialog();
-  const { data: calendarEvents } = useCalendarBookingList(selectedMonth);
+  const { data: calendarEvents, isFetching } =
+    useCalendarBookingList(selectedMonth);
 
   const events = useMemo(() => {
     const reservations = calendarEvents?.data ?? [];
@@ -84,8 +85,9 @@ export const Calendar = function () {
 
   return (
     <CalendarContainer>
-      <div className="w-full font-semibold leading-[21px] test-[14px] text-reborn-gray3 mb-[4px]">
+      <div className="w-full font-semibold leading-[21px] text-[14px] text-reborn-gray3 mb-[4px] flex flex-row items-center">
         월간 캘린더
+        {isFetching && <div className="spinner ml-[8px] !w-[12px] !h-[12px]" />}
       </div>
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
@@ -234,6 +236,16 @@ const CalendarContainer = styled.div`
   .fc-daygrid-day-frame:hover {
     transition-duration: 0.2s;
     background-color: #f7f7f7;
+  }
+
+  .fc-prev-button.fc-button.fc-button-primary,
+  .fc-next-button.fc-button.fc-button-primary,
+  .fc-prev-button.fc-button.fc-button-primary:hover,
+  .fc-next-button.fc-button.fc-button-primary:hover {
+    background-color: #fff;
+    color: #adadad;
+    outline: none;
+    border-color: #d6d6d6;
   }
 
   .fc-daygrid-day-number {

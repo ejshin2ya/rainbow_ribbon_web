@@ -14,6 +14,7 @@ import { getAllMessage } from 'src/services/chatService';
 import { type Message as MessageDTO } from 'src/queries/chat/types';
 import Loader from '../common/Loader';
 import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
+import { ReactComponent as ArrowRightIcon } from '../../assets/ArrowRight.svg';
 
 interface MessageProps {
   message: string;
@@ -202,7 +203,7 @@ export const ChatContent = function () {
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
-      {!chatListData?.data.length ? (
+      {chatListData?.data.length ? (
         <>
           <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
             <span className="font-semibold text-[18px] text-reborn-gray8">
@@ -215,8 +216,8 @@ export const ChatContent = function () {
             <span className="font-medium text-[14px] text-reborn-gray4">
               기본 패키지 + 픽업 서비스
             </span>
-            <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer">
-              {`>`}
+            <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center">
+              <ArrowRightIcon />
             </span>
           </header>
           <main className="w-full h-[1px] flex-1">

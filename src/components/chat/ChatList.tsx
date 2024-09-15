@@ -1,5 +1,6 @@
 import { useChatList } from 'src/queries';
 import { ChatListItem } from './ChatListItem';
+import { ReactComponent as ArrowDownIcon } from '../../assets/ArrowDown.svg';
 import Loader from '../common/Loader';
 
 export const ChatList = function () {
@@ -12,9 +13,11 @@ export const ChatList = function () {
           채팅 상담
         </div>
         <div className="mb-[15px] w-full flex flex-row justify-between items-center">
-          <div className="w-full flex-1 text-reborn-gray8 text-[18px] font-semibold flex flex-row">
+          <div className="w-full h-[27px] flex-1 text-reborn-gray8 text-[18px] font-semibold flex flex-row">
             모든 메세지
-            <div>{`>`}</div>
+            <div className="h-full flex items-center justify-center ml-[4px] cursor-pointer">
+              <ArrowDownIcon />
+            </div>
           </div>
           <div className="flex-shrink-0 text-[12px] text-reborn-gray4 font-medium">
             읽지 않은 메세지{' '}
@@ -27,7 +30,7 @@ export const ChatList = function () {
           </div>
         </div>
         <input
-          className="w-full h-[40px] flex flex-row items-center bg-reborn-gray0 rounded-[4px] py-[8px] px-[12px]"
+          className="w-full h-[40px] flex flex-row items-center bg-reborn-gray0 rounded-[4px] py-[8px] px-[12px] outline-none"
           placeholder="검색어를 입력해 주세요"
         />
       </header>
