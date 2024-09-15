@@ -13,6 +13,7 @@ import { useChatList, useReadMessage, useSendMessage } from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
 import { type Message as MessageDTO } from 'src/queries/chat/types';
 import Loader from '../common/Loader';
+import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
 
 interface MessageProps {
   message: string;
@@ -201,126 +202,140 @@ export const ChatContent = function () {
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
-      <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
-        <span className="font-semibold text-[18px] text-reborn-gray8">
-          {selectedUserId}
-        </span>
-        <span className="font-medium text-[14px] text-reborn-gray4">
-          2024.01.03 (수)
-        </span>
-        <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
-        <span className="font-medium text-[14px] text-reborn-gray4">
-          기본 패키지 + 픽업 서비스
-        </span>
-        <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer">
-          {`>`}
-        </span>
-      </header>
-      <main className="w-full h-[1px] flex-1">
-        <div
-          ref={chatContainerRef}
-          className="w-full h-full overflow-y-auto flex flex-col pt-[30px] px-[30px]"
-          onScroll={handleScroll}
-        >
-          {pagingData.get(selectedRoomId)?.hasMore && (
-            <div className="w-full mb-[30px]">
-              <Loader />
+      {!chatListData?.data.length ? (
+        <>
+          <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
+            <span className="font-semibold text-[18px] text-reborn-gray8">
+              {selectedUserId}
+            </span>
+            <span className="font-medium text-[14px] text-reborn-gray4">
+              2024.01.03 (수)
+            </span>
+            <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
+            <span className="font-medium text-[14px] text-reborn-gray4">
+              기본 패키지 + 픽업 서비스
+            </span>
+            <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer">
+              {`>`}
+            </span>
+          </header>
+          <main className="w-full h-[1px] flex-1">
+            <div
+              ref={chatContainerRef}
+              className="w-full h-full overflow-y-auto flex flex-col pt-[30px] px-[30px]"
+              onScroll={handleScroll}
+            >
+              {pagingData.get(selectedRoomId)?.hasMore && (
+                <div className="w-full mb-[30px]">
+                  <Loader />
+                </div>
+              )}
+              {!!selectedRoomId &&
+                messageArray.map((message, index) => {
+                  const date = new Date(message.createAt);
+                  const hours = date.getHours() % 12 || 12;
+                  const minutes = date.getMinutes() || 0;
+                  const ampm = date.getHours() >= 12 ? '오후' : '오전';
+                  const minutesFormatted =
+                    minutes < 10 ? `0${minutes}` : minutes;
+                  const beforeDate =
+                    index > 0
+                      ? new Date(messageArray[index - 1].createAt)
+                      : date;
+                  const showDate =
+                    index === 0 ||
+                    date.getFullYear() !== beforeDate.getFullYear() ||
+                    date.getMonth() !== beforeDate.getMonth() ||
+                    date.getDate() !== beforeDate.getDate();
+                  return createElement(Fragment, {
+                    children: (
+                      <>
+                        {showDate && (
+                          <div className="h-[37px] flex items-center justify-center text-reborn-gray4 mb-[30px]">
+                            {`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`}
+                          </div>
+                        )}
+                        <Message
+                          isSend={message.receiverId === selectedUserId}
+                          message={message.message}
+                          messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                        />
+                      </>
+                    ),
+                    key: `${message.roomId}-${message.messageId}`,
+                  });
+                })}
+            </div>
+          </main>
+          {!!selectedFile.length && (
+            <div className="h-[100px] absolute bottom-[95px] left-[30px] right-[30px] flex items-center">
+              <div className="w-full h-full bg-opacity-50 bg-reborn-gray3 flex flex-row items-center rounded-[4px] p-[8px] gap-[8px]">
+                {selectedFile.map(file => {
+                  return (
+                    <div className="max-w-[100px] h-full">
+                      <img
+                        className="h-full bg-reborn-gray8 bg-opacity-50 rounded-[4px]"
+                        alt={file.name}
+                        src={URL.createObjectURL(file)}
+                      />
+                    </div>
+                  );
+                })}
+                <button onClick={() => setSelectedFile([])}>취소</button>
+              </div>
             </div>
           )}
-          {!!selectedRoomId &&
-            messageArray.map((message, index) => {
-              const date = new Date(message.createAt);
-              const hours = date.getHours() % 12 || 12;
-              const minutes = date.getMinutes() || 0;
-              const ampm = date.getHours() >= 12 ? '오후' : '오전';
-              const minutesFormatted = minutes < 10 ? `0${minutes}` : minutes;
-              const beforeDate =
-                index > 0 ? new Date(messageArray[index - 1].createAt) : date;
-              const showDate =
-                index === 0 ||
-                date.getFullYear() !== beforeDate.getFullYear() ||
-                date.getMonth() !== beforeDate.getMonth() ||
-                date.getDate() !== beforeDate.getDate();
-              return createElement(Fragment, {
-                children: (
-                  <>
-                    {showDate && (
-                      <div className="h-[37px] flex items-center justify-center text-reborn-gray4 mb-[30px]">
-                        {`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`}
-                      </div>
-                    )}
-                    <Message
-                      isSend={message.receiverId === selectedUserId}
-                      message={message.message}
-                      messageDate={`${ampm} ${hours}:${minutesFormatted}`}
-                    />
-                  </>
-                ),
-                key: `${message.roomId}-${message.messageId}`,
-              });
-            })}
-        </div>
-      </main>
-      {!!selectedFile.length && (
-        <div className="h-[100px] absolute bottom-[95px] left-[30px] right-[30px] flex items-center">
-          <div className="w-full h-full bg-opacity-50 bg-reborn-gray3 flex flex-row items-center rounded-[4px] p-[8px] gap-[8px]">
-            {selectedFile.map(file => {
-              return (
-                <div className="max-w-[100px] h-full">
-                  <img
-                    className="h-full bg-reborn-gray8 bg-opacity-50 rounded-[4px]"
-                    alt={file.name}
-                    src={URL.createObjectURL(file)}
-                  />
-                </div>
-              );
-            })}
-            <button onClick={() => setSelectedFile([])}>취소</button>
-          </div>
+          <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
+            <form
+              className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
+              onSubmit={async e => {
+                e.preventDefault();
+                await testSendMessage(
+                  (e.currentTarget[1] as HTMLInputElement).value ?? '',
+                );
+                (e.target as typeof e.currentTarget).reset();
+                scrollToBottom();
+              }}
+            >
+              <label
+                htmlFor="image-upload"
+                className="w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center cursor-pointer"
+              >
+                <ImageIcon color="#d6d6d6" />
+              </label>
+              <input
+                type="file"
+                id="image-upload"
+                multiple
+                onChange={handleSelectImage}
+                accept="image/*, video/*"
+                style={{ display: 'none' }}
+              />
+              <input
+                className={`h-full flex-1 px-[10px] outline-none`}
+                placeholder="메시지를 입력하세요."
+              />
+              <button
+                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
+                disabled={sendIsPending}
+              >
+                {sendIsPending ? (
+                  <div className="spinner" />
+                ) : (
+                  <SendIcon style={{ color: '#fff' }} />
+                )}
+              </button>
+            </form>
+          </footer>
+        </>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center flex-col gap-[10px]">
+          <NoTalkIcon width={46} height={64} />
+          <span className="text-reborn-gray3 text-[20px] font-medium">
+            진행한 상담이 없어요
+          </span>
         </div>
       )}
-      <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
-        <form
-          className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
-          onSubmit={async e => {
-            e.preventDefault();
-            await testSendMessage(
-              (e.currentTarget[1] as HTMLInputElement).value ?? '',
-            );
-            (e.target as typeof e.currentTarget).reset();
-            scrollToBottom();
-          }}
-        >
-          <label
-            htmlFor="image-upload"
-            className="w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center cursor-pointer"
-          >
-            <ImageIcon color="#d6d6d6" />
-          </label>
-          <input
-            type="file"
-            id="image-upload"
-            multiple
-            onChange={handleSelectImage}
-            accept="image/*, video/*"
-            style={{ display: 'none' }}
-          />
-          <input
-            className={`h-full flex-1 px-[10px] outline-none`}
-            placeholder="메시지를 입력하세요."
-          />
-          <button
-            className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
-            disabled={sendIsPending}
-          >
-            {sendIsPending ? (
-              <div className="spinner" />
-            ) : (
-              <SendIcon style={{ color: '#fff' }} />
-            )}
-          </button>
-        </form>
-      </footer>
     </section>
   );
 };
