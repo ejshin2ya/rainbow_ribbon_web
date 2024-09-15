@@ -27,6 +27,7 @@ export const useUnreadMessage = function (
     ...options,
     queryKey: key,
     queryFn: () => getUnreadMessage(roomId),
+    enabled: !!roomId,
   });
 };
 
@@ -40,6 +41,7 @@ export const useAllMessage = function (
     ...options,
     queryKey: key,
     queryFn: () => getAllMessage(roomId, pageNo),
+    enabled: !!roomId,
   });
 };
 
@@ -49,6 +51,7 @@ export const useStartChat = function (
   const queryClient = useQueryClient();
   const { initialize } = chatQueryKey.startChat();
   return useMutation({
+    ...options,
     mutationFn: (partnerId: string) => startChat(partnerId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => {
