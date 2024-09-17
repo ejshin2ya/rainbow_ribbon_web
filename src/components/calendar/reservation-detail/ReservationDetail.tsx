@@ -5,6 +5,7 @@ import { ReservationInfo } from './ReservationInfo';
 import { PetInfo } from './PetInfo';
 import { Memo } from './Memo';
 import { ReactComponent as GrayLogoIcon } from '../../../assets/GrayLogo.svg';
+import { ReactComponent as OrangeLogoIcon } from '../../../assets/OrangeLogoIcon.svg';
 import { useFuneralEventStore } from '../store/event-store';
 import { useCalendarBookingDetail } from 'src/queries/reservation';
 import { ReactComponent as ReservationIcon } from '../../../assets/Reservation.svg';
@@ -30,9 +31,20 @@ export const ReservationDetail = function () {
                 <PetInfo />
                 <Memo />
               </section>
-              <div className="water-mark">
-                {data?.data.bookingInfo.bookingStatus}
-                <GrayLogoIcon width={36} height={36} />
+              <div
+                className={`water-mark ${data?.data.bookingInfo.bookingStatus === '결제 완료' ? '' : '!text-reborn-orange2'}`}
+              >
+                {data?.data.bookingInfo.bookingStatus === '결제 완료' ? (
+                  <>
+                    예약 대기중
+                    <GrayLogoIcon width={36} height={36} />
+                  </>
+                ) : (
+                  <>
+                    예약 확정
+                    <OrangeLogoIcon width={36} height={36} />
+                  </>
+                )}
               </div>
             </main>
             <Footer />
@@ -57,7 +69,9 @@ export const ReservationDetail = function () {
 };
 
 const ReservationContainer = styled.article`
-  width: 620px;
+  min-width: 620px;
+  width: 50%;
+  max-width: 672px;
   height: 870px;
   display: flex;
   flex-direction: column;

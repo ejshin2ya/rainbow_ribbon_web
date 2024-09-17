@@ -79,7 +79,7 @@ export const Footer = function () {
               );
             },
             className: '',
-            text: '예약확정',
+            text: '예약 확정',
           }}
         />
       </div>

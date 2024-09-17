@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import KakaoMap from './KakaoMap';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
@@ -34,7 +34,8 @@ const App = () => {
           index
           element={
             <>
-              <div>메인 페이지</div>
+              <Link to="partners">메인 페이지 (업체)</Link>
+              <br />
               <a href="/login">로그인 페이지</a>
             </>
           }
