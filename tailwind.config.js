@@ -48,6 +48,12 @@ module.exports = {
           red: '#e74e1a',
         },
       },
+      boxShadow: {
+        'thin-top-left': '2px -2px 5px rgba(0, 0, 0, 0.1)',
+        'thin-bottom-right': '-2px 2px 5px rgba(0, 0, 0, 0.1)',
+        'thin-all':
+          '2px 2px 5px rgba(0, 0, 0, 0.1), -2px -2px 5px rgba(0, 0, 0, 0.1), 2px -2px 5px rgba(0, 0, 0, 0.1), -2px 2px 5px rgba(0, 0, 0, 0.1)',
+      },
       spacing: {
         vh: '1vh',
         vw: '1vw',
@@ -58,9 +64,14 @@ module.exports = {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        scaleUp: {
+          '0%': { scale: '90%', opacity: '0' },
+          '100%': { scale: '100%', opacity: '1' },
+        },
       },
       animation: {
         fadeIn: 'fadeIn 0.2s ease-in-out',
+        scaleUp: 'scaleUp 0.2s ease-in-out',
       },
     },
   },
