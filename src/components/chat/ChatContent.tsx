@@ -15,6 +15,8 @@ import { type Message as MessageDTO } from 'src/queries/chat/types';
 import Loader from '../common/Loader';
 import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
 import { ReactComponent as ArrowRightIcon } from '../../assets/ArrowRight.svg';
+import { ReactComponent as LogoWhiteIcon } from '../../assets/LogoWhite.svg';
+import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 
 interface MessageProps {
   message: string;
@@ -41,7 +43,6 @@ const Message = function ({ isSend, message, messageDate }: MessageProps) {
 
 export const ChatContent = function () {
   const { selectedRoomId, selectedUserId } = useChatStore();
-  const [selectedFile, setSelectedFile] = useState<File[]>([]);
   const [messageMap, setMessageMap] = useState<
     Map<string, Map<string, MessageDTO>>
   >(new Map());
@@ -56,6 +57,7 @@ export const ChatContent = function () {
   const { data: chatListData } = useChatList();
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
 
   const fetchMore = async function () {
     const selectedPagingData = pagingData.get(selectedRoomId);
@@ -198,12 +200,36 @@ export const ChatContent = function () {
   }, [messageArray.length]);
 
   const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
-    setSelectedFile(Array.from(e.target.files ?? []));
+    const validMIMETypes = ['jpg', 'jpeg', 'png', 'pdf'];
+    let invalid = false;
+
+    Array.from(e.target.files ?? []).forEach(file => {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!validMIMETypes.includes(fileExtension)) {
+        invalid = true;
+      }
+    });
+
+    if (invalid) {
+      e.target.value = '';
+      setContent({
+        paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
+        header: '',
+      });
+      openConfirmHandler({
+        onClick: () => {
+          closeHandler();
+        },
+        text: '확인',
+      });
+    } else {
+      // TODO: 즉시 전송
+    }
   };
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
-      {chatListData?.data.length ? (
+      {Array.isArray(chatListData?.data) && chatListData?.data.length ? (
         <>
           <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
             <span className="font-semibold text-[18px] text-reborn-gray8">
@@ -268,24 +294,6 @@ export const ChatContent = function () {
                 })}
             </div>
           </main>
-          {!!selectedFile.length && (
-            <div className="h-[100px] absolute bottom-[95px] left-[30px] right-[30px] flex items-center">
-              <div className="w-full h-full bg-opacity-50 bg-reborn-gray3 flex flex-row items-center rounded-[4px] p-[8px] gap-[8px]">
-                {selectedFile.map(file => {
-                  return (
-                    <div className="max-w-[100px] h-full">
-                      <img
-                        className="h-full bg-reborn-gray8 bg-opacity-50 rounded-[4px]"
-                        alt={file.name}
-                        src={URL.createObjectURL(file)}
-                      />
-                    </div>
-                  );
-                })}
-                <button onClick={() => setSelectedFile([])}>취소</button>
-              </div>
-            </div>
-          )}
           <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
             <form
               className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
@@ -309,7 +317,7 @@ export const ChatContent = function () {
                 id="image-upload"
                 multiple
                 onChange={handleSelectImage}
-                accept="image/*, video/*"
+                accept=".jpg, .jpeg, .png, .pdf"
                 style={{ display: 'none' }}
               />
               <input
@@ -329,12 +337,16 @@ export const ChatContent = function () {
             </form>
           </footer>
         </>
-      ) : (
+      ) : Array.isArray(chatListData?.data) ? (
         <div className="w-full h-full flex items-center justify-center flex-col gap-[10px]">
           <NoTalkIcon width={46} height={64} />
           <span className="text-reborn-gray3 text-[20px] font-medium">
             진행한 상담이 없어요
           </span>
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <LogoWhiteIcon width={240} height={36} />
         </div>
       )}
     </section>

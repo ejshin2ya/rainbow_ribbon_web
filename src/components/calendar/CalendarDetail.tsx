@@ -143,7 +143,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
         {/* 이벤트 들어갈 것임. 높이랑 top은 inline style로, width는 left right로 */}
         {processedEvents.map((td, idx) => {
           // TODO: maxCount는 fetch해서 받아와야 함.
-          const maxCount = 5;
+          const maxCount = 3;
           const diffDate = td.endDate.getTime() - td.startDate.getTime();
           const diffHours = diffDate / (1000 * 60 * 60);
           const height = diffHours * 46;
