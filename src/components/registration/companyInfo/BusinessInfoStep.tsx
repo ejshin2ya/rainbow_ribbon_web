@@ -26,7 +26,10 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === 'contact' && !validatePhoneNumber(value)) return;
+    // contact 필드인 경우에만 유효성 검사를 수행
+    if (name === 'contact' && value !== '' && !validatePhoneNumber(value)) {
+      return; // 유효하지 않은 입력이면 함수를 종료
+    }
 
     setRegistrationData(prev => ({
       ...prev,
