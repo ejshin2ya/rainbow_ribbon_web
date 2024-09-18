@@ -29,9 +29,9 @@ export const chatQueryKey = {
       initialize: ['chat'],
     };
   },
-  roomMessage(roomId, pageNo) {
+  roomMessage(roomId, userId) {
     return {
-      key: ['chat', roomId, pageNo],
+      key: ['chat', roomId, userId],
       initialize: ['chat'],
     };
   },

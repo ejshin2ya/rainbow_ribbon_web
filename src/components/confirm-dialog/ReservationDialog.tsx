@@ -1,4 +1,4 @@
-import { Confirm } from './Confitm';
+import { Confirm } from './Confirm';
 import { useConfirmDialog } from './confitm-dialog-store';
 import { ReservationBlock } from './ReservationBlock';
 

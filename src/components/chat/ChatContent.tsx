@@ -1,119 +1,354 @@
 import { useChatStore } from './store/chat-store';
 import { ReactComponent as ImageIcon } from '../../assets/ImageIcon.svg';
 import { ReactComponent as SendIcon } from '../../assets/SendIcon.svg';
-import { ChangeEvent, useState } from 'react';
+import {
+  ChangeEvent,
+  createElement,
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useChatList, useReadMessage, useSendMessage } from 'src/queries';
+import { getAllMessage } from 'src/services/chatService';
+import { type Message as MessageDTO } from 'src/queries/chat/types';
+import Loader from '../common/Loader';
+import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
+import { ReactComponent as ArrowRightIcon } from '../../assets/ArrowRight.svg';
+import { ReactComponent as LogoWhiteIcon } from '../../assets/LogoWhite.svg';
+import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
+
+interface MessageProps {
+  message: string;
+  messageDate: string;
+  isSend: boolean;
+}
+
+const Message = function ({ isSend, message, messageDate }: MessageProps) {
+  return (
+    <div
+      className={`w-full flex ${isSend ? 'flex-row-reverse' : 'flex-row'} items-end gap-[8px] mb-[30px]`}
+    >
+      <div
+        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal items-end`}
+      >
+        {message}
+      </div>
+      <div className="h-full flex text-[14px] font-semibold text-reborn-gray3 items-end">
+        {messageDate}
+      </div>
+    </div>
+  );
+};
 
 export const ChatContent = function () {
   const { selectedRoomId, selectedUserId } = useChatStore();
-  const [selectedFile, setSelectedFile] = useState<File[]>([]);
+  const [messageMap, setMessageMap] = useState<
+    Map<string, Map<string, MessageDTO>>
+  >(new Map());
+  const [pagingData, setPagingData] = useState<
+    Map<string, { page: number; hasMore: boolean }>
+  >(new Map());
+  const [changed, setChanged] = useState(true);
+
+  const { mutateAsync: send, isPending: sendIsPending } =
+    useSendMessage(selectedRoomId);
+  const { mutateAsync: read } = useReadMessage(selectedRoomId);
+  const { data: chatListData } = useChatList();
+  const [isLoading, setIsLoading] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
+
+  const fetchMore = async function () {
+    const selectedPagingData = pagingData.get(selectedRoomId);
+    if (!selectedPagingData || !selectedPagingData.hasMore) return;
+    const { data } = await getAllMessage(
+      selectedRoomId,
+      selectedPagingData.page,
+    );
+    if (!data || !data.messages.length) return;
+    const sortedMessages = data.messages.sort(
+      (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime(),
+    );
+    const newDatas: [string, MessageDTO][] = sortedMessages.map(msg => [
+      msg.messageId,
+      msg,
+    ]);
+    setMessageMap(prevMap => {
+      const newMap = new Map(prevMap);
+      const existingRoomMessages = new Map(newMap.get(selectedRoomId) ?? []);
+      newDatas.forEach(([id, message]) => {
+        existingRoomMessages.set(id, message);
+      });
+      newMap.set(selectedRoomId, existingRoomMessages);
+      return newMap;
+    });
+    setPagingData(prevPagingData => {
+      const newPagingData = new Map(prevPagingData);
+      newPagingData.set(selectedRoomId, {
+        page: selectedPagingData.page + 1,
+        hasMore: data.hasMore,
+      });
+      return newPagingData;
+    });
+    return data;
+  };
+
+  const testSendMessage = async function (messageStr: string) {
+    // todo: 선행으로 send가 성공해야함.
+    const res = await send({
+      roomId: selectedRoomId,
+      message: messageStr,
+    });
+    const messageData = res.data;
+    const newMap = new Map(messageMap);
+    const now = new Date(); // TODO: createAt도 보내달라 요청 후 제거
+    const newRoomMessageMap = new Map([
+      [
+        messageData.messageId,
+        {
+          ...messageData,
+          createAt: messageData.createAt ?? now.toISOString(),
+          message: messageData.message ?? messageStr,
+        },
+      ],
+      ...(messageMap.get(selectedRoomId)?.entries() ?? []),
+    ]);
+
+    newMap.set(selectedRoomId, newRoomMessageMap);
+    setMessageMap(newMap);
+  };
+
+  const messageArray = Array.from(
+    messageMap.get(selectedRoomId)?.values() ?? [],
+  ).reverse();
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  const loadMoreMessages = async () => {
+    if (!chatContainerRef.current || isLoading) return;
+    const previousScrollHeight =
+      chatContainerRef.current.scrollHeight -
+      chatContainerRef.current.scrollTop -
+      50;
+    setIsLoading(true);
+    const selectedPagingData = pagingData.get(selectedRoomId);
+    if (selectedPagingData && selectedPagingData.hasMore) {
+      await fetchMore();
+    }
+    setIsLoading(false);
+    const newScrollHeight = chatContainerRef.current.scrollHeight;
+    chatContainerRef.current.scrollTop = newScrollHeight - previousScrollHeight;
+  };
+
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop } = chatContainerRef.current;
+      if (
+        scrollTop <= 10 &&
+        !isLoading &&
+        pagingData.get(selectedRoomId)?.hasMore
+      ) {
+        loadMoreMessages();
+      }
+    }
+  };
+
+  // 첫 fetch 실행부
+  useEffect(() => {
+    const fetchInitialMessages = async () => {
+      if (!selectedRoomId) return;
+      if (!messageMap.has(selectedRoomId)) {
+        setMessageMap(prevMap =>
+          new Map(prevMap).set(selectedRoomId, new Map()),
+        );
+        setPagingData(prevData =>
+          new Map(prevData).set(selectedRoomId, { page: 0, hasMore: true }),
+        );
+      }
+      const selectedPagingData = pagingData.get(selectedRoomId);
+      if (selectedPagingData && selectedPagingData.page === 0) {
+        await fetchMore();
+      }
+    };
+    fetchInitialMessages();
+  }, [selectedRoomId, pagingData]);
+
+  // selectedRoomId로 만들어진 data들이 있는 경우 필요한 로직
+  useEffect(() => {
+    if (
+      chatListData?.data.find(room => room.roomId === selectedRoomId)
+        ?.unreadCount
+    ) {
+      read({ roomId: selectedRoomId });
+    }
+    if (!pagingData.get(selectedRoomId)) setChanged(true);
+    scrollToBottom();
+  }, [selectedRoomId]);
+
+  // initial fetch 이후 scroll을 위해 필요
+  useEffect(() => {
+    if (changed) {
+      scrollToBottom();
+      setChanged(false);
+    }
+  }, [messageArray.length]);
 
   const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
-    setSelectedFile(Array.from(e.target.files ?? []));
+    const validMIMETypes = ['jpg', 'jpeg', 'png', 'pdf'];
+    let invalid = false;
+
+    Array.from(e.target.files ?? []).forEach(file => {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!validMIMETypes.includes(fileExtension)) {
+        invalid = true;
+      }
+    });
+
+    if (invalid) {
+      e.target.value = '';
+      setContent({
+        paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
+        header: '',
+      });
+      openConfirmHandler({
+        onClick: () => {
+          closeHandler();
+        },
+        text: '확인',
+      });
+    } else {
+      // TODO: 즉시 전송
+    }
   };
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
-      <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
-        <span className="font-semibold text-[18px] text-reborn-gray8">
-          {selectedUserId}
-        </span>
-        <span className="font-medium text-[14px] text-reborn-gray4">
-          2024.01.03 (수)
-        </span>
-        <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
-        <span className="font-medium text-[14px] text-reborn-gray4">
-          기본 패키지 + 픽업 서비스
-        </span>
-        <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer">
-          {`>`}
-        </span>
-      </header>
-      <main className="w-full h-[1px] flex-1 px-[30px] overflow-y-auto">
-        <div className="h-[37px] flex items-center justify-center text-reborn-gray4">
-          2024년 1월 2일
-        </div>
-        <div className="w-full flex flex-row items-end gap-[8px] mb-[30px]">
-          <div className="w-fit max-w-[45%] bg-reborn-white text-reborn-gray8 py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal">
-            추모식에서 미미의 사진을 함께 놓을 수 있을까요? 추모식에서 미미의
-            사진을 함께 놓을 수 있을까요? 추모식에서 미미의 사진을 함께 놓을 수
-            있을까요? 추모식에서 미미의 사진을 함께 놓을 수 있을까요? 추모식에서
-            미미의 사진을 함께 놓을 수 있을까요?
-          </div>
-          <div className="h-full flex text-[14px] font-semibold text-reborn-gray3">
-            오후 7:30
-          </div>
-        </div>
-        <div className="w-full flex flex-row-reverse items-end gap-[8px] mb-[30px]">
-          <div className="w-fit max-w-[45%] bg-reborn-orange3 text-reborn-white py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal">
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-            예약이 성공적으로 확정되었습니다. 예약이 성공적으로 확정되었습니다.
-          </div>
-          <div className="h-full flex text-[14px] font-semibold text-reborn-gray3">
-            오후 7:40
-          </div>
-        </div>
-      </main>
-      {!!selectedFile.length && (
-        <div className="h-[100px] absolute bottom-[95px] left-[30px] right-[30px] flex items-center">
-          <div className="w-full h-full bg-opacity-50 bg-reborn-gray3 flex flex-row items-center rounded-[4px] p-[8px] gap-[8px]">
-            {selectedFile.map(file => {
-              return (
-                <div className="max-w-[100px] h-full">
-                  <img
-                    className="h-full bg-reborn-gray8 bg-opacity-50 rounded-[4px]"
-                    alt={file.name}
-                    src={URL.createObjectURL(file)}
-                  />
+      {Array.isArray(chatListData?.data) && chatListData?.data.length ? (
+        <>
+          <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
+            <span className="font-semibold text-[18px] text-reborn-gray8">
+              {selectedUserId}
+            </span>
+            <span className="font-medium text-[14px] text-reborn-gray4">
+              2024.01.03 (수)
+            </span>
+            <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
+            <span className="font-medium text-[14px] text-reborn-gray4">
+              기본 패키지 + 픽업 서비스
+            </span>
+            <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center">
+              <ArrowRightIcon />
+            </span>
+          </header>
+          <main className="w-full h-[1px] flex-1">
+            <div
+              ref={chatContainerRef}
+              className="w-full h-full overflow-y-auto flex flex-col pt-[30px] px-[30px]"
+              onScroll={handleScroll}
+            >
+              {pagingData.get(selectedRoomId)?.hasMore && (
+                <div className="w-full mb-[30px]">
+                  <Loader />
                 </div>
-              );
-            })}
-            <button onClick={() => setSelectedFile([])}>취소</button>
-          </div>
+              )}
+              {!!selectedRoomId &&
+                messageArray.map((message, index) => {
+                  const date = new Date(message.createAt);
+                  const hours = date.getHours() % 12 || 12;
+                  const minutes = date.getMinutes() || 0;
+                  const ampm = date.getHours() >= 12 ? '오후' : '오전';
+                  const minutesFormatted =
+                    minutes < 10 ? `0${minutes}` : minutes;
+                  const beforeDate =
+                    index > 0
+                      ? new Date(messageArray[index - 1].createAt)
+                      : date;
+                  const showDate =
+                    index === 0 ||
+                    date.getFullYear() !== beforeDate.getFullYear() ||
+                    date.getMonth() !== beforeDate.getMonth() ||
+                    date.getDate() !== beforeDate.getDate();
+                  return createElement(Fragment, {
+                    children: (
+                      <>
+                        {showDate && (
+                          <div className="h-[37px] flex items-center justify-center text-reborn-gray4 mb-[30px]">
+                            {`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`}
+                          </div>
+                        )}
+                        <Message
+                          isSend={message.receiverId === selectedUserId}
+                          message={message.message}
+                          messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                        />
+                      </>
+                    ),
+                    key: `${message.roomId}-${message.messageId}`,
+                  });
+                })}
+            </div>
+          </main>
+          <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
+            <form
+              className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
+              onSubmit={async e => {
+                e.preventDefault();
+                await testSendMessage(
+                  (e.currentTarget[1] as HTMLInputElement).value ?? '',
+                );
+                (e.target as typeof e.currentTarget).reset();
+                scrollToBottom();
+              }}
+            >
+              <label
+                htmlFor="image-upload"
+                className="w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center cursor-pointer"
+              >
+                <ImageIcon color="#d6d6d6" />
+              </label>
+              <input
+                type="file"
+                id="image-upload"
+                multiple
+                onChange={handleSelectImage}
+                accept=".jpg, .jpeg, .png, .pdf"
+                style={{ display: 'none' }}
+              />
+              <input
+                className={`h-full flex-1 px-[10px] outline-none`}
+                placeholder="메시지를 입력하세요."
+              />
+              <button
+                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
+                disabled={sendIsPending}
+              >
+                {sendIsPending ? (
+                  <div className="spinner" />
+                ) : (
+                  <SendIcon style={{ color: '#fff' }} />
+                )}
+              </button>
+            </form>
+          </footer>
+        </>
+      ) : Array.isArray(chatListData?.data) ? (
+        <div className="w-full h-full flex items-center justify-center flex-col gap-[10px]">
+          <NoTalkIcon width={46} height={64} />
+          <span className="text-reborn-gray3 text-[20px] font-medium">
+            진행한 상담이 없어요
+          </span>
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <LogoWhiteIcon width={240} height={36} />
         </div>
       )}
-      <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
-        <div className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center">
-          <label
-            htmlFor="image-upload"
-            className="w-[34px] h-[34px] flex-shrink-0 flex items-center justify-center cursor-pointer"
-          >
-            <ImageIcon />
-          </label>
-          <input
-            type="file"
-            id="image-upload"
-            multiple
-            onChange={handleSelectImage}
-            accept="image/*, video/*"
-            style={{ display: 'none' }}
-          />
-          <input
-            className="h-full flex-1 px-[10px] outline-none"
-            placeholder="메시지를 입력하세요."
-          />
-          <div className="w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 cursor-pointer">
-            <SendIcon />
-          </div>
-        </div>
-      </footer>
     </section>
   );
 };

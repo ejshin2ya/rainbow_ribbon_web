@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import KakaoMap from './KakaoMap';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';

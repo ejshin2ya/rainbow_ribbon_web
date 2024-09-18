@@ -16,8 +16,10 @@ class ChatDomain {
   getUnreadMessage(roomId: number | string) {
     return Domain.getPath(`/chatting/${roomId}/message/new`);
   }
-  getAllMessage(roomId: number | string) {
-    return Domain.getPath(`/api/chatting/${roomId}/message/list`);
+  getAllMessage(roomId: string, pageNo: number) {
+    return Domain.getPath(
+      `/api/chatting/${roomId}/message/list/v2?pageNo=${pageNo}`,
+    );
   }
 }
 

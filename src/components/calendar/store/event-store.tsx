@@ -35,17 +35,18 @@ export const FuneralEventProvider = function ({
   events,
   selectedDate,
 }: PropsWithChildren<Props>) {
-  const [selectedEvent, setSelectedEvent] = useState();
+  const [selectedEvent, setSelectedEvent] = useState<string>('');
   const [processedEvents, setProcessedEvents] = useState<EventArrTypes[]>([]);
-  const changeSelectedEvent = function (event: any) {
+  const changeSelectedEvent = function (event: string) {
     setSelectedEvent(event);
   };
 
-  useEffect(function setInitialSelectedEvent() {
-    if (events.length) {
-      changeSelectedEvent(events[0]);
-    }
-  }, []);
+  useEffect(
+    function setInitialSelectedEvent() {
+      changeSelectedEvent(events?.[0]?.bookingId ?? '');
+    },
+    [events],
+  );
 
   useEffect(
     function eventDataChange() {

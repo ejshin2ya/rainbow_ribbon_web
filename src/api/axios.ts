@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Domain } from './endpoints';
 
 const api = axios.create({
@@ -23,6 +23,7 @@ export const setupAxiosInterceptors = (
     error => Promise.reject(error),
   );
 
+
   api.interceptors.response.use(
     response => response,
     async error => {
@@ -41,5 +42,7 @@ export const setupAxiosInterceptors = (
     },
   );
 };
+
+
 
 export default api;
