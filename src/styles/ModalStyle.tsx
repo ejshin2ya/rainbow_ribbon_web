@@ -2,8 +2,6 @@ import styled from 'styled-components';
 
 export interface StepProps {
   nextStep: () => void;
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
 }
 
 export const ModalOverlay = styled.div`
