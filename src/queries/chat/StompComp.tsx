@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Client, Message } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import { Domain } from 'src/api/endpoints';
 import { useQueryClient } from '@tanstack/react-query';
 import api from 'src/api/axios';
@@ -35,12 +34,11 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
           };
         }>({
           method: 'post',
-          data: { loginId: 'test1@naver.com', password: 'test1234' },
+          data: { loginId: 'woooriii@naver.com', password: 'woooriii' },
           url: '/api/account/company/auth/login',
         })
       ).data;
     },
-    onSuccess: data1 => {},
   });
   const [client, setClient] = useState<Client | null>(null);
 
@@ -49,8 +47,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
     let heartbeatInterval;
     mutateAsync().then(res => {
       const socketUrl = Domain.getPath('/chatting');
-      const socket = new SockJS(socketUrl);
-      // console.log('socketUrl', socketUrl);
+      const socket = new WebSocket(socketUrl);
 
       api.defaults.headers.common.Authorization =
         'Bearer ' + res.data.accessToken;
@@ -59,11 +56,12 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
         webSocketFactory: () => socket,
         // brokerURL: socketUrl,
         debug: str => {
-          console.warn(str);
+          if (process.env.NODE_ENV === 'development')
+            console.log(`%cDebug ${str}`, 'color: red;');
         },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
+        reconnectDelay: 10 * 1000,
+        heartbeatIncoming: 4 * 1000,
+        heartbeatOutgoing: 4 * 1000,
         connectHeaders: {
           Authorization: `Bearer ${res.data.accessToken}`,
         },
@@ -71,8 +69,6 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('stompClient', stompClient);
 
       stompClient.onConnect = () => {
-        console.log('WebSocket Connected');
-
         stompClient?.subscribe(
           '/user/queue/notifications',
           (message: Message) => {
@@ -93,21 +89,57 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
             });
           }
         }, 25000);
+      };
 
-        setClient(stompClient as Client);
+      stompClient.onWebSocketClose = e => {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('WebSocket closed with code:', e.code);
+          console.warn('WebSocket close reason:', e.reason);
+        }
+
+        switch (e.code) {
+          case 1000:
+            if (process.env.NODE_ENV === 'development')
+              console.log('WebSocket 정상적으로 종료되었습니다.');
+            break;
+          case 1006:
+            if (process.env.NODE_ENV === 'development')
+              console.error('WebSocket 비정상 종료. 재연결을 시도합니다.');
+            if (stompClient?.reconnectDelay) {
+              stompClient.activate(); // 재연결 시도
+            }
+            break;
+          default:
+            if (process.env.NODE_ENV === 'development')
+              console.error('WebSocket closed with an unhandled code:', e.code);
+        }
       };
 
       stompClient.onStompError = frame => {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('STOMP error: ' + frame.headers['message']);
+          console.error('Error details: ' + frame.body);
+        }
+      };
+
+      stompClient.onWebSocketError = error => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('WebSocket error:', error);
+          console.log('readyState', stompClient?.webSocket?.readyState);
+        }
       };
 
       stompClient.activate();
+      setClient(stompClient);
     });
 
     return () => {
-      stompClient?.deactivate();
-      clearInterval(heartbeatInterval);
+      if (stompClient?.connected) {
+        stompClient.deactivate();
+      }
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
     };
   }, []);
 

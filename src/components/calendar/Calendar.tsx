@@ -2,61 +2,82 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarDetail } from './CalendarDetail';
 import { ReservationDetail } from './reservation-detail/ReservationDetail';
 import { FuneralEventProvider } from './store/event-store';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
+import { useCalendarBookingList } from 'src/queries/reservation';
+import { DatesSetArg } from '@fullcalendar/core';
 
-const events = [
-  {
-    title: '완료 건건',
-    start: '2024-08-01',
-    className: 'event-complete',
-  },
-  { title: '예약 건건', start: '2024-08-02', className: 'event-request' },
-  {
-    title: '예약 오전 3건',
-    start: '2024-08-04',
-    className: 'event-confirmed',
-  },
-  { title: '예약 건건', start: '2024-08-04', className: 'event-request' },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-09',
-    className: 'event-confirmed',
-  },
-  { title: '예약 2건', start: '2024-08-10', className: 'event-request' },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-11',
-    className: 'event-confirmed',
-  },
-  { title: '예약 2건', start: '2024-08-11', className: 'event-request' },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-14',
-    className: 'event-confirmed',
-  },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-22',
-    className: 'event-confirmed',
-  },
-  {
-    title: '예약 오전 2건',
-    start: '2024-08-25',
-    className: 'event-confirmed',
-  },
-  { title: '예약 2건', start: '2024-08-25', className: 'event-request' },
-];
+interface CalendarEvent {
+  title: string;
+  start: string;
+  className: string;
+}
 
 export const Calendar = function () {
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), today.getDate()),
   );
+  const selectedMonth = useMemo(() => {
+    return `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}`;
+  }, [selectedDate]);
   const { setSelectedDate: updateDialogDate } = useConfirmDialog();
+  const { data: calendarEvents, isFetching } =
+    useCalendarBookingList(selectedMonth);
+
+  const events = useMemo(() => {
+    const reservations = calendarEvents?.data ?? [];
+    const eventMap: Record<string, { request: number; confirmed: number }> = {};
+
+    reservations.forEach(reservation => {
+      const { bookingStatus, bookingDate } = reservation;
+
+      if (!eventMap[bookingDate]) {
+        eventMap[bookingDate] = { request: 0, confirmed: 0 };
+      }
+
+      if (bookingStatus === '결제 완료') {
+        eventMap[bookingDate].confirmed += 1; // 예약 대기
+      } else if (bookingStatus === '예약 완료') {
+        eventMap[bookingDate].request += 1; // 예약 확정
+      }
+    });
+
+    // 카운트된 데이터를 CalendarEvent 형식으로 변환
+    const results: CalendarEvent[] = [];
+
+    Object.entries(eventMap).forEach(([date, { request, confirmed }]) => {
+      if (request > 0) {
+        results.push({
+          title: `예약 요청 ${request}건`,
+          start: date,
+          className: 'event-request',
+        });
+      }
+      if (confirmed > 0) {
+        results.push({
+          title: `예약 ${confirmed}건`,
+          start: date,
+          className: 'event-confirmed',
+        });
+      }
+    });
+
+    return results;
+  }, [calendarEvents]);
+
+  const handleDateSet = function (dateInfo: DatesSetArg) {
+    setSelectedDate(
+      new Date(
+        dateInfo.view.currentStart.getFullYear(),
+        dateInfo.view.currentStart.getMonth(),
+        dateInfo.view.currentStart.getDate(),
+      ),
+    );
+  };
 
   useEffect(() => {
     updateDialogDate(selectedDate);
@@ -64,8 +85,9 @@ export const Calendar = function () {
 
   return (
     <CalendarContainer>
-      <div className="w-full font-semibold leading-[21px] test-[14px] text-reborn-gray3 mb-[4px]">
+      <div className="w-full font-semibold leading-[21px] text-[14px] text-reborn-gray3 mb-[4px] flex flex-row items-center">
         월간 캘린더
+        {isFetching && <div className="spinner ml-[8px] !w-[12px] !h-[12px]" />}
       </div>
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
@@ -94,190 +116,27 @@ export const Calendar = function () {
         }}
         events={events}
         dayCellContent={args => args.date.getDate()}
+        datesSet={handleDateSet}
+        displayEventTime={false}
       />
       <FuneralEventProvider
-        events={[
-          {
-            status: '확정',
-            subTitle: '아롱이 (강아지) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              10,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              11,
-              0,
-            ),
-          },
-          {
-            status: '요청',
-            subTitle: '나비 (고양이) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              13,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              14,
-              30,
-            ),
-          },
-          {
-            status: '확정',
-            subTitle: '으악 (강아지) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              14,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              16,
-              0,
-            ),
-          },
-          {
-            status: '확정',
-            subTitle: '으악2 (강아지) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              14,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              16,
-              0,
-            ),
-          },
-          {
-            status: '요청',
-            subTitle: '으악3 (강아지) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              14,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              21,
-              0,
-            ),
-          },
-          {
-            status: '요청',
-            subTitle: '헉 (고양이) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              15,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              17,
-              0,
-            ),
-          },
-          {
-            status: '요청',
-            subTitle: '헉 (고양이) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              15,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              21,
-              0,
-            ),
-          },
-          {
-            status: '확정',
-            subTitle: '헉 (고양이) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              20,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              23,
-              0,
-            ),
-          },
-          {
-            status: '확정',
-            subTitle: '헉헉 (고양이) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              20,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              23,
-              0,
-            ),
-          },
-          {
-            status: '확정',
-            subTitle: '헉헉헉 (고양이) / 기본패키지',
-            startDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              20,
-              0,
-            ),
-            endDate: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
-              23,
-              0,
-            ),
-          },
-        ]}
+        events={
+          calendarEvents?.data?.map(reservation => {
+            const status =
+              reservation.bookingStatus === '결제 완료'
+                ? '요청'
+                : reservation.bookingStatus === '예약 완료'
+                  ? '확정'
+                  : '취소';
+            return {
+              status: status,
+              startDate: new Date(reservation.funeralStartDate),
+              endDate: new Date(reservation.funeralEndDate),
+              bookingId: reservation.bookingId,
+              subTitle: `${reservation.petName} (${reservation.petType}) / ${reservation.packageName}`,
+            };
+          }) ?? []
+        }
         selectedDate={selectedDate}
       >
         <BottomContainer>
@@ -319,7 +178,8 @@ const CalendarContainer = styled.div`
     width: 100%;
     height: 100%;
     min-height: 1050px;
-    min-width: 1133px;
+    min-width: 790px;
+    max-width: 1400px;
   }
   .fc-toolbar-chunk {
     > div {
@@ -377,6 +237,16 @@ const CalendarContainer = styled.div`
   .fc-daygrid-day-frame:hover {
     transition-duration: 0.2s;
     background-color: #f7f7f7;
+  }
+
+  .fc-prev-button.fc-button.fc-button-primary,
+  .fc-next-button.fc-button.fc-button-primary,
+  .fc-prev-button.fc-button.fc-button-primary:hover,
+  .fc-next-button.fc-button.fc-button-primary:hover {
+    background-color: #fff;
+    color: #adadad;
+    outline: none;
+    border-color: #d6d6d6;
   }
 
   .fc-daygrid-day-number {
