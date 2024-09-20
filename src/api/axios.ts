@@ -23,26 +23,30 @@ export const setupAxiosInterceptors = (
     error => Promise.reject(error),
   );
 
-
   api.interceptors.response.use(
     response => response,
     async error => {
+      const customCode: string = error.response.data?.code ?? '';
+      if (customCode.startsWith('20'))
+        return await Promise.resolve({
+          statusCode: customCode.slice(0, 3),
+          msg: error.response.data?.msg,
+          data: null,
+        });
       const originalRequest = error.config;
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
         const isRefreshSuccessful = await refreshToken();
         if (isRefreshSuccessful) {
-          return api(originalRequest);
+          return await api(originalRequest);
         } else {
           logout();
-          return Promise.reject(error);
+          return await Promise.reject(error);
         }
       }
-      return Promise.reject(error);
+      return await Promise.reject(error);
     },
   );
 };
-
-
 
 export default api;

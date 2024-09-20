@@ -36,7 +36,7 @@ const App = () => {
             index
             element={
               <>
-                <div>메인 페이지</div>
+                <Link to={'partners'}>메인 페이지</Link>
                 <a href="/login">로그인 페이지</a>
               </>
             }
