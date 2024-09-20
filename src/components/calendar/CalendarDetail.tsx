@@ -58,7 +58,7 @@ const EventItem = function ({
   }, [startDate, endDate]);
   return (
     <div
-      className={`absolute min-h-[23px] z-[2] left-[55px] right-0 top-[23px] opacity-100 rounded-[4px] border-l-[3px] font-medium text-[12px] leading-[18px] cursor-pointer ${boxColor}`}
+      className={`absolute min-h-[46px] z-[2] left-[55px] right-0 top-[23px] opacity-100 rounded-[4px] border-l-[3px] font-medium text-[12px] leading-[18px] cursor-pointer ${boxColor}`}
       onClick={() => changeSelectedEvent(bookingId)}
       style={{
         top,
