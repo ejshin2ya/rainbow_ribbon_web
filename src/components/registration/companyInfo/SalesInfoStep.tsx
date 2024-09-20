@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
 import {
@@ -21,6 +21,35 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   const [weekdayClose, setWeekdayClose] = useState('18:00');
   const [weekendOpen, setWeekendOpen] = useState('10:00');
   const [weekendClose, setWeekendClose] = useState('17:00');
+
+  useEffect(() => {
+    const {
+      offDay,
+      weekdayOpen: wdOpen,
+      weekdayClose: wdClose,
+      weekendOpen: weOpen,
+      weekendClose: weClose,
+    } = registrationData.companyInfoEditReq;
+
+    if (offDay) {
+      setHasDayOff(true);
+      setDayOff(offDay.split(','));
+    }
+
+    if (wdOpen) setWeekdayOpen(wdOpen);
+    if (wdClose) setWeekdayClose(wdClose);
+
+    if (weOpen && weClose && (weOpen !== wdOpen || weClose !== wdClose)) {
+      setIsDifferentWeekendHours(true);
+      setWeekendOpen(weOpen);
+      setWeekendClose(weClose);
+    } else {
+      setIsDifferentWeekendHours(false);
+      setWeekendOpen(wdOpen);
+      setWeekendClose(wdClose);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDayOffToggle = (day: string) => {
     setDayOff(prev =>
@@ -51,8 +80,8 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
         offDay: dayOff.join(','),
         weekdayOpen,
         weekdayClose,
-        weekendOpen,
-        weekendClose,
+        weekendOpen: isDifferentWeekendHours ? weekendOpen : weekdayOpen,
+        weekendClose: isDifferentWeekendHours ? weekendClose : weekdayClose,
       },
     }));
   }, [
@@ -61,6 +90,7 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
     weekdayClose,
     weekendOpen,
     weekendClose,
+    isDifferentWeekendHours,
     setRegistrationData,
   ]);
 
@@ -107,7 +137,9 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
       </ButtonGroup>
 
       <TimeSelectGroup>
-        <TimeSelectLabel>평일 영업</TimeSelectLabel>
+        <TimeSelectLabel>
+          평일{!isDifferentWeekendHours && '(주말)'} 영업
+        </TimeSelectLabel>
         <TimeSelect
           value={weekdayOpen}
           onChange={e => setWeekdayOpen(e.target.value)}

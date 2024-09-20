@@ -22,21 +22,20 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   const [isNextButtonActive, setIsNextButtonActive] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (typeof registrationData.logoImage === 'string') {
+      setPreviewUrl(registrationData.logoImage);
+    }
+  }, [registrationData.logoImage]);
+
   const validateCompanyName = (name: string): boolean => {
     if (name === '') return true;
-    const regex = /^[가-힣a-zA-Z\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]+$/;
+    const regex = /^[가-힣a-zA-Z\s!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/;
     return regex.test(name);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    setRegistrationData(prev => ({
-      ...prev,
-      companyInfoEditReq: {
-        ...prev.companyInfoEditReq,
-        companyName: newName,
-      },
-    }));
 
     if (validateCompanyName(newName)) {
       setCompanyNameError('');
@@ -50,13 +49,13 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
+        const base64String = reader.result as string;
+        setRegistrationData(prev => ({
+          ...prev,
+          logoImage: base64String,
+        }));
       };
       reader.readAsDataURL(file);
-      setRegistrationData(prev => ({
-        ...prev,
-        logoImage: file,
-      }));
     }
   };
 
@@ -71,15 +70,12 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
         validateCompanyName(companyName) &&
         registrationData.logoImage !== null,
     );
-  }, [
-    registrationData.companyInfoEditReq.companyName,
-    registrationData.logoImage,
-  ]);
+  }, [registrationData.companyInfoEditReq, registrationData.logoImage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isNextButtonActive) {
-      nextStep();
+      nextStep(); // 다음 단계로 이동
     }
   };
 

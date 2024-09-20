@@ -1,12 +1,14 @@
 import { atom } from 'recoil';
 
-//업체 등록 요청값 데이터
-interface RegistrationData {
-  logoImage: File | null;
-  companyInfoEditReq: companyInfoEditReq;
+// enum을 export 합니다
+export enum CompanyRegistrationStep {
+  CompanyInfo = 1,
+  BusinessInfo,
+  SalesInfo,
+  DetailInfo,
 }
 
-interface companyInfoEditReq {
+export interface CompanyInfoEditReq {
   companyName: string;
   contact: string;
   postalCode: string;
@@ -21,23 +23,34 @@ interface companyInfoEditReq {
   notification: string;
 }
 
+export interface RegistrationData {
+  logoImage: string | File | null;
+  companyInfoEditReq: CompanyInfoEditReq;
+  currentStep: CompanyRegistrationStep;
+  isDirty: boolean;
+}
+
+const initialRegistrationData: RegistrationData = {
+  logoImage: null,
+  companyInfoEditReq: {
+    companyName: '',
+    contact: '',
+    postalCode: '',
+    address: '',
+    addressDetail: '',
+    offDay: '',
+    weekdayOpen: '',
+    weekdayClose: '',
+    weekendOpen: '',
+    weekendClose: '',
+    parallel: 0,
+    notification: '',
+  },
+  currentStep: CompanyRegistrationStep.CompanyInfo,
+  isDirty: false,
+};
+
 export const registrationDataState = atom<RegistrationData>({
   key: 'registrationDataState',
-  default: {
-    logoImage: null,
-    companyInfoEditReq: {
-      companyName: '',
-      contact: '',
-      postalCode: '',
-      address: '',
-      addressDetail: '',
-      offDay: '',
-      weekdayOpen: '',
-      weekdayClose: '',
-      weekendOpen: '',
-      weekendClose: '',
-      parallel: 0,
-      notification: '',
-    },
-  },
+  default: initialRegistrationData,
 });

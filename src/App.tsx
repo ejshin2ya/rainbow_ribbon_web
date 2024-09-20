@@ -8,6 +8,7 @@ import { CommonRoute } from './components/CommonRoute';
 import { CompanyManagement } from './pages/CompanyManagement';
 import { BusinessManagement } from './pages/BusinessManagement';
 import { Chat } from './pages/Chat';
+import { AuthProvider } from './contexts/AuthContext';
 
 declare global {
   interface Window {
@@ -19,29 +20,30 @@ declare global {
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/kakao-map" element={<KakaoMap />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/registration" element={<RegistrationPage />} />
-        <Route path="/partners" element={<CommonRoute />}>
-          <Route index element={<Reservation />} />
-          <Route path="company" element={<CompanyManagement />} />
-          <Route path="business" element={<BusinessManagement />} />
-          <Route path="chat" element={<Chat />} />
-        </Route>
-        <Route
-          index
-          element={
-            <>
-              <Link to="partners">메인 페이지 (업체)</Link>
-              <br />
-              <a href="/login">로그인 페이지</a>
-            </>
-          }
-        />
-        <Route path="*" element={<>Not found</>} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/kakao-map" element={<KakaoMap />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/registration" element={<RegistrationPage />} />
+          <Route path="/partners" element={<CommonRoute />}>
+            <Route index element={<Reservation />} />
+            <Route path="company" element={<CompanyManagement />} />
+            <Route path="business" element={<BusinessManagement />} />
+            <Route path="chat" element={<Chat />} />
+          </Route>
+          <Route
+            index
+            element={
+              <>
+                <div>메인 페이지</div>
+                <a href="/login">로그인 페이지</a>
+              </>
+            }
+          />
+          <Route path="*" element={<>Not found</>} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 };

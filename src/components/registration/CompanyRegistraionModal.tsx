@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRecoilState } from 'recoil';
 import ProgressBar from '../common/ProgressBar';
 import CompanyInfoStep from './companyInfo/CompanyInfoStep';
 import BusinessInfoStep from './companyInfo/BusinessInfoStep';
 import SalesInfoStep from './companyInfo/SalesInfoStep';
 import DetailInfoStep from './companyInfo/DetailInfoStep';
+
 import {
   ModalOverlay,
   ModalContent,
@@ -16,36 +18,18 @@ import {
 } from '../../styles/ModalStyle';
 import { GoArrowLeft } from 'react-icons/go';
 
-enum CompanyRegistrationStep {
-  CompanyInfo = 1,
-  BusinessInfo,
-  SalesInfo,
-  DetailInfo,
-}
-
-interface FormData {
-  companyName: string;
-  phoneNumber: string;
-  postalCode: string;
-  address: string;
-  detailAddress: string;
-  hasDayOff: string;
-  businessHoursType: string;
-  simultaneousFunerals: string;
-  instructions: string;
-}
-
-const initialFormData: FormData = {
-  companyName: '',
-  phoneNumber: '',
-  postalCode: '',
-  address: '',
-  detailAddress: '',
-  hasDayOff: '',
-  businessHoursType: '',
-  simultaneousFunerals: '',
-  instructions: '',
-};
+import {
+  CompanyRegistrationStep,
+  RegistrationData,
+  registrationDataState,
+} from '../../atoms/registrationDataState';
+import {
+  saveRegistrationProgress,
+  loadRegistrationProgress,
+  clearRegistrationProgress,
+} from '../../utils/registrationUtils';
+import SaveConfirmModal from '../common/SaveConfirmModal';
+import LoadSavedProgressModal from '../common/LoadSavedProgressModal';
 
 export const CompanyRegistrationModal: React.FC<{ onClose: () => void }> = ({
   onClose,
@@ -53,7 +37,57 @@ export const CompanyRegistrationModal: React.FC<{ onClose: () => void }> = ({
   const [currentStep, setCurrentStep] = useState<CompanyRegistrationStep>(
     CompanyRegistrationStep.CompanyInfo,
   );
-  const [formData, setFormData] = useState<FormData>(initialFormData);
+  // const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [registrationData, setRegistrationData] = useRecoilState(
+    registrationDataState,
+  );
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [showLoadSavedProgressModal, setShowLoadSavedProgressModal] =
+    useState(false);
+  const [savedProgress, setSavedProgress] = useState<RegistrationData | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const saved = loadRegistrationProgress();
+    if (saved) {
+      setSavedProgress(saved);
+      setShowLoadSavedProgressModal(true);
+    }
+  }, []);
+
+  const handleCloseClick = () => {
+    if (registrationData.isDirty) {
+      setShowSaveConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleSaveAndClose = () => {
+    saveRegistrationProgress({
+      ...registrationData,
+      currentStep: currentStep,
+    });
+    onClose();
+  };
+
+  const handleCancelClose = () => {
+    setShowSaveConfirm(false);
+  };
+
+  const handleLoadSavedProgress = () => {
+    if (savedProgress) {
+      setRegistrationData(savedProgress);
+      setCurrentStep(savedProgress.currentStep);
+    }
+    setShowLoadSavedProgressModal(false);
+  };
+
+  const handleCancelLoadSavedProgress = () => {
+    clearRegistrationProgress();
+    setShowLoadSavedProgressModal(false);
+  };
 
   const stepName = [
     '업체 정보를',
@@ -62,17 +96,26 @@ export const CompanyRegistrationModal: React.FC<{ onClose: () => void }> = ({
     '상세설명을',
   ];
 
-  const nextStep = () =>
-    setCurrentStep(prev =>
-      prev < CompanyRegistrationStep.DetailInfo ? prev + 1 : prev,
-    );
-  const prevStep = () =>
-    setCurrentStep(prev =>
-      prev > CompanyRegistrationStep.CompanyInfo ? prev - 1 : prev,
-    );
+  const nextStep = () => {
+    const nextStep =
+      currentStep < CompanyRegistrationStep.DetailInfo
+        ? currentStep + 1
+        : currentStep;
+    setCurrentStep(nextStep);
+    setRegistrationData(prev => ({ ...prev, currentStep: nextStep }));
+  };
+
+  const prevStep = () => {
+    const prevStep =
+      currentStep > CompanyRegistrationStep.CompanyInfo
+        ? currentStep - 1
+        : currentStep;
+    setCurrentStep(prevStep);
+    setRegistrationData(prev => ({ ...prev, currentStep: prevStep }));
+  };
 
   const renderStepComponent = () => {
-    const props = { nextStep, formData, setFormData };
+    const props = { nextStep };
     switch (currentStep) {
       case CompanyRegistrationStep.CompanyInfo:
         return <CompanyInfoStep {...props} />;
@@ -99,7 +142,7 @@ export const CompanyRegistrationModal: React.FC<{ onClose: () => void }> = ({
             )}
           </IconWrapper>
           <ModalTitle>업체 정보</ModalTitle>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
+          <CloseButton onClick={handleCloseClick}>&times;</CloseButton>
         </ModalHeader>
         <ProgressBox>
           <span>{currentStep}/4</span>
@@ -107,6 +150,18 @@ export const CompanyRegistrationModal: React.FC<{ onClose: () => void }> = ({
         </ProgressBox>
         <SubTitle>{stepName[currentStep - 1]} 작성해 주세요.</SubTitle>
         {renderStepComponent()}
+        {showSaveConfirm && (
+          <SaveConfirmModal
+            onConfirm={handleSaveAndClose}
+            onCancel={handleCancelClose}
+          />
+        )}
+        {showLoadSavedProgressModal && (
+          <LoadSavedProgressModal
+            onConfirm={handleLoadSavedProgress}
+            onCancel={handleCancelLoadSavedProgress}
+          />
+        )}
       </ModalContent>
     </ModalOverlay>
   );

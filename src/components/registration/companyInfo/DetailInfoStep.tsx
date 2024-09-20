@@ -10,15 +10,13 @@ import {
   NextButton,
 } from '../../../styles/ModalStyle';
 import { registrationDataState } from '../../../atoms/registrationDataState';
+import { registerCompany } from '../../../services/companyService';
 
 interface DetailInfoStepProps extends StepProps {
   onClose: () => void;
 }
 
-const DetailInfoStep: React.FC<DetailInfoStepProps> = ({
-  onClose,
-  nextStep,
-}) => {
+const DetailInfoStep: React.FC<DetailInfoStepProps> = ({ onClose }) => {
   const [registrationData, setRegistrationData] = useRecoilState(
     registrationDataState,
   );
@@ -47,10 +45,16 @@ const DetailInfoStep: React.FC<DetailInfoStepProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isNextButtonActive) {
-      // 여기에서 API 호출 또는 다른 제출 로직을 구현할 수 있습니다.
-      console.log('Submitting data:', registrationData);
-      nextStep();
-      onClose();
+      try {
+        const response = await registerCompany(registrationData);
+        console.log('Registration successful:', response);
+        alert('등록 성공');
+        onClose();
+      } catch (error) {
+        console.error('Registration failed:', error);
+        // 에러 처리 로직
+        alert('등록실패');
+      }
     }
   };
 
