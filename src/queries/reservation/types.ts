@@ -40,13 +40,15 @@ interface CompanyBookingInfo {
     bookingHistory: {
       bookingDate: string;
       packageName: string;
-      totalFee: number;
       bookingStatus: string;
+      totalFee: number;
     }[];
   };
   petInfo: {
-    type: string;
+    majorType: string;
+    minorType: string;
     name: string;
+    gender: string;
     weight: string;
     age: string;
   };
@@ -55,3 +57,4 @@ interface CompanyBookingInfo {
 
 export type GetReservationOutputDTO = OutputDTO<Reservation[]>;
 export type GetReservationDetailOutputDTO = OutputDTO<CompanyBookingInfo>;
+export type PutChangeBookingStatusOutputDTO = OutputDTO<string>;

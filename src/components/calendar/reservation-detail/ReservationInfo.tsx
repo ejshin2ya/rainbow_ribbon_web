@@ -2,6 +2,10 @@ import { SubtitleAndDesc } from './SubtitleAndDesc';
 import { ReactComponent as BoardIcon } from '../../../assets/Board.svg';
 import { useFuneralEventStore } from '../store/event-store';
 import { useCalendarBookingDetail } from 'src/queries/reservation';
+import {
+  conversionDateDayATime,
+  conversionFullDateTime,
+} from 'src/utils/conversion';
 
 export const ReservationInfo = function () {
   const { selectedEvent } = useFuneralEventStore();
@@ -15,12 +19,16 @@ export const ReservationInfo = function () {
       <div className="flex flex-col gap-[8px]">
         {/* "2023.11.07 17:40:13" */}
         <SubtitleAndDesc
-          desc={data?.data.bookingInfo.paymentDate}
+          desc={conversionFullDateTime(
+            data?.data.bookingInfo.paymentDate ?? '',
+          )}
           subtitle="결제일시"
         />
         {/* "11.15(수) 오전 10:00" */}
         <SubtitleAndDesc
-          desc={data?.data.bookingInfo.bookingDate}
+          desc={conversionDateDayATime(
+            data?.data.bookingInfo.bookingDate ?? '',
+          )}
           subtitle="예약날짜"
         />
         <SubtitleAndDesc
