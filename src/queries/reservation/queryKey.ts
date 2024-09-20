@@ -7,8 +7,14 @@ export const reservationQueryKey = {
   },
   bookingDetail(bookingId: string | number) {
     return {
-      key: ['calendar', 'list', bookingId],
-      initialize: ['calendar', 'list', bookingId],
+      key: ['calendar', 'detail', bookingId],
+      initialize: ['calendar', 'detail', bookingId],
+    };
+  },
+  changeBookingStatus() {
+    return {
+      key: ['calendar'],
+      initialize: ['calendar'],
     };
   },
   // sendMessage(roomId: string | number) {

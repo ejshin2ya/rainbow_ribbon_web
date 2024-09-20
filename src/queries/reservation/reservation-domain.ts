@@ -5,7 +5,7 @@ class ReservationDomain {
    * @description get
    */
   bookingDetail(bookingId: string | number) {
-    return Domain.getPath(`/api/booking/calendar/${bookingId}`);
+    return Domain.getPath(`/api/booking/calendar/detail/${bookingId}`);
   }
   /**
    * @description get
@@ -13,31 +13,12 @@ class ReservationDomain {
   get bookingList() {
     return Domain.getPath(`/api/booking/calendar`);
   }
-  // /**
-  //  * @description get, post
-  //  */
-  // get funerals() {
-  //   return Domain.getPath(`/api/account/company/funeral`);
-  // }
-  // /**
-  //  * @description get, post
-  //  */
-  // get companyInfo() {
-  //   return Domain.getPath(`/api/account/company/info`);
-  // }
-
-  // /**
-  //  * @description put
-  //  * */
-  // get changeReservationStatus() {
-  //   return Domain.getPath(`/api/account/company/update/booking/status`);
-  // }
-  // /**
-  //  * @description get
-  //  */
-  // userReservationList(userId: string | number) {
-  //   return Domain.getPath(`/api/account/company/user/${userId}/booking/list`);
-  // }
+  /**
+   * @description put
+   */
+  get changeBookingStatus() {
+    return Domain.getPath(`/api/account/company/update/booking/status`);
+  }
 }
 
 export const reservationDomain = new ReservationDomain();
