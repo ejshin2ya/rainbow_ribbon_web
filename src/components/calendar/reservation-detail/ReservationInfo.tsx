@@ -6,10 +6,11 @@ import {
   conversionDateDayATime,
   conversionFullDateTime,
 } from 'src/utils/conversion';
+import { ReservationDefaultParams } from './ReservationDetail';
 
-export const ReservationInfo = function () {
-  const { selectedEvent } = useFuneralEventStore();
-  const { data } = useCalendarBookingDetail(selectedEvent);
+export const ReservationInfo = function ({
+  reservationInfo,
+}: ReservationDefaultParams) {
   return (
     <div className="w-full">
       <h3 className="font-semibold text-[14px] leading-[17px] mb-[23px] flex flex-row gap-[4px]">
@@ -20,25 +21,25 @@ export const ReservationInfo = function () {
         {/* "2023.11.07 17:40:13" */}
         <SubtitleAndDesc
           desc={conversionFullDateTime(
-            data?.data.bookingInfo.paymentDate ?? '',
+            reservationInfo.bookingInfo.paymentDate ?? '',
           )}
           subtitle="결제일시"
         />
         {/* "11.15(수) 오전 10:00" */}
         <SubtitleAndDesc
           desc={conversionDateDayATime(
-            data?.data.bookingInfo.bookingDate ?? '',
+            reservationInfo.bookingInfo.bookingDate ?? '',
           )}
           subtitle="예약날짜"
         />
         <SubtitleAndDesc
-          desc={data?.data.bookingInfo.packageName}
+          desc={reservationInfo.bookingInfo.packageName}
           subtitle="패키지"
         />
         <SubtitleAndDesc desc="업체 수의함+추억쿠션" />
         <SubtitleAndDesc
           subtitle="총 결제 금액"
-          desc={`${(data?.data.bookingInfo.totalFee ?? 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원`}
+          desc={`${(reservationInfo.bookingInfo.totalFee ?? 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원`}
           descClassName={'text-reborn-orange3 font-bold'}
         />
       </div>

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { ButtonGroup } from 'src/components/common/ButtonGroup';
 import { useConfirmDialog } from 'src/components/confirm-dialog/confitm-dialog-store';
+import { ReservationDefaultParams } from './ReservationDetail';
 
-export const Footer = function () {
+export const Footer = function (props: ReservationDefaultParams) {
   const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
   const [sendTalk, setSendTalk] = useState(false);
   const toggleSwitch = function () {
