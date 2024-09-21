@@ -5,7 +5,7 @@ export const reservationQueryKey = {
       initialize: ['calendar', 'list'],
     };
   },
-  bookingDetail(bookingId: string | number) {
+  bookingDetail(bookingId: string) {
     return {
       key: ['calendar', 'detail', bookingId],
       initialize: ['calendar', 'detail', bookingId],
@@ -17,28 +17,10 @@ export const reservationQueryKey = {
       initialize: ['calendar'],
     };
   },
-  // sendMessage(roomId: string | number) {
-  //   return {
-  //     key: ['chat', roomId],
-  //     initialize: ['chat'],
-  //   };
-  // },
-  // readMessage(roomId: string | number) {
-  //   return {
-  //     key: ['chat', roomId],
-  //     initialize: ['chat'],
-  //   };
-  // },
-  // unreadMessage(roomId: string | number) {
-  //   return {
-  //     key: ['chat', roomId],
-  //     initialize: ['chat'],
-  //   };
-  // },
-  // roomMessage(roomId, pageNo) {
-  //   return {
-  //     key: ['chat', roomId, pageNo],
-  //     initialize: ['chat'],
-  //   };
-  // },
+  changeBookingMemo(bookingId: string) {
+    return {
+      key: ['calendar', 'detail', bookingId],
+      initialize: ['calendar', 'detail', bookingId],
+    };
+  },
 };

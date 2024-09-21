@@ -21,7 +21,7 @@ interface Reservation {
   packageName: string;
 }
 
-interface CompanyBookingInfo {
+export interface CompanyBookingInfo {
   // companyBookingInfo: {
   bookingInfo: {
     bookingDate: string;
@@ -58,3 +58,4 @@ interface CompanyBookingInfo {
 export type GetReservationOutputDTO = OutputDTO<Reservation[]>;
 export type GetReservationDetailOutputDTO = OutputDTO<CompanyBookingInfo>;
 export type PutChangeBookingStatusOutputDTO = OutputDTO<string>;
+export type PostChangeBookingMemoOutputDTO = OutputDTO;

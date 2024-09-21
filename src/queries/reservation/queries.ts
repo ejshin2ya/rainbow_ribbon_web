@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { reservationQueryKey } from '.';
 import {
+  changeBookingMemo,
   changeBookingStatus,
   getBookingDetail,
   getCalendarBookingList,
@@ -44,11 +45,29 @@ export const useChangeBookingStatus = function () {
     mutationFn: ({
       bookingId,
       status,
+      sendAlert,
     }: {
       bookingId: string;
       status: 'yes' | 'no';
-    }) => changeBookingStatus(bookingId, status),
+      sendAlert: boolean;
+    }) => changeBookingStatus(bookingId, status, sendAlert),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+    onError: () => console.log(`Cannot change status`),
+  });
+};
+
+/**
+ * mutation
+ * @param bookingId string
+ * @param memo string
+ */
+export const useChangeBookingMemo = function (
+  options?: Parameters<typeof useMutation>,
+) {
+  return useMutation({
+    ...options,
+    mutationFn: ({ bookingId, memo }: { bookingId: string; memo: string }) =>
+      changeBookingMemo(bookingId, memo),
     onError: () => console.log(`Cannot change status`),
   });
 };

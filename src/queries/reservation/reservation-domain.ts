@@ -4,8 +4,10 @@ class ReservationDomain {
   /**
    * @description get
    */
-  bookingDetail(bookingId: string | number) {
-    return Domain.getPath(`/api/booking/calendar/detail/${bookingId}`);
+  bookingDetail(bookingId: string) {
+    return Domain.getPath(
+      `/api/booking/calendar/detail?bookingId=${bookingId}`,
+    );
   }
   /**
    * @description get
@@ -18,6 +20,12 @@ class ReservationDomain {
    */
   get changeBookingStatus() {
     return Domain.getPath(`/api/account/company/update/booking/status`);
+  }
+  /**
+   * @description post
+   */
+  changeBookingMemo(bookingId: string) {
+    return Domain.getPath(`/api/booking/calendar/memo?bookingId=${bookingId}`);
   }
 }
 
