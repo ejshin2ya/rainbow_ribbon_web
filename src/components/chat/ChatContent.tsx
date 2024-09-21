@@ -9,7 +9,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useChatList, useReadMessage, useSendMessage } from 'src/queries';
+import {
+  useChatBookingDetail,
+  useChatList,
+  useReadMessage,
+  useSendMessage,
+} from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
 import { type Message as MessageDTO } from 'src/queries/chat/types';
 import Loader from '../common/Loader';
@@ -17,6 +22,7 @@ import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
 import { ReactComponent as ArrowRightIcon } from '../../assets/ArrowRight.svg';
 import { ReactComponent as LogoWhiteIcon } from '../../assets/LogoWhite.svg';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
+import { conversionDateYearToDay } from 'src/utils/conversion';
 
 interface MessageProps {
   message: string;
@@ -55,6 +61,7 @@ export const ChatContent = function () {
     useSendMessage(selectedRoomId);
   const { mutateAsync: read } = useReadMessage(selectedRoomId);
   const { data: chatListData } = useChatList();
+  const { data: reservationData } = useChatBookingDetail(selectedUserId);
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
@@ -233,18 +240,31 @@ export const ChatContent = function () {
         <>
           <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
             <span className="font-semibold text-[18px] text-reborn-gray8">
-              {selectedUserId}
+              {
+                chatListData.data.find(room => room.userId === selectedUserId)
+                  ?.name
+              }
             </span>
-            <span className="font-medium text-[14px] text-reborn-gray4">
-              2024.01.03 (수)
-            </span>
-            <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
-            <span className="font-medium text-[14px] text-reborn-gray4">
-              기본 패키지 + 픽업 서비스
-            </span>
-            <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center">
-              <ArrowRightIcon />
-            </span>
+            {reservationData?.data ? (
+              <>
+                <span className="font-medium text-[14px] text-reborn-gray4">
+                  {conversionDateYearToDay(
+                    reservationData?.data?.bookingInfo?.bookingDate ?? '',
+                  )}
+                </span>
+                <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
+                <span className="font-medium text-[14px] text-reborn-gray4">
+                  {reservationData.data.bookingInfo.packageName}
+                </span>
+                <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center">
+                  <ArrowRightIcon />
+                </span>
+              </>
+            ) : (
+              <span className="font-medium text-[14px] text-reborn-gray4">
+                예약 기록이 없습니다.
+              </span>
+            )}
           </header>
           <main className="w-full h-[1px] flex-1">
             <div
