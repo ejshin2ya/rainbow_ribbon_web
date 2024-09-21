@@ -1,11 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
 import { ENDPOINT_COMPANY_REGISTRATION } from '../api/endpoints'; // API 엔드포인트 상수를 정의해야 합니다
 import { RegistrationData } from '../atoms/registrationDataState';
+import api from 'src/api/axios';
 
-interface ApiResponse {
+interface ApiResponse<T = any> {
   statusCode: number;
   msg: string;
-  data: any;
+  data: T;
 }
 
 export const registerCompany = async (
@@ -69,4 +70,26 @@ export const registerCompany = async (
     }
     throw error;
   }
+};
+
+export const getCompanyInfo = async function () {
+  return (
+    await api.get<
+      ApiResponse<{
+        companyName: string;
+        contact: string;
+        postalCode: string;
+        address: string;
+        addressDetail: string;
+        offDay: string;
+        weekdayOpen: string;
+        weekdayClose: string;
+        weekendOpen: string;
+        weekendClose: string;
+        parallel: number;
+        notification: string;
+        logoImage: string;
+      }>
+    >('/api/account/company/info')
+  ).data;
 };
