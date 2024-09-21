@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getAllMessage,
+  getBookingDetailByUserId,
   getChatList,
   getUnreadMessage,
   readMessage,
@@ -42,6 +43,15 @@ export const useAllMessage = function (
     queryKey: key,
     queryFn: () => getAllMessage(roomId, pageNo),
     enabled: !!roomId,
+  });
+};
+
+export const useChatBookingDetail = function (userId: string) {
+  const { key } = chatQueryKey.chatBookingDetail(userId);
+  return useQuery({
+    queryKey: key,
+    queryFn: () => getBookingDetailByUserId(userId),
+    enabled: !!userId,
   });
 };
 

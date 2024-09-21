@@ -7,6 +7,7 @@ import {
   GetAllMessage,
   GetUnreadMessageRes,
 } from '../queries/chat/types';
+import { GetReservationDetailOutputDTO } from 'src/queries/reservation';
 
 export const getChatList = async function () {
   return (
@@ -63,6 +64,15 @@ export const getAllMessage = async function (roomId: string, pageNo: number) {
     await api<GetAllMessage>({
       method: 'get',
       url: chatDomain.getAllMessage(roomId, pageNo),
+    })
+  ).data;
+};
+
+export const getBookingDetailByUserId = async function (userId: string) {
+  return (
+    await api<GetReservationDetailOutputDTO>({
+      method: 'get',
+      url: chatDomain.bookingDetail(userId),
     })
   ).data;
 };

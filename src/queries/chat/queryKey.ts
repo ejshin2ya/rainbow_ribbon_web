@@ -11,19 +11,25 @@ export const chatQueryKey = {
       initialize: ['chat', 'list'],
     };
   },
-  sendMessage(roomId: string | number) {
+  chatBookingDetail(userId: string) {
+    return {
+      key: ['chat', 'booking-detail', userId],
+      initialize: ['chat', 'booking-detail', userId],
+    };
+  },
+  sendMessage(roomId: string) {
     return {
       key: ['chat', roomId],
       initialize: ['chat'],
     };
   },
-  readMessage(roomId: string | number) {
+  readMessage(roomId: string) {
     return {
       key: ['chat', roomId],
       initialize: ['chat'],
     };
   },
-  unreadMessage(roomId: string | number) {
+  unreadMessage(roomId: string) {
     return {
       key: ['chat', roomId],
       initialize: ['chat'],
