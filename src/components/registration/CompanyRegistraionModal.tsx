@@ -57,7 +57,7 @@ export const CompanyRegistrationModal: React.FC<{ onClose: () => void }> = ({
   }, []);
 
   const handleCloseClick = () => {
-    if (registrationData.isDirty) {
+    if (registrationData) {
       setShowSaveConfirm(true);
     } else {
       onClose();
