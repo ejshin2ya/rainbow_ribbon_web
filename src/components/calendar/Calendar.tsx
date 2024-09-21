@@ -3,12 +3,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import styled from 'styled-components';
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDetail } from './CalendarDetail';
-import { ReservationDetail } from './reservation-detail/ReservationDetail';
 import { FuneralEventProvider } from './store/event-store';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 import { useCalendarBookingList } from 'src/queries/reservation';
 import { DatesSetArg } from '@fullcalendar/core';
+import { BottomScheduler } from './BottomScheduler';
 
 interface CalendarEvent {
   title: string;
@@ -139,10 +138,7 @@ export const Calendar = function () {
         }
         selectedDate={selectedDate}
       >
-        <BottomContainer>
-          <CalendarDetail selectedDate={selectedDate} />
-          <ReservationDetail />
-        </BottomContainer>
+        <BottomScheduler selectedDate={selectedDate} />
       </FuneralEventProvider>
     </CalendarContainer>
   );
@@ -338,12 +334,4 @@ const CalendarContainer = styled.div`
   .fc-scroller-harness {
     overflow: visible;
   }
-`;
-
-const BottomContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
 `;
