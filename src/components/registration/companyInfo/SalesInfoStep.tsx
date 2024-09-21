@@ -33,7 +33,7 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
 
     if (offDay) {
       setHasDayOff(true);
-      setDayOff(offDay.split(','));
+      setDayOff(offDay);
     }
 
     if (wdOpen) setWeekdayOpen(wdOpen);
@@ -52,9 +52,13 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   }, []);
 
   const handleDayOffToggle = (day: string) => {
-    setDayOff(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day],
-    );
+    setDayOff(prev => {
+      if (!Array.isArray(prev)) {
+        // prev가 배열이 아닌 경우, 빈 배열로 초기화
+        return [day];
+      }
+      return prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day];
+    });
   };
 
   const generateTimeOptions = (): JSX.Element[] => {
@@ -77,7 +81,7 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
       ...prev,
       companyInfoEditReq: {
         ...prev.companyInfoEditReq,
-        offDay: dayOff.join(','),
+        offDay: dayOff,
         weekdayOpen,
         weekdayClose,
         weekendOpen: isDifferentWeekendHours ? weekendOpen : weekdayOpen,

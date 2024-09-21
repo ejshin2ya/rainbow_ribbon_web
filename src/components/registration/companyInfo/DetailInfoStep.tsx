@@ -52,7 +52,7 @@ const DetailInfoStep: React.FC<DetailInfoStepProps> = ({ onClose }) => {
         onClose();
       } catch (error) {
         console.error('Registration failed:', error);
-        // 에러 처리 로직
+        console.log(registrationData); // 에러 처리 로직
         alert('등록실패');
       }
     }

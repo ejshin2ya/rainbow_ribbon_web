@@ -14,7 +14,7 @@ export interface CompanyInfoEditReq {
   postalCode: string;
   address: string;
   addressDetail: string;
-  offDay: string;
+  offDay: string[];
   weekdayOpen: string;
   weekdayClose: string;
   weekendOpen: string;
@@ -27,7 +27,6 @@ export interface RegistrationData {
   logoImage: string | File | null;
   companyInfoEditReq: CompanyInfoEditReq;
   currentStep: CompanyRegistrationStep;
-  isDirty: boolean;
 }
 
 const initialRegistrationData: RegistrationData = {
@@ -38,7 +37,7 @@ const initialRegistrationData: RegistrationData = {
     postalCode: '',
     address: '',
     addressDetail: '',
-    offDay: '',
+    offDay: [],
     weekdayOpen: '',
     weekdayClose: '',
     weekendOpen: '',
@@ -47,7 +46,6 @@ const initialRegistrationData: RegistrationData = {
     notification: '',
   },
   currentStep: CompanyRegistrationStep.CompanyInfo,
-  isDirty: false,
 };
 
 export const registrationDataState = atom<RegistrationData>({
