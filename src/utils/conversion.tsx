@@ -43,3 +43,18 @@ export const conversionDateDayATime = function (dateString: string): string {
 
   return `${MM}.${dd}(${E}) · ${a} ${hh % 12 || 12}:${mm}`;
 };
+
+/**
+ * @param dateString ISODateString
+ * @returns `yyyy.MM.dd (E)`
+ */
+export const conversionDateYearToDay = function (dateString: string): string {
+  if (!dateString) return '날짜 정보가 없습니다.';
+  const date = new Date(dateString);
+
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const E = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+  return `${yyyy}.${MM}.${dd} (${E})`;
+};
