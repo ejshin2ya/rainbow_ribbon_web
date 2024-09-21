@@ -1,6 +1,4 @@
-import { useCalendarBookingDetail } from 'src/queries/reservation';
 import { ReactComponent as FaceIcon } from '../../../assets/Person.svg';
-import { useFuneralEventStore } from '../store/event-store';
 import { ReservationDefaultParams } from './ReservationDetail';
 
 interface InfoProps {

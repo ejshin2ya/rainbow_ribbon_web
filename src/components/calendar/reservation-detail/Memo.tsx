@@ -1,11 +1,9 @@
 import {
   GetReservationDetailOutputDTO,
   reservationQueryKey,
-  useCalendarBookingDetail,
   useChangeBookingMemo,
 } from 'src/queries/reservation';
 import { ReactComponent as MemoIcon } from '../../../assets/Memo.svg';
-import { useFuneralEventStore } from '../store/event-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { ReservationDefaultParams } from './ReservationDetail';
 
@@ -14,7 +12,7 @@ export const Memo = function ({
   selectedEventId,
 }: ReservationDefaultParams) {
   const queryClient = useQueryClient();
-  const { mutateAsync } = useChangeBookingMemo();
+  const { mutateAsync: updateMemo } = useChangeBookingMemo();
   return (
     <div className="w-full flex-1">
       <h3 className="font-semibold text-[14px] leading-[17px] mb-[23px] flex flex-row gap-[4px]">
@@ -27,23 +25,26 @@ export const Memo = function ({
         rows={3}
         defaultValue={reservationInfo.bookingInfo.memo ?? ''}
         onBlur={e => {
-          mutateAsync({
-            bookingId: selectedEventId,
-            memo: e.target.value,
-          }).then(() => {
-            const { key } = reservationQueryKey.bookingDetail(selectedEventId);
-            const { data, msg, statusCode } = queryClient.getQueryData(
-              key,
-            ) as GetReservationDetailOutputDTO;
-            queryClient.setQueryData(key, {
-              msg,
-              statusCode,
-              data: {
-                ...data,
-                bookingInfo: { ...data.bookingInfo, memo: e.target.value },
-              },
+          if (e.target.value !== reservationInfo.bookingInfo.memo) {
+            updateMemo({
+              bookingId: selectedEventId,
+              memo: e.target.value,
+            }).then(() => {
+              const { key } =
+                reservationQueryKey.bookingDetail(selectedEventId);
+              const { data, msg, statusCode } = queryClient.getQueryData(
+                key,
+              ) as GetReservationDetailOutputDTO;
+              queryClient.setQueryData(key, {
+                msg,
+                statusCode,
+                data: {
+                  ...data,
+                  bookingInfo: { ...data.bookingInfo, memo: e.target.value },
+                },
+              });
             });
-          });
+          }
         }}
       />
     </div>

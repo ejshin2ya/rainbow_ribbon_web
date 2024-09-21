@@ -1,7 +1,5 @@
 import { SubtitleAndDesc } from './SubtitleAndDesc';
 import { ReactComponent as BoardIcon } from '../../../assets/Board.svg';
-import { useFuneralEventStore } from '../store/event-store';
-import { useCalendarBookingDetail } from 'src/queries/reservation';
 import {
   conversionDateDayATime,
   conversionFullDateTime,

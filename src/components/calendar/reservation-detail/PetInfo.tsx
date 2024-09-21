@@ -1,7 +1,5 @@
 import { SubtitleAndDesc } from './SubtitleAndDesc';
 import { ReactComponent as FootPrintIcon } from '../../../assets/FootPrint.svg';
-import { useFuneralEventStore } from '../store/event-store';
-import { useCalendarBookingDetail } from 'src/queries/reservation';
 import { conversionYearMonth } from 'src/utils/conversion';
 import { ReservationDefaultParams } from './ReservationDetail';
 
