@@ -15,7 +15,10 @@ export interface Alarm {
   createAt: string;
 }
 
-export type getAlarmCountOutputDTO = OutputDTO<number>;
+export type getAlarmCountOutputDTO = OutputDTO<{
+  chat: number;
+  booking: number;
+}>;
 export type getAlarmListOutputDTO = OutputDTO<{
   alerts: Alarm[];
   hasMore: boolean;

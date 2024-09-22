@@ -5,6 +5,12 @@ export const reservationQueryKey = {
       initialize: ['calendar', 'list'],
     };
   },
+  availableHours(bookingDate: string) {
+    return {
+      key: ['calendar', 'hours', bookingDate],
+      initialize: ['calendar', 'hours', bookingDate],
+    };
+  },
   bookingDetail(bookingId: string) {
     return {
       key: ['calendar', 'detail', bookingId],

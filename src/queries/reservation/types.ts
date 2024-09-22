@@ -56,6 +56,10 @@ export interface CompanyBookingInfo {
 }
 
 export type GetReservationOutputDTO = OutputDTO<Reservation[]>;
+export type GetAvailableHoursOutputDTO = OutputDTO<boolean[]>;
 export type GetReservationDetailOutputDTO = OutputDTO<CompanyBookingInfo>;
-export type PutChangeBookingStatusOutputDTO = OutputDTO<string>;
+export type PutChangeBookingStatusOutputDTO = OutputDTO<{
+  bookingId: string;
+  parallelBookingCount: boolean[];
+}>;
 export type PostChangeBookingMemoOutputDTO = OutputDTO;

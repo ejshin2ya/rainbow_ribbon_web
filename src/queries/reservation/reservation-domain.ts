@@ -16,6 +16,12 @@ class ReservationDomain {
     return Domain.getPath(`/api/booking/calendar`);
   }
   /**
+   * @description get
+   */
+  get availableHours() {
+    return Domain.getPath(`/api/booking/check`);
+  }
+  /**
    * @description put
    */
   get changeBookingStatus() {

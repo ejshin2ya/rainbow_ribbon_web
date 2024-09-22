@@ -3,6 +3,7 @@ import { reservationQueryKey } from '.';
 import {
   changeBookingMemo,
   changeBookingStatus,
+  getAvailableHours,
   getBookingDetail,
   getCalendarBookingList,
 } from 'src/services/reservationService';
@@ -30,6 +31,22 @@ export const useCalendarBookingDetail = function (bookingId: string) {
     queryKey: key,
     queryFn: () => getBookingDetail(bookingId),
     enabled: !!bookingId,
+  });
+};
+
+/**
+ * query
+ * @param bookingId string
+ */
+export const useAvailableHours = function (
+  companyId: string,
+  bookingDate: string,
+) {
+  const { key } = reservationQueryKey.availableHours(bookingDate);
+  return useQuery({
+    queryKey: key,
+    queryFn: () => getAvailableHours(companyId, bookingDate),
+    enabled: !!bookingDate || !!companyId,
   });
 };
 

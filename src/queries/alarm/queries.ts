@@ -19,7 +19,7 @@ export const useAlarmList = function (
   category: 'BOOKING' | 'CHAT',
   pageNo: number,
 ) {
-  const { key } = alarmQueryKey.alarmCount();
+  const { key } = alarmQueryKey.alarmList(category, pageNo);
   return useQuery({
     queryKey: key,
     queryFn: () => getAlarmList(category, pageNo),
