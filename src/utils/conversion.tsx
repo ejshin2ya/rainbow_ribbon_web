@@ -58,3 +58,38 @@ export const conversionDateYearToDay = function (dateString: string): string {
   const E = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
   return `${yyyy}.${MM}.${dd} (${E})`;
 };
+
+/**
+ * @param dateString ISODateString
+ * @returns `yyyy.MM.dd || a hh:mm`
+ */
+export const conversionAlarmDate = function (dateString): string {
+  if (!dateString) return '날짜 정보가 없습니다.';
+  const date = new Date(dateString);
+  const today = new Date();
+  const hourDiff = (today.getTime() - date.getTime()) / (60 * 60 * 1000);
+  if (hourDiff > 24) {
+    const yyyy = date.getFullYear();
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}.${MM}.${dd}`;
+  } else {
+    const hh = date.getHours();
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const a = hh >= 12 ? '오후' : '오전';
+    return `${a} ${hh % 12 || 12}:${mm}`;
+  }
+};
+
+/**
+ * @param dateString ISODateString
+ * @returns `yyyy.MM.dd || a hh:mm`
+ */
+export const conversionNormalDate = function (dateString): string {
+  if (!dateString) return '날짜 정보가 없습니다.';
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1);
+  const dd = String(date.getDate());
+  return `${yyyy}년 ${MM}월 ${dd}일`;
+};
