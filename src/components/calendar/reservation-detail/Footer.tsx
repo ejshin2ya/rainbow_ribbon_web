@@ -2,13 +2,47 @@ import { useState } from 'react';
 import { ButtonGroup } from 'src/components/common/ButtonGroup';
 import { useConfirmDialog } from 'src/components/confirm-dialog/confitm-dialog-store';
 import { ReservationDefaultParams } from './ReservationDetail';
+import { useChangeBookingStatus } from 'src/queries/reservation';
+import { useQuery } from '@tanstack/react-query';
+import { getCompanyInfo } from 'src/services/companyService';
 
-export const Footer = function (props: ReservationDefaultParams) {
+export const Footer = function ({
+  reservationInfo,
+  selectedEventId,
+}: ReservationDefaultParams) {
   const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
   const [sendTalk, setSendTalk] = useState(false);
   const toggleSwitch = function () {
     setSendTalk(prev => !prev);
   };
+  const { mutateAsync } = useChangeBookingStatus();
+  // TODO: company query 개발 시 해당 쿼리문으로 대체
+  const { data } = useQuery({
+    queryKey: ['company'],
+    queryFn: () => {
+      return getCompanyInfo()
+        .then(res => {
+          // TODO: 삭제
+          console.log(res);
+          return {
+            weekdayOpen: res.data.weekdayOpen,
+            weekdayClose: res.data.weekdayClose,
+            weekendOpen: res.data.weekendOpen,
+            weekendClose: res.data.weekendClose,
+            parallel: res.data.parallel,
+          };
+        })
+        .catch(() => {
+          return {
+            weekdayOpen: 7,
+            weekdayClose: 24,
+            weekendOpen: 7,
+            weekendClose: 24,
+            parallel: 1,
+          };
+        });
+    },
+  });
   return (
     <footer className="w-full h-full flex flex-row justify-between py-[26px] px-[28px] items-center">
       <div className="w-[50%] h-full flex flex-col items-start justify-center">
@@ -44,7 +78,13 @@ export const Footer = function (props: ReservationDefaultParams) {
                 {
                   text: '거절 하기',
                   onClick: () => {
-                    closeHandler();
+                    mutateAsync({
+                      bookingId: selectedEventId,
+                      sendAlert: sendTalk,
+                      status: 'no',
+                    }).finally(() => {
+                      closeHandler();
+                    });
                   },
                 },
                 {
@@ -60,6 +100,15 @@ export const Footer = function (props: ReservationDefaultParams) {
           }}
           confirmButtonOptions={{
             onClick: () => {
+              mutateAsync({
+                bookingId: selectedEventId,
+                sendAlert: sendTalk,
+                status: 'yes',
+              }).then(() => {
+                const maxCount = data?.parallel ?? 1;
+                // TODO: api 혹은 response로 보내달라고 요청하였음.
+                // if (maxCount)
+              });
               setContent({
                 header: '이후 예약을 제한하시겠어요?',
                 paragraph: '최대 예약 3건으로, 이후 예약을 제한해 드립니다.',
