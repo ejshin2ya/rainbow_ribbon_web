@@ -168,6 +168,8 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
 
       <div className="grid__container grid grid-rows-36 grid-cols-[55px_1fr]">
         {processedEvents.map((td, idx) => {
+          if (selectedDate.toDateString() !== td.startDate.toDateString())
+            return null;
           const diffDate = td.endDate.getTime() - td.startDate.getTime();
           const diffHours = diffDate / (1000 * 60 * 60);
           const height = diffHours * 46;
