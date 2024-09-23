@@ -2,6 +2,9 @@ import { ButtonGroup } from '../common/ButtonGroup';
 import { useConfirmDialog } from './confitm-dialog-store';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
 import { useState } from 'react';
+import { useAvailableHours } from 'src/queries/reservation';
+import { useQuery } from '@tanstack/react-query';
+import { getCompanyInfo } from 'src/services/companyService';
 
 export const ReservationBlock = function () {
   const { confirmOption, cancelOption, selectedDate } = useConfirmDialog();
@@ -11,6 +14,20 @@ export const ReservationBlock = function () {
     e.preventDefault();
     setTab(tabName);
   };
+  // TODO: 쿼리문 연동 및 삭제
+  const { data: companyData } = useQuery({
+    queryKey: ['company'],
+    queryFn: () => {
+      return getCompanyInfo().then(res => {
+        return res;
+      });
+    },
+  });
+  const { data: timeData } = useAvailableHours(
+    companyData?.data?.id ?? '',
+    selectedDate.toISOString().slice(0, 10),
+  );
+  console.log(timeData);
   const gridCommonClass =
     'flex items-center justify-center text-[14px] border-[1px] rounded-[4px] h-full w-full';
   return (

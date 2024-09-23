@@ -93,27 +93,9 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
   const { data } = useQuery({
     queryKey: ['company'],
     queryFn: () => {
-      return getCompanyInfo()
-        .then(res => {
-          // TODO: 삭제
-          console.log(res);
-          return {
-            weekdayOpen: res.data.weekdayOpen,
-            weekdayClose: res.data.weekdayClose,
-            weekendOpen: res.data.weekendOpen,
-            weekendClose: res.data.weekendClose,
-            parallel: res.data.parallel,
-          };
-        })
-        .catch(() => {
-          return {
-            weekdayOpen: 7,
-            weekdayClose: 24,
-            weekendOpen: 7,
-            weekendClose: 24,
-            parallel: 1,
-          };
-        });
+      return getCompanyInfo().then(res => {
+        return res;
+      });
     },
   });
 
@@ -174,8 +156,8 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           const diffHours = diffDate / (1000 * 60 * 60);
           const height = diffHours * 46;
           const top = (td.startDate.getHours() - 7) * 46;
-          const width = `calc((100% - 55px) / ${data?.parallel ?? 1})`;
-          const left = `calc(55px + (100% - 55px) / ${data?.parallel ?? 1} * ${td.layer})`;
+          const width = `calc((100% - 55px) / ${data?.data.parallel ?? 1})`;
+          const left = `calc(55px + (100% - 55px) / ${data?.data.parallel ?? 1} * ${td.layer})`;
 
           return (
             <EventItem

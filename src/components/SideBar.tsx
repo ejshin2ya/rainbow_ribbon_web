@@ -15,21 +15,9 @@ export const SideBar = function () {
   const { data } = useQuery({
     queryKey: ['company'],
     queryFn: () => {
-      return getCompanyInfo()
-        .then(res => {
-          return {
-            companyName: res.data.companyName,
-            id: '추가 예정',
-            logoSrc: res.data.logoImage,
-          };
-        })
-        .catch(() => {
-          return {
-            companyName: '포포즈 경기 김포점',
-            id: '2347329347',
-            logoSrc: '/assets/images/icMapMarkerOrange.png',
-          };
-        });
+      return getCompanyInfo().then(res => {
+        return res;
+      });
     },
   });
 
@@ -39,16 +27,16 @@ export const SideBar = function () {
         <div className="w-[48px] h-[48px] rounded-[4px] flex-shrink-0">
           <img
             className="w-full h-full"
-            src={data?.logoSrc ?? '/assets/images/icMapMarkerOrange.png'}
+            src={data?.data.logoImage ?? '/assets/images/icMapMarkerOrange.png'}
             alt="no-image"
           />
         </div>
         <div className="flex flex-col gap-[1px] flex-1 w-[1px]">
           <div className="text-[14px] font-medium truncate text-reborn-gray8">
-            {data?.companyName}
+            {data?.data.companyName}
           </div>
           <div className="font-roboto text-[12px] font-medium truncate text-reborn-gray4">
-            ID: {data?.id}
+            ID: {data?.data.id}
           </div>
         </div>
       </div>

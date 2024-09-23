@@ -20,27 +20,9 @@ export const Footer = function ({
   const { data } = useQuery({
     queryKey: ['company'],
     queryFn: () => {
-      return getCompanyInfo()
-        .then(res => {
-          // TODO: 삭제
-          console.log(res);
-          return {
-            weekdayOpen: res.data.weekdayOpen,
-            weekdayClose: res.data.weekdayClose,
-            weekendOpen: res.data.weekendOpen,
-            weekendClose: res.data.weekendClose,
-            parallel: res.data.parallel,
-          };
-        })
-        .catch(() => {
-          return {
-            weekdayOpen: 7,
-            weekdayClose: 24,
-            weekendOpen: 7,
-            weekendClose: 24,
-            parallel: 1,
-          };
-        });
+      return getCompanyInfo().then(res => {
+        return res;
+      });
     },
   });
   return (
@@ -105,7 +87,7 @@ export const Footer = function ({
                 sendAlert: sendTalk,
                 status: 'yes',
               }).then(() => {
-                const maxCount = data?.parallel ?? 1;
+                const maxCount = data?.data.parallel ?? 1;
                 // TODO: api 혹은 response로 보내달라고 요청하였음.
                 // if (maxCount)
               });
