@@ -35,7 +35,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
         }>({
           method: 'post',
           data: { loginId: 'woooriii@naver.com', password: 'woooriii' },
-          url: '/api/account/company/auth/login',
+          url: '/api/no-auth/account/company/login',
         })
       ).data;
     },
