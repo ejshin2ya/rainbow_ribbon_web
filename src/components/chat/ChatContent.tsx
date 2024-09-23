@@ -14,15 +14,22 @@ import {
   useChatList,
   useReadMessage,
   useSendMessage,
+  useStomp,
 } from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
-import { type Message as MessageDTO } from 'src/queries/chat/types';
+import {
+  type GetRoomListRes,
+  type Message as MessageDTO,
+} from 'src/queries/chat/types';
 import Loader from '../common/Loader';
 import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
 import { ReactComponent as ArrowRightIcon } from '../../assets/ArrowRight.svg';
 import { ReactComponent as LogoWhiteIcon } from '../../assets/LogoWhite.svg';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 import { conversionDateYearToDay } from 'src/utils/conversion';
+import { useQueryClient } from '@tanstack/react-query';
+import { chatQueryKey } from 'src/queries/chat/queryKey';
+import { IStompSocket } from '@stomp/stompjs';
 
 interface MessageProps {
   message: string;
@@ -48,6 +55,7 @@ const Message = function ({ isSend, message, messageDate }: MessageProps) {
 };
 
 export const ChatContent = function () {
+  const queryClient = useQueryClient();
   const { selectedRoomId, selectedUserId } = useChatStore();
   const [messageMap, setMessageMap] = useState<
     Map<string, Map<string, MessageDTO>>
@@ -57,8 +65,9 @@ export const ChatContent = function () {
   >(new Map());
   const [changed, setChanged] = useState(true);
 
-  const { mutateAsync: send, isPending: sendIsPending } =
-    useSendMessage(selectedRoomId);
+  const { client } = useStomp();
+
+  const { mutateAsync: send, isPending: sendIsPending } = useSendMessage();
   const { mutateAsync: read } = useReadMessage(selectedRoomId);
   const { data: chatListData } = useChatList();
   const { data: reservationData } = useChatBookingDetail(selectedUserId);
@@ -101,11 +110,27 @@ export const ChatContent = function () {
     return data;
   };
 
-  const testSendMessage = async function (messageStr: string) {
-    // todo: 선행으로 send가 성공해야함.
+  const sendMessage = async function (messageStr: string) {
     const res = await send({
       roomId: selectedRoomId,
       message: messageStr,
+    }).then(res => {
+      const { key } = chatQueryKey.chatList();
+      const originalChatList = queryClient.getQueryData(key) as GetRoomListRes;
+      queryClient.setQueryData(key, {
+        msg: originalChatList.msg,
+        statusCode: originalChatList.statusCode,
+        data: originalChatList.data.map(chatRoom => {
+          return {
+            ...chatRoom,
+            lastMessage:
+              chatRoom.roomId === selectedRoomId
+                ? messageStr
+                : chatRoom.lastMessage,
+          };
+        }),
+      });
+      return res;
     });
     const messageData = res.data;
     const newMap = new Map(messageMap);
@@ -319,11 +344,13 @@ export const ChatContent = function () {
               className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
               onSubmit={async e => {
                 e.preventDefault();
-                await testSendMessage(
+                await sendMessage(
                   (e.currentTarget[1] as HTMLInputElement).value ?? '',
                 );
                 (e.target as typeof e.currentTarget).reset();
-                scrollToBottom();
+                setTimeout(() => {
+                  scrollToBottom();
+                }, 0);
               }}
             >
               <label
