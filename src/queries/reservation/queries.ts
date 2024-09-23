@@ -46,7 +46,7 @@ export const useAvailableHours = function (
   return useQuery({
     queryKey: key,
     queryFn: () => getAvailableHours(companyId, bookingDate),
-    enabled: !!bookingDate || !!companyId,
+    enabled: !!bookingDate && !!companyId,
   });
 };
 
@@ -61,13 +61,13 @@ export const useChangeBookingStatus = function () {
   return useMutation({
     mutationFn: ({
       bookingId,
-      status,
+      status: bookingStatus,
       sendAlert,
     }: {
       bookingId: string;
       status: 'yes' | 'no';
       sendAlert: boolean;
-    }) => changeBookingStatus(bookingId, status, sendAlert),
+    }) => changeBookingStatus(bookingId, bookingStatus, sendAlert),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => console.log(`Cannot change status`),
   });

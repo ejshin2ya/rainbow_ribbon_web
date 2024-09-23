@@ -76,6 +76,7 @@ export const getCompanyInfo = async function () {
   return (
     await api.get<
       ApiResponse<{
+        id: string;
         companyName: string;
         contact: string;
         postalCode: string;

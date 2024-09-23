@@ -60,6 +60,6 @@ export type GetAvailableHoursOutputDTO = OutputDTO<boolean[]>;
 export type GetReservationDetailOutputDTO = OutputDTO<CompanyBookingInfo>;
 export type PutChangeBookingStatusOutputDTO = OutputDTO<{
   bookingId: string;
-  parallelBookingCount: boolean[];
+  parallelBookingCount: number;
 }>;
 export type PostChangeBookingMemoOutputDTO = OutputDTO;

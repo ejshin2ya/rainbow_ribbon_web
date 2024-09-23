@@ -33,11 +33,9 @@ export const getAvailableHours = async function (
   return (
     await api<GetAvailableHoursOutputDTO>({
       method: 'get',
-      url: reservationDomain.availableHours,
-      data: {
-        companyId,
-        bookingDate,
-      },
+      url:
+        reservationDomain.availableHours +
+        `?companyId=${companyId}&bookingDate=${bookingDate}`,
     })
   ).data;
 };
@@ -51,7 +49,7 @@ export const changeBookingStatus = async function (
     await api<PutChangeBookingStatusOutputDTO>({
       method: 'put',
       url: reservationDomain.changeBookingStatus,
-      data: { bookingId, status: bookingStatus, sendAlert },
+      data: { bookingId, bookingStatus, sendAlert },
     })
   ).data;
 };
@@ -62,8 +60,8 @@ export const changeBookingMemo = async function (
 ) {
   return (
     await api<PostChangeBookingMemoOutputDTO>({
-      method: 'put',
-      url: reservationDomain.changeBookingStatus,
+      method: 'post',
+      url: reservationDomain.changeBookingMemo(bookingId),
       data: { bookingId, memo },
     })
   ).data;
