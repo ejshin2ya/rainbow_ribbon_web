@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { CompanyRegistrationModal } from './CompanyRegistraionModal';
-import { ParticipationRulesModal } from './ParticipationRulesModal';
+import { FuneralCompositionModal } from './FuneralCompositionModal';
 
 const CompanyRegistration = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -88,7 +88,7 @@ const CompanyRegistration = () => {
           <CompanyRegistrationModal onClose={handleCloseModal} />
         )}
         {openModal && modalType === 'participationRules' && (
-          <ParticipationRulesModal onClose={handleCloseModal} />
+          <FuneralCompositionModal onClose={handleCloseModal} />
         )}
       </Container>
     </div>
