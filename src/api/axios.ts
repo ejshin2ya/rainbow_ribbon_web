@@ -24,7 +24,9 @@ export const setupAxiosInterceptors = (
   );
 
   api.interceptors.response.use(
-    response => response,
+    response => {
+      return response;
+    },
     async error => {
       const customCode: string = error.response.data?.code ?? '';
       if (customCode.startsWith('20'))

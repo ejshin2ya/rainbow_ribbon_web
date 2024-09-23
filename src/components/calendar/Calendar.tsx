@@ -51,9 +51,9 @@ export const Calendar = function () {
         }
 
         if (bookingStatus === '결제 완료') {
-          eventMap[newDate.toISOString()].confirmed += 1; // 예약 대기
+          eventMap[newDate.toISOString()].request += 1; // 예약 대기
         } else if (bookingStatus === '예약 완료') {
-          eventMap[newDate.toISOString()].request += 1; // 예약 확정
+          eventMap[newDate.toISOString()].confirmed += 1; // 예약 확정
         }
       });
 
@@ -298,6 +298,9 @@ const CalendarContainer = styled.div`
     border-left: solid 3px #fc9974;
     background-color: #fef6e7;
     padding: 6px;
+    .fc-daygrid-event-dot {
+      border-color: #cc5228;
+    }
     .fc-event-title {
       color: #cc5228;
     }
@@ -311,6 +314,9 @@ const CalendarContainer = styled.div`
     border-left: solid 3px #238df7;
     background-color: #e7f6fd;
     padding: 6px;
+    .fc-daygrid-event-dot {
+      border-color: #238df7;
+    }
     .fc-event-title {
       color: #238df7;
     }
