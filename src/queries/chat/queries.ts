@@ -71,11 +71,9 @@ export const useStartChat = function (
 };
 
 export const useSendMessage = function (
-  roomId: string,
+  // roomId: string,
   options?: Parameters<typeof useMutation>,
 ) {
-  const queryClient = useQueryClient();
-  const { initialize } = chatQueryKey.sendMessage(roomId);
   return useMutation({
     ...options,
     mutationFn: ({
@@ -85,7 +83,7 @@ export const useSendMessage = function (
       roomId: string | number;
       message: string;
     }) => sendMessage(roomId, message),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+    // onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => {
       console.error('Cannot Send Chat');
     },

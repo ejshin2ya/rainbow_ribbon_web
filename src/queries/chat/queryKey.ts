@@ -20,7 +20,7 @@ export const chatQueryKey = {
   sendMessage(roomId: string) {
     return {
       key: ['chat', roomId],
-      initialize: ['chat'],
+      initialize: ['chat', 'list'],
     };
   },
   readMessage(roomId: string) {
