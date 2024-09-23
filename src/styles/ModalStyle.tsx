@@ -68,12 +68,22 @@ export const FormTitle = styled.h1`
   margin: 20px auto;
 `;
 
+export const FormSubTitle = styled.h1`
+  font-size: 14px;
+  font-weight: 600;
+  margin: 20px auto;
+`;
+
 export const Input = styled.input`
   width: 100%;
   padding: 12px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-bottom: 8px;
+  &:focus {
+    outline: none;
+    border-color: #ff6b6b;
+  }
 `;
 
 export const Textarea = styled.textarea`
@@ -108,18 +118,38 @@ export const ImageUploadArea = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100px;
-  border: 2px dashed #e0e0e0;
+  width: 120px;
+  height: 120px;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  overflow: hidden;
 `;
 
 export const UploadButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  color: #ff6b6b;
+  color: #666;
   font-size: 14px;
   cursor: pointer;
+
+  &::before {
+    content: '+';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #666;
+    border-radius: 50%;
+    margin-bottom: 8px;
+    font-size: 20px;
+  }
 `;
 
 export const HintText = styled.span`
@@ -135,12 +165,12 @@ export const ButtonGroup = styled.div`
   margin-bottom: 16px;
 `;
 
-export const Button = styled.button<{ active?: boolean }>`
+export const Button = styled.button<{ isActive?: boolean }>`
   flex: 1;
   padding: 10px;
-  background-color: ${props => (props.active ? '#ff6b6b' : 'white')};
-  color: ${props => (props.active ? 'white' : '#333')};
-  border: 1px solid ${props => (props.active ? '#ff6b6b' : '#e0e0e0')};
+  background-color: white;
+  color: ${props => (props.isActive ? '#ff6f3d' : '#333')};
+  border: 2px solid ${props => (props.isActive ? '#ff6f3d' : '#ccc')};
   border-radius: 8px;
   cursor: pointer;
   margin-right: 8px;
@@ -148,7 +178,7 @@ export const Button = styled.button<{ active?: boolean }>`
     margin-right: 0;
   }
   &:hover {
-    background-color: ${props => (props.active ? '#ff5252' : '#f0f0f0')};
+    background-color: ${props => (props.isActive ? '#fff' : '#f5f5f5')};
   }
 `;
 
@@ -210,4 +240,20 @@ export const NextButton = styled.button<NextButtonProps>`
   &:hover {
     background-color: ${props => (props.isActive ? '#ff5252' : '#e0e0e0')};
   }
+`;
+
+export const ImagePreview = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+export const HiddenInput = styled.input`
+  display: none;
+`;
+
+export const ImageCountText = styled.span`
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
 `;
