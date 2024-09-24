@@ -20,7 +20,7 @@ export const ReservationDetail = function ({
 }: Partial<Pick<ReservationDefaultParams, 'reservationInfo'>> &
   Omit<ReservationDefaultParams, 'reservationInfo'>) {
   return (
-    <ReservationContainer className="rounded-[10px] border-[1px] border-reborn-gray2">
+    <ReservationContainer className="rounded-[10px] border-[1px] border-reborn-gray2 bg-reborn-white">
       {reservationInfo ? (
         <>
           <main>

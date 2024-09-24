@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { ButtonGroup } from 'src/components/common/ButtonGroup';
 import { useConfirmDialog } from 'src/components/confirm-dialog/confitm-dialog-store';
 import { ReservationDefaultParams } from './ReservationDetail';
-import { useChangeBookingStatus } from 'src/queries/reservation';
+import {
+  useChangeBookingStatus,
+  useReservationBlock,
+} from 'src/queries/reservation';
 import { useQuery } from '@tanstack/react-query';
 import { getCompanyInfo } from 'src/services/companyService';
+import { ReactComponent as CancelIcon } from 'src/assets/Cancel.svg';
 
 export const Footer = function ({
   reservationInfo,
@@ -15,7 +19,11 @@ export const Footer = function ({
   const toggleSwitch = function () {
     setSendTalk(prev => !prev);
   };
-  const { mutateAsync } = useChangeBookingStatus();
+  const { mutateAsync: statusChange, isPending: confirmIsPending } =
+    useChangeBookingStatus();
+  const { mutateAsync: reservationBlock } = useReservationBlock(
+    new Date(reservationInfo.bookingInfo.bookingDate).toISOString(),
+  );
   // TODO: company query 개발 시 해당 쿼리문으로 대체
   const { data } = useQuery({
     queryKey: ['company'],
@@ -48,72 +56,108 @@ export const Footer = function ({
         </div>
       </div>
       <div className="w-[50%] h-full">
-        <ButtonGroup
-          cancelButtonOptions={{
-            onClick: () => {
-              setContent({
-                header: '정말 거절하시겠어요?',
-                paragraph:
-                  '거절 후에는 복구할 수 없습니다. 신중히 선택해주세요.',
-              });
-              openConfirmHandler(
-                {
-                  text: '거절 하기',
-                  onClick: () => {
-                    mutateAsync({
-                      bookingId: selectedEventId,
-                      sendAlert: sendTalk,
-                      status: 'no',
-                    }).finally(() => {
+        {reservationInfo.bookingInfo.bookingStatus === '예약 완료' ? (
+          <div className="w-full h-full flex flex-row items-center justify-end gap-[12px]">
+            <button
+              className="w-[146px] h-[40px] bg-reborn-gray4 rounded-[4px] flex items-center justify-center text-reborn-white text-[14px] font-medium py-[9.5px] px-[21px]"
+              onClick={() =>
+                statusChange({
+                  bookingId: selectedEventId,
+                  sendAlert: sendTalk,
+                  status: 'no',
+                })
+              }
+            >
+              <CancelIcon className="block" width={16} height={15} />
+              <span className="pl-[12px]">
+                {confirmIsPending ? (
+                  <div className="spinner" />
+                ) : (
+                  '예약 취소하기'
+                )}
+              </span>
+            </button>
+          </div>
+        ) : (
+          <ButtonGroup
+            cancelButtonOptions={{
+              onClick: () => {
+                setContent({
+                  header: '정말 거절하시겠어요?',
+                  paragraph:
+                    '거절 후에는 복구할 수 없습니다. 신중히 선택해주세요.',
+                });
+                openConfirmHandler(
+                  {
+                    text: '거절 하기',
+                    onClick: () => {
+                      statusChange({
+                        bookingId: selectedEventId,
+                        sendAlert: sendTalk,
+                        status: 'no',
+                      }).finally(() => {
+                        closeHandler();
+                      });
+                    },
+                  },
+                  {
+                    text: '아니요',
+                    onClick: () => {
                       closeHandler();
-                    });
+                    },
                   },
-                },
-                {
-                  text: '아니요',
-                  onClick: () => {
-                    closeHandler();
-                  },
-                },
-              );
-            },
-            className: '',
-            text: '예약 거절',
-          }}
-          confirmButtonOptions={{
-            onClick: () => {
-              mutateAsync({
-                bookingId: selectedEventId,
-                sendAlert: sendTalk,
-                status: 'yes',
-              }).then(() => {
-                const maxCount = data?.data.parallel ?? 1;
-                // TODO: api 혹은 response로 보내달라고 요청하였음.
-                // if (maxCount)
-              });
-              setContent({
-                header: '이후 예약을 제한하시겠어요?',
-                paragraph: '최대 예약 3건으로, 이후 예약을 제한해 드립니다.',
-              });
-              openConfirmHandler(
-                {
-                  text: '예약 제한',
-                  onClick: () => {
-                    closeHandler();
-                  },
-                },
-                {
-                  text: '아니요',
-                  onClick: () => {
-                    closeHandler();
-                  },
-                },
-              );
-            },
-            className: '',
-            text: '예약 확정',
-          }}
-        />
+                );
+              },
+              className: ``,
+              text: '예약 거절',
+              disabled: confirmIsPending,
+            }}
+            confirmButtonOptions={{
+              onClick: () => {
+                statusChange({
+                  bookingId: selectedEventId,
+                  sendAlert: sendTalk,
+                  status: 'yes',
+                }).then(res => {
+                  const maxCount = data?.data.parallel ?? 1;
+                  if (res.data.parallelBookingCount < maxCount) return res;
+                  setContent({
+                    header: '이후 예약을 제한하시겠어요?',
+                    paragraph:
+                      '최대 예약 3건으로, 이후 예약을 제한해 드립니다.',
+                  });
+                  openConfirmHandler(
+                    {
+                      text: '예약 제한',
+                      onClick: () => {
+                        reservationBlock({
+                          restrictTime: new Date(
+                            reservationInfo.bookingInfo.bookingDate,
+                          ).toISOString(),
+                        });
+                        closeHandler();
+                      },
+                    },
+                    {
+                      text: '아니요',
+                      onClick: () => {
+                        closeHandler();
+                      },
+                    },
+                  );
+                  return res;
+                });
+              },
+              className: '',
+              text: confirmIsPending ? (
+                <div className="spinner" />
+              ) : (
+                '예약 확정'
+              ),
+              disabled: confirmIsPending,
+            }}
+          />
+        )}
       </div>
     </footer>
   );

@@ -1,3 +1,4 @@
+import { formatPhoneNumber } from 'src/utils/conversion';
 import { ReactComponent as FaceIcon } from '../../../assets/Person.svg';
 import { ReservationDefaultParams } from './ReservationDetail';
 
@@ -53,10 +54,24 @@ export const PersonalInfo = function ({
       </div>
       <InfoBox label="아이디" value={reservationInfo.userInfo.id} />
       <InfoBox label="이름" value={reservationInfo.userInfo.name} />
-      <InfoBox label="연락처" value={reservationInfo.userInfo.phoneNumber} />
-      <InfoBox label="주소" value={reservationInfo.userInfo.address} />
-      <InfoBox label="" />
-      <InfoBox label="" />
+      <InfoBox
+        label="연락처"
+        value={formatPhoneNumber(reservationInfo.userInfo.phoneNumber)}
+      />
+      <InfoBox
+        label="주소"
+        value={
+          reservationInfo.userInfo.postalCode ?? '우편번호 정보가 없습니다.'
+        }
+      />
+      <InfoBox
+        value={reservationInfo.userInfo.address ?? '주소 정보가 없습니다.'}
+      />
+      <InfoBox
+        value={
+          reservationInfo.userInfo.addressDetail ?? '상세 주소 정보가 없습니다.'
+        }
+      />
       <div className="overflow-y-auto w-full">
         <h3 className="flex flex-row gap-[4px] text-reborn-gray8 text-[14px] leading-[17px] font-semibold mb-[12px]">
           지난 내역 ({reservationInfo.userInfo.bookingHistory.length})
@@ -74,12 +89,6 @@ export const PersonalInfo = function ({
             />
           );
         })}
-        {/* <RecordInfo
-          price={`150,000원`}
-          date="2023.06.12 (목)"
-          status="완료"
-          title="기본패키지"
-        /> */}
       </div>
     </div>
   );
