@@ -30,6 +30,8 @@ import { conversionDateYearToDay } from 'src/utils/conversion';
 import { useQueryClient } from '@tanstack/react-query';
 import { chatQueryKey } from 'src/queries/chat/queryKey';
 import { IStompSocket } from '@stomp/stompjs';
+import { CommonRouteDialog } from '../CommonRouteDialog';
+import { ReservationDetail } from '../calendar/reservation-detail/ReservationDetail';
 
 interface MessageProps {
   message: string;
@@ -57,6 +59,7 @@ const Message = function ({ isSend, message, messageDate }: MessageProps) {
 export const ChatContent = function () {
   const queryClient = useQueryClient();
   const { selectedRoomId, selectedUserId } = useChatStore();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [messageMap, setMessageMap] = useState<
     Map<string, Map<string, MessageDTO>>
   >(new Map());
@@ -261,6 +264,15 @@ export const ChatContent = function () {
 
   return (
     <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
+      <CommonRouteDialog
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+      >
+        <ReservationDetail
+          reservationInfo={reservationData?.data}
+          selectedEventId={reservationData?.data?.bookingInfo?.bookingId ?? ''}
+        />
+      </CommonRouteDialog>
       {Array.isArray(chatListData?.data) && chatListData?.data.length ? (
         <>
           <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
@@ -270,7 +282,8 @@ export const ChatContent = function () {
                   ?.name
               }
             </span>
-            {reservationData?.data ? (
+            {reservationData?.data &&
+            reservationData.data.bookingInfo.bookingStatus !== '예약 취소' ? (
               <>
                 <span className="font-medium text-[14px] text-reborn-gray4">
                   {conversionDateYearToDay(
@@ -281,13 +294,16 @@ export const ChatContent = function () {
                 <span className="font-medium text-[14px] text-reborn-gray4">
                   {reservationData.data.bookingInfo.packageName}
                 </span>
-                <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center">
+                <span
+                  className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center"
+                  onClick={() => setDialogOpen(true)}
+                >
                   <ArrowRightIcon />
                 </span>
               </>
             ) : (
               <span className="font-medium text-[14px] text-reborn-gray4">
-                예약 기록이 없습니다.
+                예약 정보가 없습니다.
               </span>
             )}
           </header>
