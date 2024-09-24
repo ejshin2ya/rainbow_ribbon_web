@@ -13,6 +13,7 @@ import {
   useChatBookingDetail,
   useChatList,
   useReadMessage,
+  useSendImage,
   useSendMessage,
   useStomp,
 } from 'src/queries';
@@ -71,6 +72,8 @@ export const ChatContent = function () {
   const { client } = useStomp();
 
   const { mutateAsync: send, isPending: sendIsPending } = useSendMessage();
+  const { mutateAsync: sendImage, isPending: sendImageIsPending } =
+    useSendImage();
   const { mutateAsync: read } = useReadMessage(selectedRoomId);
   const { data: chatListData } = useChatList();
   const { data: reservationData } = useChatBookingDetail(selectedUserId);
@@ -246,7 +249,6 @@ export const ChatContent = function () {
     });
 
     if (invalid) {
-      e.target.value = '';
       setContent({
         paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
         header: '',
@@ -259,7 +261,29 @@ export const ChatContent = function () {
       });
     } else {
       // TODO: 즉시 전송
+      sendImage({
+        roomId: selectedRoomId,
+        message: '',
+        files: Array.from(e.target.files ?? []),
+      }).then(res => {
+        const { key } = chatQueryKey.chatList();
+        const originalChatList = queryClient.getQueryData(
+          key,
+        ) as GetRoomListRes;
+        queryClient.setQueryData(key, {
+          msg: originalChatList.msg,
+          statusCode: originalChatList.statusCode,
+          data: originalChatList.data.map(chatRoom => {
+            return {
+              ...chatRoom,
+              lastMessage: '사진',
+            };
+          }),
+        });
+        return res;
+      });
     }
+    e.target.value = '';
   };
 
   return (
@@ -388,10 +412,10 @@ export const ChatContent = function () {
                 placeholder="메시지를 입력하세요."
               />
               <button
-                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
-                disabled={sendIsPending}
+                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending || sendImageIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
+                disabled={sendIsPending || sendImageIsPending}
               >
-                {sendIsPending ? (
+                {sendIsPending || sendImageIsPending ? (
                   <div className="spinner" />
                 ) : (
                   <SendIcon style={{ color: '#fff' }} />

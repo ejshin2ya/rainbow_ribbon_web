@@ -5,6 +5,7 @@ import {
   getChatList,
   getUnreadMessage,
   readMessage,
+  sendImage,
   sendMessage,
   startChat,
 } from '../../services/chatService';
@@ -76,13 +77,30 @@ export const useSendMessage = function (
 ) {
   return useMutation({
     ...options,
+    mutationFn: ({ roomId, message }: { roomId: string; message: string }) =>
+      sendMessage(roomId, message),
+    // onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+    onError: () => {
+      console.error('Cannot Send Chat');
+    },
+  });
+};
+
+export const useSendImage = function (
+  // roomId: string,
+  options?: Parameters<typeof useMutation>,
+) {
+  return useMutation({
+    ...options,
     mutationFn: ({
       roomId,
-      message,
+      message = '',
+      files,
     }: {
-      roomId: string | number;
-      message: string;
-    }) => sendMessage(roomId, message),
+      roomId: string;
+      message?: string;
+      files: File[];
+    }) => sendImage(roomId, message, files),
     // onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => {
       console.error('Cannot Send Chat');

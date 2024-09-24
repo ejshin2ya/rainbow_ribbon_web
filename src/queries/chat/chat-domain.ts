@@ -16,8 +16,14 @@ class ChatDomain {
   /**
    * @description post
    */
-  sendMessage(roomId: number | string) {
+  sendMessage(roomId: string) {
     return Domain.getPath(`/api/chatting/${roomId}/message`);
+  }
+  /**
+   * @description post
+   */
+  sendImage(roomId: string) {
+    return Domain.getPath(`/api/chatting/${roomId}/message/v2`);
   }
   /**
    * @description put
@@ -28,7 +34,7 @@ class ChatDomain {
   /**
    * @description get
    */
-  getUnreadMessage(roomId: number | string) {
+  getUnreadMessage(roomId: string) {
     return Domain.getPath(`/chatting/${roomId}/message/new`);
   }
   /**
