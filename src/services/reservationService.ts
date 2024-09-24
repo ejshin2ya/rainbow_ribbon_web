@@ -6,6 +6,7 @@ import {
   PutChangeBookingStatusOutputDTO,
   PostChangeBookingMemoOutputDTO,
   GetAvailableHoursOutputDTO,
+  OutputDTO,
 } from 'src/queries/reservation';
 
 export const getCalendarBookingList = async function (month: string) {
@@ -63,6 +64,16 @@ export const changeBookingMemo = async function (
       method: 'post',
       url: reservationDomain.changeBookingMemo(bookingId),
       data: { bookingId, memo },
+    })
+  ).data;
+};
+
+export const reservationBlock = async function (restrictTime: string) {
+  return (
+    await api<OutputDTO>({
+      method: 'post',
+      data: { restrictTime },
+      url: reservationDomain.bookingTimeBlock,
     })
   ).data;
 };

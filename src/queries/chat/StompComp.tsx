@@ -57,7 +57,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
         // brokerURL: socketUrl,
         debug: str => {
           if (process.env.NODE_ENV === 'development')
-            console.log(`%cDebug ${str}`, 'color: red;');
+            console.log(`%cDebug\n${str}`, 'color: red;');
         },
         reconnectDelay: 10 * 1000,
         heartbeatIncoming: 25 * 1000,
@@ -80,9 +80,10 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           },
           {
-            'user-name': frame.headers?.['user-name'],
+            id: frame.headers?.['user-name'],
             version: frame.headers?.['version'],
             'heart-beat': frame.headers?.['heart-beat'],
+            Authorization: `Bearer ${res.data.accessToken}`,
           },
         );
 
