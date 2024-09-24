@@ -93,3 +93,14 @@ export const conversionNormalDate = function (dateString): string {
   const dd = String(date.getDate());
   return `${yyyy}년 ${MM}월 ${dd}일`;
 };
+
+export const formatPhoneNumber = function (phoneNumber: string) {
+  if (phoneNumber.startsWith('02')) {
+    return phoneNumber.replace(/(02)(\d{3,4})(\d{4})$/, '$1-$2-$3');
+  } else if (/^\d{3}/.test(phoneNumber)) {
+    return phoneNumber.replace(/(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
+  } else if (/^\d{4}/.test(phoneNumber)) {
+    return phoneNumber.replace(/(\d{4})(\d{3,4})(\d{4})$/, '$1-$2-$3');
+  }
+  return phoneNumber.replace(/(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
+};
