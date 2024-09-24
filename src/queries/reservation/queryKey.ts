@@ -11,6 +11,12 @@ export const reservationQueryKey = {
       initialize: ['calendar', 'hours', bookingDate],
     };
   },
+  reservationBlock(restrictTime: string) {
+    return {
+      key: ['calendar', 'hours', restrictTime],
+      initialize: ['calendar', 'hours', restrictTime],
+    };
+  },
   bookingDetail(bookingId: string) {
     return {
       key: ['calendar', 'detail', bookingId],

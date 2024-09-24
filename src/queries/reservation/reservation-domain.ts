@@ -33,6 +33,12 @@ class ReservationDomain {
   changeBookingMemo(bookingId: string) {
     return Domain.getPath(`/api/booking/calendar/memo?bookingId=${bookingId}`);
   }
+  /**
+   * @description post
+   */
+  get bookingTimeBlock() {
+    return Domain.getPath(`/api/booking/calendar/restrict`);
+  }
 }
 
 export const reservationDomain = new ReservationDomain();

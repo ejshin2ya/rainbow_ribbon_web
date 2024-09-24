@@ -24,6 +24,7 @@ interface Reservation {
 export interface CompanyBookingInfo {
   // companyBookingInfo: {
   bookingInfo: {
+    bookingId: string;
     bookingDate: string;
     paymentDate: string;
     packageName: string;
@@ -36,6 +37,8 @@ export interface CompanyBookingInfo {
     name: string;
     phoneNumber: string;
     address: string;
+    postalCode: string;
+    addressDetail: string;
 
     bookingHistory: {
       bookingDate: string;
