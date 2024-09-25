@@ -160,6 +160,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
 
       <div className="grid__container grid grid-rows-36 grid-cols-[55px_1fr]">
         {timeBlockData?.data?.map((canBook, idx) => {
+          if (canBook) return;
           const startDate = new Date(
             selectedDate.getFullYear(),
             selectedDate.getMonth(),
@@ -174,7 +175,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           );
           const height = 46;
           const top = (idx - 7) * 46;
-          const width = `calc((100% - 55px) / ${data?.data.parallel ?? 1})`;
+          const width = `calc((100% - 55px))`;
           const left = '55px';
           return (
             <EventItem
