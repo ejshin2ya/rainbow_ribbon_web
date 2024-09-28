@@ -102,12 +102,12 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
     <>
       <FormTitle>휴무일이 있나요?</FormTitle>
       <ButtonGroup>
-        <StyledButton onClick={() => setHasDayOff(true)} isActive={hasDayOff}>
+        <Button onClick={() => setHasDayOff(true)} isActive={hasDayOff}>
           휴무일이 있어요
-        </StyledButton>
-        <StyledButton onClick={() => setHasDayOff(false)} isActive={!hasDayOff}>
+        </Button>
+        <Button onClick={() => setHasDayOff(false)} isActive={!hasDayOff}>
           휴무일이 없어요
-        </StyledButton>
+        </Button>
       </ButtonGroup>
 
       {hasDayOff && (
@@ -126,18 +126,18 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
 
       <FormTitle>영업시간을 입력해주세요.</FormTitle>
       <ButtonGroup>
-        <StyledButton
+        <Button
           onClick={() => setIsDifferentWeekendHours(false)}
           isActive={!isDifferentWeekendHours}
         >
           평일, 주말 동일
-        </StyledButton>
-        <StyledButton
+        </Button>
+        <Button
           onClick={() => setIsDifferentWeekendHours(true)}
           isActive={isDifferentWeekendHours}
         >
           평일, 주말 다름
-        </StyledButton>
+        </Button>
       </ButtonGroup>
 
       <TimeSelectGroup>
@@ -187,23 +187,13 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
 
 export default SalesInfoStep;
 
-const StyledButton = styled(Button)<{ isActive: boolean }>`
-  border: 2px solid ${props => (props.isActive ? '#ff6f3d' : '#ccc')};
-  background-color: white;
-  color: ${props => (props.isActive ? '#ff6f3d' : '#333')};
-
-  &:hover {
-    background-color: ${props => (props.isActive ? '#fff' : '#f5f5f5')};
-  }
-`;
-
 const DayButtonGroup = styled.div`
   display: flex;
   gap: 5px;
   margin-bottom: 20px;
 `;
 
-const DayButton = styled(StyledButton)`
+const DayButton = styled(Button)`
   padding: 5px 10px;
 `;
 
