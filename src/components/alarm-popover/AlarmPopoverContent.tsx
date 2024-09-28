@@ -54,7 +54,10 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
       {!!data?.data.alerts.length &&
         data?.data.alerts.map(alarm => {
           return (
-            <div className="w-full h-[80px] flex flex-col py-[17px] px-[20px] items-start gap-[2px] border-b-[1px] border-b-reborn-gray0 text-reborn-gray8">
+            <div
+              className="w-full h-[80px] flex flex-col py-[17px] px-[20px] items-start gap-[2px] border-b-[1px] border-b-reborn-gray0 text-reborn-gray8"
+              key={`${alarm.category}-${alarm.id}`}
+            >
               <span className="max-w-full text-[16px] font-medium leading-[22px] truncate">
                 {`${parseHandler(alarm)}`}
               </span>

@@ -38,13 +38,20 @@ interface MessageProps {
   message: string;
   messageDate: string;
   isSend: boolean;
+  imgSrc?: string;
 }
 
-const Message = function ({ isSend, message, messageDate }: MessageProps) {
+const Message = function ({
+  isSend,
+  message,
+  messageDate,
+  imgSrc,
+}: MessageProps) {
   return (
     <div
       className={`w-full flex ${isSend ? 'flex-row-reverse' : 'flex-row'} items-end gap-[8px] mb-[30px]`}
     >
+      {imgSrc && <img src={imgSrc} alt="img" />}
       <div
         className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal items-end`}
       >
@@ -287,7 +294,7 @@ export const ChatContent = function () {
   };
 
   return (
-    <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
+    <section className="box-border w-full h-full flex flex-col relative border-l-[1px] border-l-reborn-gray1">
       <CommonRouteDialog
         isOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -379,9 +386,9 @@ export const ChatContent = function () {
                 })}
             </div>
           </main>
-          <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
+          <footer className="box-border w-full h-[60px] flex-shrink-0">
             <form
-              className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
+              className="p-[8px] flex flex-row bg-reborn-white border-t-[1px] border-reborn-gray2 items-center"
               onSubmit={async e => {
                 e.preventDefault();
                 await sendMessage(
