@@ -38,12 +38,14 @@ interface MessageProps {
   message: string;
   messageDate: string;
   isSend: boolean;
-  imgSrc?: string;
+  messageId: string;
+  imgSrc?: string[];
 }
 
 const Message = function ({
   isSend,
   message,
+  messageId,
   messageDate,
   imgSrc,
 }: MessageProps) {
@@ -51,10 +53,15 @@ const Message = function ({
     <div
       className={`w-full flex ${isSend ? 'flex-row-reverse' : 'flex-row'} items-end gap-[8px] mb-[30px]`}
     >
-      {imgSrc && <img src={imgSrc} alt="img" />}
       <div
-        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal items-end`}
+        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} ${!!imgSrc?.length ? '' : 'py-[9px] px-[13px]'} rounded-[4px] text-[18px] font-normal items-end`}
       >
+        {!!imgSrc?.length &&
+          imgSrc.map((src, idx) => {
+            return (
+              <img key={`image-${messageId}-${idx}`} alt={src} src={src} />
+            );
+          })}
         {message}
       </div>
       <div className="h-full flex text-[14px] font-semibold text-reborn-gray3 items-end">
@@ -69,7 +76,7 @@ export const ChatContent = function () {
   const { selectedRoomId, selectedUserId } = useChatStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [messageMap, setMessageMap] = useState<
-    Map<string, Map<string, MessageDTO>>
+    Map<string, Map<string, MessageDTO & { images?: string[] }>>
   >(new Map());
   const [pagingData, setPagingData] = useState<
     Map<string, { page: number; hasMore: boolean }>
@@ -99,10 +106,8 @@ export const ChatContent = function () {
     const sortedMessages = data.messages.sort(
       (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime(),
     );
-    const newDatas: [string, MessageDTO][] = sortedMessages.map(msg => [
-      msg.messageId,
-      msg,
-    ]);
+    const newDatas: [string, MessageDTO & { images?: string[] }][] =
+      sortedMessages.map(msg => [msg.messageId, msg]);
     setMessageMap(prevMap => {
       const newMap = new Map(prevMap);
       const existingRoomMessages = new Map(newMap.get(selectedRoomId) ?? []);
@@ -162,6 +167,80 @@ export const ChatContent = function () {
 
     newMap.set(selectedRoomId, newRoomMessageMap);
     setMessageMap(newMap);
+  };
+
+  const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
+    const validMIMETypes = ['jpg', 'jpeg', 'png', 'pdf'];
+    let invalid = false;
+
+    Array.from(e.target.files ?? []).forEach(file => {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!validMIMETypes.includes(fileExtension)) {
+        invalid = true;
+      }
+    });
+
+    if (invalid) {
+      setContent({
+        paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
+        header: '',
+      });
+      openConfirmHandler({
+        onClick: () => {
+          closeHandler();
+        },
+        text: '확인',
+      });
+    } else {
+      sendImage({
+        roomId: selectedRoomId,
+        message: '',
+        files: Array.from(e.target.files ?? []),
+      })
+        .then(res => {
+          const { key } = chatQueryKey.chatList();
+          const originalChatList = queryClient.getQueryData(
+            key,
+          ) as GetRoomListRes;
+          queryClient.setQueryData(key, {
+            msg: originalChatList.msg,
+            statusCode: originalChatList.statusCode,
+            data: originalChatList.data.map(chatRoom => {
+              return {
+                ...chatRoom,
+                lastMessage: '사진',
+              };
+            }),
+          });
+          return res;
+        })
+        .then(res => {
+          const messageData = res.data;
+          const newMap = new Map(messageMap);
+          const now = new Date(); // TODO: createAt도 보내달라 요청 후 제거
+          const newRoomMessageMap = new Map([
+            [
+              messageData.messageId,
+              {
+                ...messageData,
+                createAt: messageData.createAt ?? now.toISOString(),
+                message: messageData.message ?? '',
+              },
+            ],
+            ...(messageMap.get(selectedRoomId)?.entries() ?? []),
+          ]);
+
+          newMap.set(selectedRoomId, newRoomMessageMap);
+          setMessageMap(newMap);
+          return res;
+        })
+        .then(res => {
+          setTimeout(() => {
+            scrollToBottom();
+          }, 0);
+        });
+    }
+    e.target.value = '';
   };
 
   const messageArray = Array.from(
@@ -243,55 +322,6 @@ export const ChatContent = function () {
       setChanged(false);
     }
   }, [messageArray.length]);
-
-  const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
-    const validMIMETypes = ['jpg', 'jpeg', 'png', 'pdf'];
-    let invalid = false;
-
-    Array.from(e.target.files ?? []).forEach(file => {
-      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
-      if (!validMIMETypes.includes(fileExtension)) {
-        invalid = true;
-      }
-    });
-
-    if (invalid) {
-      setContent({
-        paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
-        header: '',
-      });
-      openConfirmHandler({
-        onClick: () => {
-          closeHandler();
-        },
-        text: '확인',
-      });
-    } else {
-      // TODO: 즉시 전송
-      sendImage({
-        roomId: selectedRoomId,
-        message: '',
-        files: Array.from(e.target.files ?? []),
-      }).then(res => {
-        const { key } = chatQueryKey.chatList();
-        const originalChatList = queryClient.getQueryData(
-          key,
-        ) as GetRoomListRes;
-        queryClient.setQueryData(key, {
-          msg: originalChatList.msg,
-          statusCode: originalChatList.statusCode,
-          data: originalChatList.data.map(chatRoom => {
-            return {
-              ...chatRoom,
-              lastMessage: '사진',
-            };
-          }),
-        });
-        return res;
-      });
-    }
-    e.target.value = '';
-  };
 
   return (
     <section className="box-border w-full h-full flex flex-col relative border-l-[1px] border-l-reborn-gray1">
@@ -377,7 +407,9 @@ export const ChatContent = function () {
                         <Message
                           isSend={message.receiverId === selectedUserId}
                           message={message.message}
+                          messageId={message.messageId}
                           messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                          imgSrc={message.images}
                         />
                       </>
                     ),
