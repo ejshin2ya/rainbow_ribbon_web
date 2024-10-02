@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { createElement, Fragment, useMemo } from 'react';
+import { createElement, Fragment, useCallback, useMemo, useState } from 'react';
 import { useFuneralEventStore } from './store/event-store';
 import { ReactComponent as PlusIcon } from '../../assets/Plus.svg';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
@@ -7,6 +7,8 @@ import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 import { useQuery } from '@tanstack/react-query';
 import { getCompanyInfo } from 'src/services/companyService';
 import { useAvailableHours } from 'src/queries/reservation';
+import { CommonRouteDialog } from '../CommonRouteDialog';
+import CreateReservationDialog from './create-dialog/CreateReservationDialog';
 
 interface Props {
   selectedDate: Date;
@@ -95,6 +97,7 @@ const EventItem = function ({
 export const CalendarDetail = function ({ selectedDate }: Props) {
   const { processedEvents } = useFuneralEventStore();
   const { closeHandler, openBlockHandler } = useConfirmDialog();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   // TODO: company query 개발 시 해당 쿼리문으로 대체
   const { data } = useQuery({
     queryKey: ['company'],
@@ -121,8 +124,15 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
     );
   };
 
+  const closeCreateDialog = useCallback(() => {
+    setCreateDialogOpen(false);
+  }, []);
+
   return (
     <CalendarContainer>
+      <CommonRouteDialog isOpen={createDialogOpen} onClose={closeCreateDialog}>
+        <CreateReservationDialog onClose={closeCreateDialog} />
+      </CommonRouteDialog>
       <div className="w-full font-semibold text-[14px] leading-[21px] text-reborn-gray3 mb-[12px] flex-shrink-0">
         오늘의 일정
       </div>
@@ -136,7 +146,10 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           </h2>
         </div>
         <div className="h-full flex flex-row gap-[12px]">
-          <button className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1">
+          <button
+            className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1"
+            onClick={() => setCreateDialogOpen(true)}
+          >
             <PlusIcon
               width={15}
               height={15}
