@@ -1,4 +1,7 @@
-import { ENDPOINT_COMPANY_AUTH } from '../api/endpoints';
+import {
+  ENDPOINT_COMPANY_AUTH,
+  ENDPOINT_COMPANY_LOGIN,
+} from '../api/endpoints';
 import api from 'src/api/axios';
 
 //로그인 및 회원가입 요청값, 응답값 타입 지정
@@ -74,7 +77,7 @@ export const signUpUser = async (
 
 export const loginUser = async (loginData: LoginReq): Promise<ApiResponse> => {
   const response = await api.post<ApiResponse>(
-    `${ENDPOINT_COMPANY_AUTH}/login`,
+    `${ENDPOINT_COMPANY_LOGIN}`,
     loginData,
     {
       headers: {
