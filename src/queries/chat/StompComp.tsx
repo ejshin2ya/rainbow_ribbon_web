@@ -81,6 +81,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
           },
           {
             id: frame.headers?.['user-name'],
+            'user-name': frame.headers?.['user-name'],
             version: frame.headers?.['version'],
             'heart-beat': frame.headers?.['heart-beat'],
             Authorization: `Bearer ${res.data.accessToken}`,
