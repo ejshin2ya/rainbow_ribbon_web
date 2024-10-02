@@ -26,7 +26,10 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [contents, setContents] = useState<Alarm[]>([]);
-  const { data } = useAlarmList(tab === '예약' ? 'BOOKING' : 'CHAT', page);
+  const { data, isLoading } = useAlarmList(
+    tab === '예약' ? 'BOOKING' : 'CHAT',
+    page,
+  );
 
   const parseHandler = function (info: Alarm) {
     switch (info.type) {
@@ -51,7 +54,12 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
   }, [data]);
   return (
     <div className="w-full h-[50px] flex-1 overflow-y-auto overflow-x-hidden">
-      {!!data?.data.alerts.length &&
+      {isLoading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="spinner" />
+        </div>
+      ) : (
+        !!data?.data.alerts.length &&
         data?.data.alerts.map(alarm => {
           return (
             <div
@@ -66,7 +74,8 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
               </span>
             </div>
           );
-        })}
+        })
+      )}
     </div>
   );
 };
