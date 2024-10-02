@@ -77,3 +77,13 @@ export const reservationBlock = async function (restrictTime: string) {
     })
   ).data;
 };
+
+export const reservationBlockList = async function (restrictTimes: string[]) {
+  return (
+    await api<OutputDTO>({
+      method: 'post',
+      data: { restrictTimes },
+      url: reservationDomain.bookingTimeBlockList,
+    })
+  ).data;
+};

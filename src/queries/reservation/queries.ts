@@ -7,6 +7,7 @@ import {
   getBookingDetail,
   getCalendarBookingList,
   reservationBlock,
+  reservationBlockList,
 } from 'src/services/reservationService';
 
 /**
@@ -95,17 +96,34 @@ export const useChangeBookingMemo = function (
  * @param restrictTime string ISODateString
  */
 export const useReservationBlock = function (
-  restrictTime: string,
+  bookingDate: string,
   options?: Parameters<typeof useMutation>,
 ) {
   const queryClient = useQueryClient();
-  const { initialize } = reservationQueryKey.reservationBlock(
-    restrictTime.slice(0, 10),
-  );
+  const { initialize } = reservationQueryKey.reservationBlock(bookingDate);
   return useMutation({
     ...options,
     mutationFn: ({ restrictTime }: { restrictTime: string }) =>
       reservationBlock(restrictTime),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+    onError: () => console.log(`Cannot change status`),
+  });
+};
+
+/**
+ * mutation
+ * @param restrictTimes string[] ISODateString[]
+ */
+export const useReservationBlockList = function (
+  bookingDate: string,
+  options?: Parameters<typeof useMutation>,
+) {
+  const queryClient = useQueryClient();
+  const { initialize } = reservationQueryKey.reservationBlock(bookingDate);
+  return useMutation({
+    ...options,
+    mutationFn: ({ restrictTimes }: { restrictTimes: string[] }) =>
+      reservationBlockList(restrictTimes),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => console.log(`Cannot change status`),
   });

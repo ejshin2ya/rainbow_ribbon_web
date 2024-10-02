@@ -39,6 +39,9 @@ class ReservationDomain {
   get bookingTimeBlock() {
     return Domain.getPath(`/api/booking/calendar/restrict`);
   }
+  get bookingTimeBlockList() {
+    return Domain.getPath(`/api/booking/calendar/restrict/list`);
+  }
 }
 
 export const reservationDomain = new ReservationDomain();

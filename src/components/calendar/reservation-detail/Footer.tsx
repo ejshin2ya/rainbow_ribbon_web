@@ -14,7 +14,8 @@ export const Footer = function ({
   reservationInfo,
   selectedEventId,
 }: ReservationDefaultParams) {
-  const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
+  const { openConfirmHandler, closeHandler, setContent, selectedDate } =
+    useConfirmDialog();
   const [sendTalk, setSendTalk] = useState(false);
   const toggleSwitch = function () {
     setSendTalk(prev => !prev);
@@ -22,7 +23,7 @@ export const Footer = function ({
   const { mutateAsync: statusChange, isPending: confirmIsPending } =
     useChangeBookingStatus();
   const { mutateAsync: reservationBlock } = useReservationBlock(
-    new Date(reservationInfo.bookingInfo.bookingDate).toISOString(),
+    selectedDate.toISOString().slice(0, 10),
   );
   // TODO: company query 개발 시 해당 쿼리문으로 대체
   const { data } = useQuery({
