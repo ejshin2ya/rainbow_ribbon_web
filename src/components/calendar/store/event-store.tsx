@@ -43,7 +43,11 @@ export const FuneralEventProvider = function ({
 
   useEffect(
     function setInitialSelectedEvent() {
-      changeSelectedEvent(events?.[0]?.bookingId ?? '');
+      const selectedDayEvents = events.filter(ev => {
+        const evStartDate = new Date(ev.startDate);
+        return selectedDate.toDateString() === evStartDate.toDateString();
+      });
+      changeSelectedEvent(selectedDayEvents?.[0]?.bookingId ?? '');
     },
     [events],
   );

@@ -4,7 +4,7 @@ import { Domain } from './endpoints';
 const api = axios.create({
   baseURL: Domain.DOMAIN,
   withCredentials: true,
-  timeout: 10000,
+  timeout: 20 * 1000,
 });
 
 export const setupAxiosInterceptors = (
@@ -24,9 +24,11 @@ export const setupAxiosInterceptors = (
   );
 
   api.interceptors.response.use(
-    response => response,
+    response => {
+      return response;
+    },
     async error => {
-      const customCode: string = error.response.data?.code ?? '';
+      const customCode: string = error?.response?.data?.code ?? '';
       if (customCode.startsWith('20'))
         return await Promise.resolve({
           statusCode: customCode.slice(0, 3),

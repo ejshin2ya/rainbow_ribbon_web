@@ -4,8 +4,10 @@ class ReservationDomain {
   /**
    * @description get
    */
-  bookingDetail(bookingId: string | number) {
-    return Domain.getPath(`/api/booking/calendar/${bookingId}`);
+  bookingDetail(bookingId: string) {
+    return Domain.getPath(
+      `/api/booking/calendar/detail?bookingId=${bookingId}`,
+    );
   }
   /**
    * @description get
@@ -13,31 +15,33 @@ class ReservationDomain {
   get bookingList() {
     return Domain.getPath(`/api/booking/calendar`);
   }
-  // /**
-  //  * @description get, post
-  //  */
-  // get funerals() {
-  //   return Domain.getPath(`/api/account/company/funeral`);
-  // }
-  // /**
-  //  * @description get, post
-  //  */
-  // get companyInfo() {
-  //   return Domain.getPath(`/api/account/company/info`);
-  // }
-
-  // /**
-  //  * @description put
-  //  * */
-  // get changeReservationStatus() {
-  //   return Domain.getPath(`/api/account/company/update/booking/status`);
-  // }
-  // /**
-  //  * @description get
-  //  */
-  // userReservationList(userId: string | number) {
-  //   return Domain.getPath(`/api/account/company/user/${userId}/booking/list`);
-  // }
+  /**
+   * @description get
+   */
+  get availableHours() {
+    return Domain.getPath(`/api/booking/check`);
+  }
+  /**
+   * @description put
+   */
+  get changeBookingStatus() {
+    return Domain.getPath(`/api/account/company/update/booking/status`);
+  }
+  /**
+   * @description post
+   */
+  changeBookingMemo(bookingId: string) {
+    return Domain.getPath(`/api/booking/calendar/memo?bookingId=${bookingId}`);
+  }
+  /**
+   * @description post
+   */
+  get bookingTimeBlock() {
+    return Domain.getPath(`/api/booking/calendar/restrict`);
+  }
+  get bookingTimeBlockList() {
+    return Domain.getPath(`/api/booking/calendar/restrict/list`);
+  }
 }
 
 export const reservationDomain = new ReservationDomain();

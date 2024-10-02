@@ -54,6 +54,10 @@ export interface Message {
   senderType: string;
 }
 
+export interface ImageMessage extends Message {
+  images: string[];
+}
+
 export interface GetAllMessage {
   data: {
     messages: Message[];

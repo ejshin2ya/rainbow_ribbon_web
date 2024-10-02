@@ -21,9 +21,10 @@ interface Reservation {
   packageName: string;
 }
 
-interface CompanyBookingInfo {
+export interface CompanyBookingInfo {
   // companyBookingInfo: {
   bookingInfo: {
+    bookingId: string;
     bookingDate: string;
     paymentDate: string;
     packageName: string;
@@ -36,17 +37,21 @@ interface CompanyBookingInfo {
     name: string;
     phoneNumber: string;
     address: string;
+    postalCode: string;
+    addressDetail: string;
 
     bookingHistory: {
       bookingDate: string;
       packageName: string;
-      totalFee: number;
       bookingStatus: string;
+      totalFee: number;
     }[];
   };
   petInfo: {
-    type: string;
+    majorType: string;
+    minorType: string;
     name: string;
+    gender: string;
     weight: string;
     age: string;
   };
@@ -54,4 +59,10 @@ interface CompanyBookingInfo {
 }
 
 export type GetReservationOutputDTO = OutputDTO<Reservation[]>;
+export type GetAvailableHoursOutputDTO = OutputDTO<boolean[]>;
 export type GetReservationDetailOutputDTO = OutputDTO<CompanyBookingInfo>;
+export type PutChangeBookingStatusOutputDTO = OutputDTO<{
+  bookingId: string;
+  parallelBookingCount: number;
+}>;
+export type PostChangeBookingMemoOutputDTO = OutputDTO;

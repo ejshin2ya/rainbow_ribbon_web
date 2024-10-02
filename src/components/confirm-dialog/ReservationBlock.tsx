@@ -1,18 +1,51 @@
 import { ButtonGroup } from '../common/ButtonGroup';
 import { useConfirmDialog } from './confitm-dialog-store';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAvailableHours } from 'src/queries/reservation';
+import { useQuery } from '@tanstack/react-query';
+import { getCompanyInfo } from 'src/services/companyService';
 
 export const ReservationBlock = function () {
   const { confirmOption, cancelOption, selectedDate } = useConfirmDialog();
   const [tab, setTab] = useState<'am' | 'pm'>('am');
-  const [selectedTimes, setSelectedTimes] = useState();
+  const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const generateChangeTab = e => (tabName: 'am' | 'pm') => {
     e.preventDefault();
     setTab(tabName);
   };
+  const [companyId, setCompanyId] = useState('');
+  // TODO: 쿼리문 연동 및 삭제
+  const { data: companyData } = useQuery({
+    queryKey: ['company'],
+    queryFn: () => {
+      return getCompanyInfo().then(res => {
+        return res;
+      });
+    },
+  });
+  const { data: timeData, isLoading } = useAvailableHours(
+    companyId,
+    selectedDate.toISOString().slice(0, 10),
+  );
+
+  const gridClickHandler = function (idx: number) {
+    const time = idx + (tab === 'am' ? 0 : 12);
+    if (selectedTimes.includes(idx))
+      setSelectedTimes(prev => prev.filter(i => i !== time));
+    else setSelectedTimes(prev => [...prev, time]);
+  };
+
   const gridCommonClass =
     'flex items-center justify-center text-[14px] border-[1px] rounded-[4px] h-full w-full';
+
+  useEffect(() => {
+    setCompanyId(companyData?.data.id ?? '');
+    return () => {
+      setCompanyId('');
+    };
+  }, [companyData]);
+
   return (
     <div className="rounded-[10px] flex flex-col gap-[14px] bg-reborn-white w-[420px] h-[412px] items-center justify-center animate-fadeIn">
       <div className="w-full flex flex-row gap-[4px] items-center text-reborn-gray5 text-[16px] leading-[12px] text-center py-[20px] px-[22px]">
@@ -39,19 +72,33 @@ export const ReservationBlock = function () {
         </button>
       </div>
       <div className="w-full flex-1">
-        <div className="w-full h-full px-[30px] items-center justify-center grid grid-cols-4 grid-rows-3 gap-[6px]">
-          <button className={gridCommonClass}>00:00</button>
-          <button className={gridCommonClass}>01:00</button>
-          <button className={gridCommonClass}>02:00</button>
-          <button className={gridCommonClass}>03:00</button>
-          <button className={gridCommonClass}>04:00</button>
-          <button className={gridCommonClass}>05:00</button>
-          <button className={gridCommonClass}>06:00</button>
-          <button className={gridCommonClass}>07:00</button>
-          <button className={gridCommonClass}>08:00</button>
-          <button className={gridCommonClass}>09:00</button>
-          <button className={gridCommonClass}>10:00</button>
-          <button className={gridCommonClass}>11:00</button>
+        <div
+          className={`w-full h-full px-[30px] items-center justify-center gap-[6px] ${isLoading ? 'flex items-center justify-center' : 'grid grid-cols-4 grid-rows-3'}`}
+        >
+          {!isLoading ? (
+            <>
+              {timeData?.data
+                ?.filter((_, idx) => {
+                  if (tab === 'am' && idx < 12) return true;
+                  if (tab === 'pm' && idx > 11) return true;
+                })
+                .map((canBook, idx) => {
+                  const selected = selectedTimes.includes(
+                    idx + (tab === 'am' ? 0 : 12),
+                  );
+                  return (
+                    <button
+                      className={`${gridCommonClass} ${selected ? 'border-reborn-orange3 text-reborn-orange3' : canBook ? 'border-reborn-gray3 text-reborn-gray8' : 'border-reborn-gray1 text-reborn-gray2'}`}
+                      onClick={() => gridClickHandler(idx)}
+                      disabled={!canBook}
+                      key={`grid-${idx}`}
+                    >{`${idx.toString().padStart(2, '0')}:00`}</button>
+                  );
+                })}
+            </>
+          ) : (
+            <div className="spinner" />
+          )}
         </div>
       </div>
       <div className="w-full h-[80px] py-[20px] px-[22px]">

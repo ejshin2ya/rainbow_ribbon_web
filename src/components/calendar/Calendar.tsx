@@ -3,12 +3,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import styled from 'styled-components';
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDetail } from './CalendarDetail';
-import { ReservationDetail } from './reservation-detail/ReservationDetail';
 import { FuneralEventProvider } from './store/event-store';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 import { useCalendarBookingList } from 'src/queries/reservation';
 import { DatesSetArg } from '@fullcalendar/core';
+import { BottomScheduler } from './BottomScheduler';
 
 interface CalendarEvent {
   title: string;
@@ -32,19 +31,31 @@ export const Calendar = function () {
     const reservations = calendarEvents?.data ?? [];
     const eventMap: Record<string, { request: number; confirmed: number }> = {};
 
-    reservations.forEach(reservation => {
-      const { bookingStatus, bookingDate } = reservation;
+    reservations
+      .sort(
+        (a, b) =>
+          new Date(a.funeralStartDate).getTime() -
+          new Date(b.funeralStartDate).getTime(),
+      )
+      .forEach(reservation => {
+        const { bookingStatus, funeralStartDate } = reservation;
+        const date = new Date(funeralStartDate);
+        const newDate = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+        );
 
-      if (!eventMap[bookingDate]) {
-        eventMap[bookingDate] = { request: 0, confirmed: 0 };
-      }
+        if (!eventMap[newDate.toISOString()]) {
+          eventMap[newDate.toISOString()] = { request: 0, confirmed: 0 };
+        }
 
-      if (bookingStatus === '결제 완료') {
-        eventMap[bookingDate].confirmed += 1; // 예약 대기
-      } else if (bookingStatus === '예약 완료') {
-        eventMap[bookingDate].request += 1; // 예약 확정
-      }
-    });
+        if (bookingStatus === '결제 완료') {
+          eventMap[newDate.toISOString()].request += 1; // 예약 대기
+        } else if (bookingStatus === '예약 완료') {
+          eventMap[newDate.toISOString()].confirmed += 1; // 예약 확정
+        }
+      });
 
     // 카운트된 데이터를 CalendarEvent 형식으로 변환
     const results: CalendarEvent[] = [];
@@ -121,28 +132,27 @@ export const Calendar = function () {
       />
       <FuneralEventProvider
         events={
-          calendarEvents?.data?.map(reservation => {
-            const status =
-              reservation.bookingStatus === '결제 완료'
-                ? '요청'
-                : reservation.bookingStatus === '예약 완료'
-                  ? '확정'
-                  : '취소';
-            return {
-              status: status,
-              startDate: new Date(reservation.funeralStartDate),
-              endDate: new Date(reservation.funeralEndDate),
-              bookingId: reservation.bookingId,
-              subTitle: `${reservation.petName} (${reservation.petType}) / ${reservation.packageName}`,
-            };
-          }) ?? []
+          calendarEvents?.data
+            ?.filter(reservation => reservation.bookingStatus !== '예약 취소')
+            .map(reservation => {
+              const status =
+                reservation.bookingStatus === '결제 완료'
+                  ? '요청'
+                  : reservation.bookingStatus === '예약 완료'
+                    ? '확정'
+                    : '취소';
+              return {
+                status: status,
+                startDate: new Date(reservation.funeralStartDate),
+                endDate: new Date(reservation.funeralEndDate),
+                bookingId: reservation.bookingId,
+                subTitle: `${reservation.petName} (${reservation.petType}) / ${reservation.packageName}`,
+              };
+            }) ?? []
         }
         selectedDate={selectedDate}
       >
-        <BottomContainer>
-          <CalendarDetail selectedDate={selectedDate} />
-          <ReservationDetail />
-        </BottomContainer>
+        <BottomScheduler selectedDate={selectedDate} />
       </FuneralEventProvider>
     </CalendarContainer>
   );
@@ -288,6 +298,9 @@ const CalendarContainer = styled.div`
     border-left: solid 3px #fc9974;
     background-color: #fef6e7;
     padding: 6px;
+    .fc-daygrid-event-dot {
+      border-color: #cc5228;
+    }
     .fc-event-title {
       color: #cc5228;
     }
@@ -301,6 +314,9 @@ const CalendarContainer = styled.div`
     border-left: solid 3px #238df7;
     background-color: #e7f6fd;
     padding: 6px;
+    .fc-daygrid-event-dot {
+      border-color: #238df7;
+    }
     .fc-event-title {
       color: #238df7;
     }
@@ -338,12 +354,4 @@ const CalendarContainer = styled.div`
   .fc-scroller-harness {
     overflow: visible;
   }
-`;
-
-const BottomContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
 `;

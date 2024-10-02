@@ -5,34 +5,40 @@ export const reservationQueryKey = {
       initialize: ['calendar', 'list'],
     };
   },
-  bookingDetail(bookingId: string | number) {
+  availableHours(bookingDate: string) {
     return {
-      key: ['calendar', 'list', bookingId],
-      initialize: ['calendar', 'list', bookingId],
+      key: ['calendar', 'hours', bookingDate],
+      initialize: ['calendar', 'hours', bookingDate],
     };
   },
-  // sendMessage(roomId: string | number) {
-  //   return {
-  //     key: ['chat', roomId],
-  //     initialize: ['chat'],
-  //   };
-  // },
-  // readMessage(roomId: string | number) {
-  //   return {
-  //     key: ['chat', roomId],
-  //     initialize: ['chat'],
-  //   };
-  // },
-  // unreadMessage(roomId: string | number) {
-  //   return {
-  //     key: ['chat', roomId],
-  //     initialize: ['chat'],
-  //   };
-  // },
-  // roomMessage(roomId, pageNo) {
-  //   return {
-  //     key: ['chat', roomId, pageNo],
-  //     initialize: ['chat'],
-  //   };
-  // },
+  reservationBlock(bookingDate: string) {
+    return {
+      key: ['calendar', 'hours', bookingDate],
+      initialize: ['calendar', 'hours'],
+    };
+  },
+  reservationBlockList(bookingDate: string) {
+    return {
+      key: ['calendar', 'hours'],
+      initialize: ['calendar', 'hours', bookingDate],
+    };
+  },
+  bookingDetail(bookingId: string) {
+    return {
+      key: ['calendar', 'detail', bookingId],
+      initialize: ['calendar', 'detail', bookingId],
+    };
+  },
+  changeBookingStatus() {
+    return {
+      key: ['calendar'],
+      initialize: ['calendar'],
+    };
+  },
+  changeBookingMemo(bookingId: string) {
+    return {
+      key: ['calendar', 'detail', bookingId],
+      initialize: ['calendar', 'detail', bookingId],
+    };
+  },
 };

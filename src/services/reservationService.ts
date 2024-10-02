@@ -3,6 +3,10 @@ import {
   reservationDomain,
   GetReservationDetailOutputDTO,
   GetReservationOutputDTO,
+  PutChangeBookingStatusOutputDTO,
+  PostChangeBookingMemoOutputDTO,
+  GetAvailableHoursOutputDTO,
+  OutputDTO,
 } from 'src/queries/reservation';
 
 export const getCalendarBookingList = async function (month: string) {
@@ -19,6 +23,67 @@ export const getBookingDetail = async function (bookingId: string) {
     await api<GetReservationDetailOutputDTO>({
       method: 'get',
       url: reservationDomain.bookingDetail(bookingId),
+    })
+  ).data;
+};
+
+export const getAvailableHours = async function (
+  companyId: string,
+  bookingDate: string,
+) {
+  return (
+    await api<GetAvailableHoursOutputDTO>({
+      method: 'get',
+      url:
+        reservationDomain.availableHours +
+        `?companyId=${companyId}&bookingDate=${bookingDate}`,
+    })
+  ).data;
+};
+
+export const changeBookingStatus = async function (
+  bookingId: string,
+  bookingStatus: 'yes' | 'no',
+  sendAlert: boolean,
+) {
+  return (
+    await api<PutChangeBookingStatusOutputDTO>({
+      method: 'put',
+      url: reservationDomain.changeBookingStatus,
+      data: { bookingId, bookingStatus, sendAlert },
+    })
+  ).data;
+};
+
+export const changeBookingMemo = async function (
+  bookingId: string,
+  memo: string,
+) {
+  return (
+    await api<PostChangeBookingMemoOutputDTO>({
+      method: 'post',
+      url: reservationDomain.changeBookingMemo(bookingId),
+      data: { bookingId, memo },
+    })
+  ).data;
+};
+
+export const reservationBlock = async function (restrictTime: string) {
+  return (
+    await api<OutputDTO>({
+      method: 'post',
+      data: { restrictTime },
+      url: reservationDomain.bookingTimeBlock,
+    })
+  ).data;
+};
+
+export const reservationBlockList = async function (restrictTimes: string[]) {
+  return (
+    await api<OutputDTO>({
+      method: 'post',
+      data: { restrictTimes },
+      url: reservationDomain.bookingTimeBlockList,
     })
   ).data;
 };

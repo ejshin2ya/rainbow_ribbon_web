@@ -6,7 +6,7 @@ import api from 'src/api/axios';
 import { useMutation } from '@tanstack/react-query';
 
 interface StompContextProps {
-  client: Client | null;
+  client: Client;
   messages: string[];
 }
 
@@ -35,15 +35,15 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
         }>({
           method: 'post',
           data: { loginId: 'woooriii@naver.com', password: 'woooriii' },
-          url: '/api/account/company/auth/login',
+          url: '/api/no-auth/account/company/login',
         })
       ).data;
     },
   });
-  const [client, setClient] = useState<Client | null>(null);
+  const [client, setClient] = useState<Client>();
 
   useEffect(() => {
-    let stompClient: undefined | Client;
+    let stompClient: Client;
     let heartbeatInterval;
     mutateAsync().then(res => {
       const socketUrl = Domain.getPath('/chatting');
@@ -57,27 +57,34 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
         // brokerURL: socketUrl,
         debug: str => {
           if (process.env.NODE_ENV === 'development')
-            console.log(`%cDebug ${str}`, 'color: red;');
+            console.log(`%cDebug\n${str}`, 'color: red;');
         },
         reconnectDelay: 10 * 1000,
-        heartbeatIncoming: 4 * 1000,
-        heartbeatOutgoing: 4 * 1000,
+        heartbeatIncoming: 25 * 1000,
+        heartbeatOutgoing: 25 * 1000,
         connectHeaders: {
           Authorization: `Bearer ${res.data.accessToken}`,
         },
       });
-      console.log('stompClient', stompClient);
 
-      stompClient.onConnect = () => {
+      stompClient.onConnect = frame => {
         stompClient?.subscribe(
           '/user/queue/notifications',
           (message: Message) => {
+            console.log('유저 큐 노티 메세지', message);
             if (message.body) {
               setMessages(prevMessages => [...prevMessages, message.body]);
               console.log('Received', message.body);
               // TODO: 메세지에 따라 세세하게 refetch
               queryClient.invalidateQueries({ queryKey: ['chat'] });
             }
+          },
+          {
+            id: frame.headers?.['user-name'],
+            'user-name': frame.headers?.['user-name'],
+            version: frame.headers?.['version'],
+            'heart-beat': frame.headers?.['heart-beat'],
+            Authorization: `Bearer ${res.data.accessToken}`,
           },
         );
 
@@ -145,6 +152,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // TODO: 로그인 뮤테이션 빼면 지워줘야함
   if (!isSuccess) return null;
+  if (!client) return null;
 
   return (
     <StompContext.Provider value={{ client, messages }}>

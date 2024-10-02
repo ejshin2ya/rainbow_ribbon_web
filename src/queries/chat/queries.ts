@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getAllMessage,
+  getBookingDetailByUserId,
   getChatList,
+  getSearch,
   getUnreadMessage,
   readMessage,
+  sendImage,
   sendMessage,
   startChat,
 } from '../../services/chatService';
@@ -45,6 +48,24 @@ export const useAllMessage = function (
   });
 };
 
+export const useChatBookingDetail = function (userId: string) {
+  const { key } = chatQueryKey.chatBookingDetail(userId);
+  return useQuery({
+    queryKey: key,
+    queryFn: () => getBookingDetailByUserId(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useChatSearch = function (keyword: string) {
+  const { key } = chatQueryKey.search(keyword);
+  return useQuery({
+    queryKey: key,
+    queryFn: () => getSearch(keyword),
+    enabled: !!keyword,
+  });
+};
+
 export const useStartChat = function (
   options?: Parameters<typeof useMutation>,
 ) {
@@ -61,21 +82,36 @@ export const useStartChat = function (
 };
 
 export const useSendMessage = function (
-  roomId: string,
+  // roomId: string,
   options?: Parameters<typeof useMutation>,
 ) {
-  const queryClient = useQueryClient();
-  const { initialize } = chatQueryKey.sendMessage(roomId);
+  return useMutation({
+    ...options,
+    mutationFn: ({ roomId, message }: { roomId: string; message: string }) =>
+      sendMessage(roomId, message),
+    // onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+    onError: () => {
+      console.error('Cannot Send Chat');
+    },
+  });
+};
+
+export const useSendImage = function (
+  // roomId: string,
+  options?: Parameters<typeof useMutation>,
+) {
   return useMutation({
     ...options,
     mutationFn: ({
       roomId,
-      message,
+      message = '',
+      files,
     }: {
-      roomId: string | number;
-      message: string;
-    }) => sendMessage(roomId, message),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+      roomId: string;
+      message?: string;
+      files: File[];
+    }) => sendImage(roomId, message, files),
+    // onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => {
       console.error('Cannot Send Chat');
     },

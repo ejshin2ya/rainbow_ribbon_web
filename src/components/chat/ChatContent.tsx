@@ -9,29 +9,59 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useChatList, useReadMessage, useSendMessage } from 'src/queries';
+import {
+  useChatBookingDetail,
+  useChatList,
+  useReadMessage,
+  useSendImage,
+  useSendMessage,
+  useStomp,
+} from 'src/queries';
 import { getAllMessage } from 'src/services/chatService';
-import { type Message as MessageDTO } from 'src/queries/chat/types';
+import {
+  type GetRoomListRes,
+  type Message as MessageDTO,
+} from 'src/queries/chat/types';
 import Loader from '../common/Loader';
 import { ReactComponent as NoTalkIcon } from '../../assets/NoTalk.svg';
 import { ReactComponent as ArrowRightIcon } from '../../assets/ArrowRight.svg';
 import { ReactComponent as LogoWhiteIcon } from '../../assets/LogoWhite.svg';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
+import { conversionDateYearToDay } from 'src/utils/conversion';
+import { useQueryClient } from '@tanstack/react-query';
+import { chatQueryKey } from 'src/queries/chat/queryKey';
+import { IStompSocket } from '@stomp/stompjs';
+import { CommonRouteDialog } from '../CommonRouteDialog';
+import { ReservationDetail } from '../calendar/reservation-detail/ReservationDetail';
 
 interface MessageProps {
   message: string;
   messageDate: string;
   isSend: boolean;
+  messageId: string;
+  imgSrc?: string[];
 }
 
-const Message = function ({ isSend, message, messageDate }: MessageProps) {
+const Message = function ({
+  isSend,
+  message,
+  messageId,
+  messageDate,
+  imgSrc,
+}: MessageProps) {
   return (
     <div
       className={`w-full flex ${isSend ? 'flex-row-reverse' : 'flex-row'} items-end gap-[8px] mb-[30px]`}
     >
       <div
-        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} py-[9px] px-[13px] rounded-[4px] text-[18px] font-normal items-end`}
+        className={`w-fit max-w-[45%] ${!isSend ? 'bg-reborn-white text-reborn-gray8' : 'bg-reborn-orange3 text-reborn-white'} ${!!imgSrc?.length ? '' : 'py-[9px] px-[13px]'} rounded-[4px] text-[18px] font-normal items-end`}
       >
+        {!!imgSrc?.length &&
+          imgSrc.map((src, idx) => {
+            return (
+              <img key={`image-${messageId}-${idx}`} alt={src} src={src} />
+            );
+          })}
         {message}
       </div>
       <div className="h-full flex text-[14px] font-semibold text-reborn-gray3 items-end">
@@ -42,19 +72,25 @@ const Message = function ({ isSend, message, messageDate }: MessageProps) {
 };
 
 export const ChatContent = function () {
+  const queryClient = useQueryClient();
   const { selectedRoomId, selectedUserId } = useChatStore();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [messageMap, setMessageMap] = useState<
-    Map<string, Map<string, MessageDTO>>
+    Map<string, Map<string, MessageDTO & { images?: string[] }>>
   >(new Map());
   const [pagingData, setPagingData] = useState<
     Map<string, { page: number; hasMore: boolean }>
   >(new Map());
   const [changed, setChanged] = useState(true);
 
-  const { mutateAsync: send, isPending: sendIsPending } =
-    useSendMessage(selectedRoomId);
+  const { client } = useStomp();
+
+  const { mutateAsync: send, isPending: sendIsPending } = useSendMessage();
+  const { mutateAsync: sendImage, isPending: sendImageIsPending } =
+    useSendImage();
   const { mutateAsync: read } = useReadMessage(selectedRoomId);
   const { data: chatListData } = useChatList();
+  const { data: reservationData } = useChatBookingDetail(selectedUserId);
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { openConfirmHandler, closeHandler, setContent } = useConfirmDialog();
@@ -70,10 +106,8 @@ export const ChatContent = function () {
     const sortedMessages = data.messages.sort(
       (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime(),
     );
-    const newDatas: [string, MessageDTO][] = sortedMessages.map(msg => [
-      msg.messageId,
-      msg,
-    ]);
+    const newDatas: [string, MessageDTO & { images?: string[] }][] =
+      sortedMessages.map(msg => [msg.messageId, msg]);
     setMessageMap(prevMap => {
       const newMap = new Map(prevMap);
       const existingRoomMessages = new Map(newMap.get(selectedRoomId) ?? []);
@@ -94,11 +128,27 @@ export const ChatContent = function () {
     return data;
   };
 
-  const testSendMessage = async function (messageStr: string) {
-    // todo: 선행으로 send가 성공해야함.
+  const sendMessage = async function (messageStr: string) {
     const res = await send({
       roomId: selectedRoomId,
       message: messageStr,
+    }).then(res => {
+      const { key } = chatQueryKey.chatList();
+      const originalChatList = queryClient.getQueryData(key) as GetRoomListRes;
+      queryClient.setQueryData(key, {
+        msg: originalChatList.msg,
+        statusCode: originalChatList.statusCode,
+        data: originalChatList.data.map(chatRoom => {
+          return {
+            ...chatRoom,
+            lastMessage:
+              chatRoom.roomId === selectedRoomId
+                ? messageStr
+                : chatRoom.lastMessage,
+          };
+        }),
+      });
+      return res;
     });
     const messageData = res.data;
     const newMap = new Map(messageMap);
@@ -117,6 +167,80 @@ export const ChatContent = function () {
 
     newMap.set(selectedRoomId, newRoomMessageMap);
     setMessageMap(newMap);
+  };
+
+  const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
+    const validMIMETypes = ['jpg', 'jpeg', 'png', 'pdf'];
+    let invalid = false;
+
+    Array.from(e.target.files ?? []).forEach(file => {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!validMIMETypes.includes(fileExtension)) {
+        invalid = true;
+      }
+    });
+
+    if (invalid) {
+      setContent({
+        paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
+        header: '',
+      });
+      openConfirmHandler({
+        onClick: () => {
+          closeHandler();
+        },
+        text: '확인',
+      });
+    } else {
+      sendImage({
+        roomId: selectedRoomId,
+        message: '',
+        files: Array.from(e.target.files ?? []),
+      })
+        .then(res => {
+          const { key } = chatQueryKey.chatList();
+          const originalChatList = queryClient.getQueryData(
+            key,
+          ) as GetRoomListRes;
+          queryClient.setQueryData(key, {
+            msg: originalChatList.msg,
+            statusCode: originalChatList.statusCode,
+            data: originalChatList.data.map(chatRoom => {
+              return {
+                ...chatRoom,
+                lastMessage: '사진',
+              };
+            }),
+          });
+          return res;
+        })
+        .then(res => {
+          const messageData = res.data;
+          const newMap = new Map(messageMap);
+          const now = new Date(); // TODO: createAt도 보내달라 요청 후 제거
+          const newRoomMessageMap = new Map([
+            [
+              messageData.messageId,
+              {
+                ...messageData,
+                createAt: messageData.createAt ?? now.toISOString(),
+                message: messageData.message ?? '',
+              },
+            ],
+            ...(messageMap.get(selectedRoomId)?.entries() ?? []),
+          ]);
+
+          newMap.set(selectedRoomId, newRoomMessageMap);
+          setMessageMap(newMap);
+          return res;
+        })
+        .then(res => {
+          setTimeout(() => {
+            scrollToBottom();
+          }, 0);
+        });
+    }
+    e.target.value = '';
   };
 
   const messageArray = Array.from(
@@ -199,52 +323,50 @@ export const ChatContent = function () {
     }
   }, [messageArray.length]);
 
-  const handleSelectImage = function (e: ChangeEvent<HTMLInputElement>) {
-    const validMIMETypes = ['jpg', 'jpeg', 'png', 'pdf'];
-    let invalid = false;
-
-    Array.from(e.target.files ?? []).forEach(file => {
-      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
-      if (!validMIMETypes.includes(fileExtension)) {
-        invalid = true;
-      }
-    });
-
-    if (invalid) {
-      e.target.value = '';
-      setContent({
-        paragraph: '지원하지 않는 형식입니다. 파일 형식을 확인해 주세요.',
-        header: '',
-      });
-      openConfirmHandler({
-        onClick: () => {
-          closeHandler();
-        },
-        text: '확인',
-      });
-    } else {
-      // TODO: 즉시 전송
-    }
-  };
-
   return (
-    <section className="box-border w-full h-full flex flex-col px-[4px] pb-[27px] relative">
+    <section className="box-border w-full h-full flex flex-col relative border-l-[1px] border-l-reborn-gray1">
+      <CommonRouteDialog
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+      >
+        <ReservationDetail
+          reservationInfo={reservationData?.data}
+          selectedEventId={reservationData?.data?.bookingInfo?.bookingId ?? ''}
+        />
+      </CommonRouteDialog>
       {Array.isArray(chatListData?.data) && chatListData?.data.length ? (
         <>
           <header className="w-full h-[82px] px-[30px] border-b-[1px] border-b-reborn-gray2 flex flex-row items-center gap-[12px] flex-shrink-0">
             <span className="font-semibold text-[18px] text-reborn-gray8">
-              {selectedUserId}
+              {
+                chatListData.data.find(room => room.userId === selectedUserId)
+                  ?.name
+              }
             </span>
-            <span className="font-medium text-[14px] text-reborn-gray4">
-              2024.01.03 (수)
-            </span>
-            <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
-            <span className="font-medium text-[14px] text-reborn-gray4">
-              기본 패키지 + 픽업 서비스
-            </span>
-            <span className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center">
-              <ArrowRightIcon />
-            </span>
+            {reservationData?.data &&
+            reservationData.data.bookingInfo.bookingStatus !== '예약 취소' ? (
+              <>
+                <span className="font-medium text-[14px] text-reborn-gray4">
+                  {conversionDateYearToDay(
+                    reservationData?.data?.bookingInfo?.bookingDate ?? '',
+                  )}
+                </span>
+                <span className="w-[1px] h-[16px] border-l-[1px] border-l-reborn-gray3" />
+                <span className="font-medium text-[14px] text-reborn-gray4">
+                  {reservationData.data.bookingInfo.packageName}
+                </span>
+                <span
+                  className="font-medium text-[14px] text-reborn-gray4 h-[21px] w-[21px] cursor-pointer flex items-center justify-items-center"
+                  onClick={() => setDialogOpen(true)}
+                >
+                  <ArrowRightIcon />
+                </span>
+              </>
+            ) : (
+              <span className="font-medium text-[14px] text-reborn-gray4">
+                예약 정보가 없습니다.
+              </span>
+            )}
           </header>
           <main className="w-full h-[1px] flex-1">
             <div
@@ -285,7 +407,9 @@ export const ChatContent = function () {
                         <Message
                           isSend={message.receiverId === selectedUserId}
                           message={message.message}
+                          messageId={message.messageId}
                           messageDate={`${ampm} ${hours}:${minutesFormatted}`}
+                          imgSrc={message.images}
                         />
                       </>
                     ),
@@ -294,16 +418,18 @@ export const ChatContent = function () {
                 })}
             </div>
           </main>
-          <footer className="box-border w-full h-[60px] px-[30px] flex-shrink-0">
+          <footer className="box-border w-full h-[60px] flex-shrink-0">
             <form
-              className="p-[8px] flex flex-row rounded-[12px] bg-reborn-white border-[1px] border-reborn-gray2 items-center"
+              className="p-[8px] flex flex-row bg-reborn-white border-t-[1px] border-reborn-gray2 items-center"
               onSubmit={async e => {
                 e.preventDefault();
-                await testSendMessage(
+                await sendMessage(
                   (e.currentTarget[1] as HTMLInputElement).value ?? '',
                 );
                 (e.target as typeof e.currentTarget).reset();
-                scrollToBottom();
+                setTimeout(() => {
+                  scrollToBottom();
+                }, 0);
               }}
             >
               <label
@@ -325,10 +451,10 @@ export const ChatContent = function () {
                 placeholder="메시지를 입력하세요."
               />
               <button
-                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
-                disabled={sendIsPending}
+                className={`w-[44px] h-[44px] flex-shrink-0 flex items-center justify-center rounded-[12px] bg-reborn-gray7 ${sendIsPending || sendImageIsPending ? 'cursor-wait' : 'cursor-pointer'}`}
+                disabled={sendIsPending || sendImageIsPending}
               >
-                {sendIsPending ? (
+                {sendIsPending || sendImageIsPending ? (
                   <div className="spinner" />
                 ) : (
                   <SendIcon style={{ color: '#fff' }} />

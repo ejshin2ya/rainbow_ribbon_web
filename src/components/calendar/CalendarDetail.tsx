@@ -1,16 +1,20 @@
 import styled from 'styled-components';
-import { createElement, Fragment, useMemo } from 'react';
+import { createElement, Fragment, useCallback, useMemo, useState } from 'react';
 import { useFuneralEventStore } from './store/event-store';
 import { ReactComponent as PlusIcon } from '../../assets/Plus.svg';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
 import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
+import { useQuery } from '@tanstack/react-query';
+import { getCompanyInfo } from 'src/services/companyService';
+import { useAvailableHours } from 'src/queries/reservation';
+import { CommonRouteDialog } from '../CommonRouteDialog';
+import CreateReservationDialog from './create-dialog/CreateReservationDialog';
 
 interface Props {
   selectedDate: Date;
 }
 
 export interface EventProps {
-  // TODO: maxWidth, width, height, top, right, left, startDate, endDate는 필수값으로 변경
   maxWidth?: number | string;
   width?: number | string;
   height?: number | string;
@@ -22,7 +26,7 @@ export interface EventProps {
   status: string;
   startDate: Date;
   endDate: Date;
-  bookingId: string;
+  bookingId?: string;
 }
 
 const EventItem = function ({
@@ -40,15 +44,18 @@ const EventItem = function ({
   bookingId,
 }: EventProps) {
   const { changeSelectedEvent } = useFuneralEventStore();
-  // 이름 / 패키지 배경  폰트  왼쪽 보더
   const boxColor =
     status === '요청'
       ? 'bg-reborn-yellow1 text-reborn-orange2_4 border-reborn-orange5'
-      : 'bg-reborn-blue0 border-l-reborn-blue1 text-reborn-blue2';
+      : status === '제한'
+        ? 'bg-reborn-gray0 text-reborn-gray4 border-l-reborn-gray4'
+        : 'bg-reborn-blue0 border-l-reborn-blue1 text-reborn-blue2';
   const buttonColor =
     status === '요청'
       ? 'bg-reborn-yellow2 text-reborn-orange2_4'
-      : 'bg-reborn-blue0_1 text-reborn-blue2';
+      : status === '제한'
+        ? 'bg-reborn-gray1 text-reborn-gray4'
+        : 'bg-reborn-blue0_1 text-reborn-blue2';
   const timeString = useMemo(() => {
     const startHour = ('0' + startDate?.getHours()).slice(-2);
     const startMinutes = ('0' + startDate?.getMinutes()).slice(-2);
@@ -58,8 +65,10 @@ const EventItem = function ({
   }, [startDate, endDate]);
   return (
     <div
-      className={`absolute min-h-[23px] z-[2] left-[55px] right-0 top-[23px] opacity-100 rounded-[4px] border-l-[3px] font-medium text-[12px] leading-[18px] cursor-pointer ${boxColor}`}
-      onClick={() => changeSelectedEvent(bookingId)}
+      className={`absolute min-h-[46px] z-[2] left-[55px] right-0 top-[23px] opacity-100 rounded-[4px] border-l-[3px] font-medium text-[12px] leading-[18px] cursor-pointer ${boxColor}`}
+      onClick={() => {
+        if (bookingId) changeSelectedEvent(bookingId);
+      }}
       style={{
         top,
         left,
@@ -88,6 +97,20 @@ const EventItem = function ({
 export const CalendarDetail = function ({ selectedDate }: Props) {
   const { processedEvents } = useFuneralEventStore();
   const { closeHandler, openBlockHandler } = useConfirmDialog();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  // TODO: company query 개발 시 해당 쿼리문으로 대체
+  const { data } = useQuery({
+    queryKey: ['company'],
+    queryFn: () => {
+      return getCompanyInfo().then(res => {
+        return res;
+      });
+    },
+  });
+  const { data: timeBlockData } = useAvailableHours(
+    data?.data?.id ?? '',
+    selectedDate.toISOString().slice(0, 10),
+  );
 
   const openConfirmBlockDialogHandler = function () {
     openBlockHandler(
@@ -101,8 +124,15 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
     );
   };
 
+  const closeCreateDialog = useCallback(() => {
+    setCreateDialogOpen(false);
+  }, []);
+
   return (
     <CalendarContainer>
+      <CommonRouteDialog isOpen={createDialogOpen} onClose={closeCreateDialog}>
+        <CreateReservationDialog onClose={closeCreateDialog} />
+      </CommonRouteDialog>
       <div className="w-full font-semibold text-[14px] leading-[21px] text-reborn-gray3 mb-[12px] flex-shrink-0">
         오늘의 일정
       </div>
@@ -116,7 +146,10 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           </h2>
         </div>
         <div className="h-full flex flex-row gap-[12px]">
-          <button className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1">
+          <button
+            className="px-[14px] py-[10px] border-[1px] border-reborn-gray2 rounded-[4px] flex felx-row gap-[8px] text-[12px] font-medium leading-[18px] text-reborn-gray4 duration-200 hover:bg-reborn-gray0 active:bg-reborn-gray1"
+            onClick={() => setCreateDialogOpen(true)}
+          >
             <PlusIcon
               width={15}
               height={15}
@@ -139,17 +172,47 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
       </div>
 
       <div className="grid__container grid grid-rows-36 grid-cols-[55px_1fr]">
-        {/* 이벤트 영역은 위에 */}
-        {/* 이벤트 들어갈 것임. 높이랑 top은 inline style로, width는 left right로 */}
+        {timeBlockData?.data?.map((canBook, idx) => {
+          if (canBook) return;
+          const startDate = new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            idx,
+          );
+          const endDate = new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            idx + 1,
+          );
+          const height = 46;
+          const top = (idx - 7) * 46;
+          const width = `calc((100% - 55px))`;
+          const left = '55px';
+          return (
+            <EventItem
+              key={`event-block-${idx}`}
+              status={'제한'}
+              subTitle={'예약 제한'}
+              startDate={startDate}
+              endDate={endDate}
+              height={height}
+              top={top}
+              left={left}
+              width={width}
+            />
+          );
+        })}
         {processedEvents.map((td, idx) => {
-          // TODO: maxCount는 fetch해서 받아와야 함.
-          const maxCount = 3;
+          if (selectedDate.toDateString() !== td.startDate.toDateString())
+            return null;
           const diffDate = td.endDate.getTime() - td.startDate.getTime();
           const diffHours = diffDate / (1000 * 60 * 60);
           const height = diffHours * 46;
           const top = (td.startDate.getHours() - 7) * 46;
-          const width = `calc((100% - 55px) / ${maxCount})`;
-          const left = `calc(55px + (100% - 55px) / ${maxCount} * ${td.layer})`;
+          const width = `calc((100% - 55px) / ${data?.data.parallel ?? 1})`;
+          const left = `calc(55px + (100% - 55px) / ${data?.data.parallel ?? 1} * ${td.layer})`;
 
           return (
             <EventItem

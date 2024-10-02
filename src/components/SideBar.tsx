@@ -1,15 +1,25 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { SideBarItem } from './SidBarItem';
 import { ReactComponent as ReservationIcon } from '../assets/Reservation.svg';
 import { ReactComponent as ClientIcon } from '../assets/Client.svg';
 import { ReactComponent as BusinessIcon } from '../assets/Business.svg';
 import { ReactComponent as ChatIcon } from '../assets/Chat.svg';
+import { useQuery } from '@tanstack/react-query';
+import { getCompanyInfo } from 'src/services/companyService';
 
 export const SideBar = function () {
-  const navigate = useNavigate();
   const generateHandler = (path?: string) => () => {
     // navigate(path ?? '');
   };
+  // TODO: 쿼리문 연동 및 삭제
+  const { data } = useQuery({
+    queryKey: ['company'],
+    queryFn: () => {
+      return getCompanyInfo().then(res => {
+        return res;
+      });
+    },
+  });
 
   return (
     <div className="w-full h-full bg-reborn-gray0 flex-shrink-0">
@@ -17,16 +27,16 @@ export const SideBar = function () {
         <div className="w-[48px] h-[48px] rounded-[4px] flex-shrink-0">
           <img
             className="w-full h-full"
-            src={'/assets/images/icMapMarkerOrange.png'}
+            src={data?.data.logoImage ?? '/assets/images/icMapMarkerOrange.png'}
             alt="no-image"
           />
         </div>
         <div className="flex flex-col gap-[1px] flex-1 w-[1px]">
           <div className="text-[14px] font-medium truncate text-reborn-gray8">
-            {'포포즈 경기 김포점'}
+            {data?.data.companyName}
           </div>
           <div className="font-roboto text-[12px] font-medium truncate text-reborn-gray4">
-            ID: {'2347329347'}
+            ID: {data?.data.id}
           </div>
         </div>
       </div>
