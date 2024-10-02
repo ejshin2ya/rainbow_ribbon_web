@@ -51,6 +51,12 @@ class ChatDomain {
   bookingDetail(userId: string) {
     return Domain.getPath(`/api/booking/calendar/detail?userId=${userId}`);
   }
+  /**
+   * @description get
+   */
+  search(keyword: string) {
+    return Domain.getPath(`/api/chatting/room/search?keyword=${keyword}`);
+  }
 }
 
 export const chatDomain = new ChatDomain();

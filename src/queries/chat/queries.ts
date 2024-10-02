@@ -3,6 +3,7 @@ import {
   getAllMessage,
   getBookingDetailByUserId,
   getChatList,
+  getSearch,
   getUnreadMessage,
   readMessage,
   sendImage,
@@ -53,6 +54,15 @@ export const useChatBookingDetail = function (userId: string) {
     queryKey: key,
     queryFn: () => getBookingDetailByUserId(userId),
     enabled: !!userId,
+  });
+};
+
+export const useChatSearch = function (keyword: string) {
+  const { key } = chatQueryKey.search(keyword);
+  return useQuery({
+    queryKey: key,
+    queryFn: () => getSearch(keyword),
+    enabled: !!keyword,
   });
 };
 

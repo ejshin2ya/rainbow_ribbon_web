@@ -41,4 +41,10 @@ export const chatQueryKey = {
       initialize: ['chat'],
     };
   },
+  search(keyword: string) {
+    return {
+      key: ['chat', keyword],
+      initialize: ['chat'],
+    };
+  },
 };

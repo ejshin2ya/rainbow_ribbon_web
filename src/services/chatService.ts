@@ -95,3 +95,12 @@ export const getBookingDetailByUserId = async function (userId: string) {
     })
   ).data;
 };
+
+export const getSearch = async function (keyword: string) {
+  return (
+    await api<GetRoomListRes>({
+      method: 'get',
+      url: chatDomain.search(keyword),
+    })
+  ).data;
+};
