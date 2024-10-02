@@ -1,10 +1,15 @@
-import { useChatList } from 'src/queries';
+import { useChatList, useChatSearch } from 'src/queries';
 import { ChatListItem } from './ChatListItem';
 import { ReactComponent as ArrowDownIcon } from '../../assets/ArrowDown.svg';
+import { ReactComponent as SearchIcon } from 'src/assets/Search.svg';
 import Loader from '../common/Loader';
+import { useState } from 'react';
 
 export const ChatList = function () {
+  const [keyword, setKeyword] = useState('');
   const { data: roomListData, isLoading } = useChatList();
+  const { data: searchData, isFetching: searchLoading } =
+    useChatSearch(keyword);
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -29,17 +34,38 @@ export const ChatList = function () {
             </span>
           </div>
         </div>
-        <input
-          className="w-full h-[40px] flex flex-row items-center bg-reborn-gray0 rounded-[4px] py-[8px] px-[12px] outline-none"
-          placeholder="검색어를 입력해 주세요"
-        />
+        <form
+          className="w-full h-[40px] flex flex-row items-center rounded-[8px] py-[8px] px-[12px] border-[1px] border-reborn-gray1"
+          onSubmit={e => {
+            e.preventDefault();
+            setKeyword((e.currentTarget[0] as HTMLInputElement).value ?? '');
+          }}
+        >
+          <input
+            className="outline-none flex-1 placeholder:text-reborn-gray3"
+            placeholder="검색어를 입력해 주세요"
+            onChange={e => {
+              if (!e.target.value) setKeyword('');
+            }}
+          />
+          <button
+            type="submit"
+            className="flex-shrink-0 flex items-center justify-center"
+          >
+            {searchLoading ? (
+              <div className="spinner" />
+            ) : (
+              <SearchIcon className="text-reborn-gray3" />
+            )}
+          </button>
+        </form>
       </header>
       <div className="w-full flex-1 flex flex-col overflow-y-auto">
-        {isLoading ? (
+        {isLoading || searchLoading ? (
           <div className="w-full h-full flex items-center justify-center">
             <Loader />
           </div>
-        ) : (
+        ) : !keyword ? (
           roomListData?.data.map(roomInfo => {
             return (
               <ChatListItem
@@ -48,6 +74,29 @@ export const ChatList = function () {
               />
             );
           })
+        ) : searchData?.data?.length ? (
+          searchData?.data?.map(roomInfo => {
+            return (
+              <ChatListItem
+                roomInfo={roomInfo}
+                keyword={keyword}
+                key={`${roomInfo.roomId}-${roomInfo.userId}`}
+              />
+            );
+          })
+        ) : (
+          <div className="w-full flex flex-col items-center px-[25px] pt-[44px] font-medium">
+            <h3 className="text-[18px] text-reborn-gray8 mb-[12px]">{`'${keyword}' 검색 결과가 없습니다.`}</h3>
+            <span className="text-[16px] text-reborn-gray4">
+              단어의 철자가 정확한지 확인해보세요.
+            </span>
+            <span className="text-[16px] text-reborn-gray4">
+              검색어에 포함된 키워드 수를 줄여보거나
+            </span>
+            <span className="text-[16px] text-reborn-gray4">
+              다른 단어로 다시 검색해보세요.
+            </span>
+          </div>
         )}
       </div>
     </div>

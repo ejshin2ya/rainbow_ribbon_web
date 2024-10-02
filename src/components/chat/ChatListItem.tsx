@@ -1,15 +1,33 @@
 import { RoomListDto } from 'src/queries/chat/types';
 import { useChatStore } from './store/chat-store';
-import { useEffect } from 'react';
+import { Fragment } from 'react';
 
 interface Props {
   roomInfo: RoomListDto;
+  keyword?: string;
 }
 
-export const ChatListItem = function ({ roomInfo }: Props) {
+export const ChatListItem = function ({ roomInfo, keyword = '' }: Props) {
   const { selectedRoomId, changeRoom, changeUser } = useChatStore();
 
   const date = new Date(roomInfo.lastMessageDateTime);
+  const keywordChager = function (message: string) {
+    if (!keyword) return message;
+    const messages = message.split(keyword);
+    return (
+      <>
+        {messages.map((msg, idx) => (
+          <Fragment key={`text-splitter-${idx}`}>
+            {msg}
+            {idx < messages.length - 1 && (
+              <span className="!text-reborn-orange3">{keyword}</span>
+            )}
+          </Fragment>
+        ))}
+      </>
+    );
+  };
+  const hour = date.getHours();
 
   return (
     <div
@@ -29,12 +47,14 @@ export const ChatListItem = function ({ roomInfo }: Props) {
           </div>
         )}
         <div className="min-w-[70px] h-full flex-1 flex text-[14px] text-reborn-gray4 flex-shrink-0 text-right justify-end items-center">
-          {`${date.getHours() >= 12 ? '오후' : '오전'} ${date.getHours()}:${date.getMinutes()}`}
+          {`${hour >= 12 ? '오후' : '오전'} ${hour >= 12 ? hour - 12 || 12 : hour || 12}:${date.getMinutes().toString().padStart(2, '0')}`}
         </div>
       </div>
       <div className="flex-1 w-full flex flex-row items-center justify-center gap-[8px]">
         <div className="line-clamp-2 flex-1 break-all">
-          {roomInfo.lastMessage}
+          {!keyword
+            ? roomInfo.lastMessage
+            : keywordChager(roomInfo.lastMessage)}
         </div>
         <div
           className={`min-w-[29px] h-[29px] flex items-center justify-center rounded-full font-medium text-[14px] ${roomInfo.unreadCount ? 'bg-reborn-orange3 text-reborn-white' : ''}`}
