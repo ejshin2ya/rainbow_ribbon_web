@@ -189,7 +189,7 @@ const CalendarContainer = styled.div`
     height: 100%;
     min-height: 1050px;
     min-width: 790px;
-    max-width: 1400px;
+    /* max-width: 1400px; */
   }
   .fc-toolbar-chunk {
     > div {

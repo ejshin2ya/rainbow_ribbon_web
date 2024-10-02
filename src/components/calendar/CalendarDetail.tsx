@@ -1,5 +1,12 @@
 import styled from 'styled-components';
-import { createElement, Fragment, useCallback, useMemo, useState } from 'react';
+import {
+  createElement,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useFuneralEventStore } from './store/event-store';
 import { ReactComponent as PlusIcon } from '../../assets/Plus.svg';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
@@ -98,6 +105,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
   const { processedEvents } = useFuneralEventStore();
   const { closeHandler, openBlockHandler } = useConfirmDialog();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [times, setTimes] = useState<string[]>([]);
   // TODO: company query 개발 시 해당 쿼리문으로 대체
   const { data } = useQuery({
     queryKey: ['company'],
@@ -111,6 +119,14 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
     data?.data?.id ?? '',
     selectedDate.toISOString().slice(0, 10),
   );
+
+  useEffect(() => {
+    if (!data?.data) return;
+    // data.data.weekdayOpen
+    // data.data.weekdayClose
+    // data.data.weekendOpen
+    // data.data.weekendClose
+  }, [data?.data]);
 
   const openConfirmBlockDialogHandler = function () {
     openBlockHandler(
