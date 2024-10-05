@@ -16,6 +16,7 @@ import { getCompanyInfo } from 'src/services/companyService';
 import { useAvailableHours } from 'src/queries/reservation';
 import { CommonRouteDialog } from '../CommonRouteDialog';
 import CreateReservationDialog from './create-dialog/CreateReservationDialog';
+import { conversionKST } from 'src/utils/conversion';
 
 interface Props {
   selectedDate: Date;
@@ -117,7 +118,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
   });
   const { data: timeBlockData } = useAvailableHours(
     data?.data?.id ?? '',
-    selectedDate.toISOString().slice(0, 10),
+    conversionKST(selectedDate),
   );
 
   useEffect(() => {
