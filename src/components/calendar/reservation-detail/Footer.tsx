@@ -9,6 +9,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getCompanyInfo } from 'src/services/companyService';
 import { ReactComponent as CancelIcon } from 'src/assets/Cancel.svg';
+import { conversionKST } from 'src/utils/conversion';
 
 export const Footer = function ({
   reservationInfo,
@@ -23,10 +24,10 @@ export const Footer = function ({
   const { mutateAsync: statusChange, isPending: confirmIsPending } =
     useChangeBookingStatus();
   const { mutateAsync: reservationBlock } = useReservationBlock(
-    selectedDate.toISOString().slice(0, 10),
+    conversionKST(selectedDate),
   );
   // TODO: company query 개발 시 해당 쿼리문으로 대체
-  const { data } = useQuery({
+  const { data: companyInfo } = useQuery({
     queryKey: ['company'],
     queryFn: () => {
       return getCompanyInfo().then(res => {
@@ -120,18 +121,18 @@ export const Footer = function ({
                   sendAlert: sendTalk,
                   status: 'yes',
                 }).then(res => {
-                  const maxCount = data?.data.parallel ?? 1;
+                  const maxCount = companyInfo?.data?.parallel ?? 1;
                   if (res.data.parallelBookingCount < maxCount) return res;
                   setContent({
                     header: '이후 예약을 제한하시겠어요?',
-                    paragraph:
-                      '최대 예약 3건으로, 이후 예약을 제한해 드립니다.',
+                    paragraph: `최대 예약 ${maxCount}건으로, 이후 예약을 제한해 드립니다.`,
                   });
                   openConfirmHandler(
                     {
                       text: '예약 제한',
                       onClick: () => {
                         reservationBlock({
+                          // TODO: 확인 필요 이 부분의 new Date는 서버에서 받은 time으로 만들기에 자동으로 KST로 맞춰져 있어서 ㄱㅊ은듯 아마도....?
                           restrictTime: new Date(
                             reservationInfo.bookingInfo.bookingDate,
                           ).toISOString(),
