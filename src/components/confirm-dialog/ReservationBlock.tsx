@@ -2,9 +2,13 @@ import { ButtonGroup } from '../common/ButtonGroup';
 import { useConfirmDialog } from './confitm-dialog-store';
 import { ReactComponent as ClockIcon } from '../../assets/Clock.svg';
 import { useEffect, useState } from 'react';
-import { useAvailableHours } from 'src/queries/reservation';
+import {
+  useAvailableHours,
+  useReservationBlockList,
+} from 'src/queries/reservation';
 import { useQuery } from '@tanstack/react-query';
 import { getCompanyInfo } from 'src/services/companyService';
+import { conversionKST } from 'src/utils/conversion';
 
 export const ReservationBlock = function () {
   const { confirmOption, cancelOption, selectedDate } = useConfirmDialog();
@@ -15,6 +19,9 @@ export const ReservationBlock = function () {
     setTab(tabName);
   };
   const [companyId, setCompanyId] = useState('');
+  const { mutateAsync: reservationBlockFn } = useReservationBlockList(
+    selectedDate.toISOString(),
+  );
   // TODO: 쿼리문 연동 및 삭제
   const { data: companyData } = useQuery({
     queryKey: ['company'],
@@ -26,14 +33,34 @@ export const ReservationBlock = function () {
   });
   const { data: timeData, isLoading } = useAvailableHours(
     companyId,
-    selectedDate.toISOString().slice(0, 10),
+    conversionKST(selectedDate),
   );
 
   const gridClickHandler = function (idx: number) {
     const time = idx + (tab === 'am' ? 0 : 12);
-    if (selectedTimes.includes(idx))
+    if (selectedTimes.includes(time))
       setSelectedTimes(prev => prev.filter(i => i !== time));
     else setSelectedTimes(prev => [...prev, time]);
+  };
+
+  const cleanupCallback = function () {
+    // setCompanyId('');
+    setSelectedTimes([]);
+  };
+
+  const reservationBlockHandler = async function () {
+    await reservationBlockFn({
+      restrictTimes: selectedTimes.map(time => {
+        const date = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          time + 9,
+          0,
+        );
+        return date.toISOString();
+      }),
+    });
   };
 
   const gridCommonClass =
@@ -41,9 +68,6 @@ export const ReservationBlock = function () {
 
   useEffect(() => {
     setCompanyId(companyData?.data.id ?? '');
-    return () => {
-      setCompanyId('');
-    };
   }, [companyData]);
 
   return (
@@ -105,6 +129,9 @@ export const ReservationBlock = function () {
         <ButtonGroup
           cancelButtonOptions={cancelOption}
           confirmButtonOptions={confirmOption}
+          afterCancelCallback={cleanupCallback}
+          afterConfirmCallback={cleanupCallback}
+          beforeConfirmCallback={reservationBlockHandler}
         />
       </div>
     </div>
