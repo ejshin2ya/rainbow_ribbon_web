@@ -135,27 +135,6 @@ export const ChatContent = function () {
     }).then(res => {
       const { key } = chatQueryKey.chatList();
       const originalChatList = queryClient.getQueryData(key) as GetRoomListRes;
-      console.log(
-        originalChatList.data
-          .map(chatRoom => {
-            return {
-              ...chatRoom,
-              lastMessage:
-                chatRoom.roomId === selectedRoomId
-                  ? messageStr
-                  : chatRoom.lastMessage,
-              lastMessageDateTime:
-                chatRoom.roomId === selectedRoomId
-                  ? new Date().toISOString()
-                  : chatRoom.lastMessageDateTime,
-            };
-          })
-          .sort(
-            (a, b) =>
-              new Date(b.lastMessageDateTime).getTime() -
-              new Date(a.lastMessageDateTime).getTime(),
-          ),
-      );
       queryClient.setQueryData(key, {
         msg: originalChatList.msg,
         statusCode: originalChatList.statusCode,
