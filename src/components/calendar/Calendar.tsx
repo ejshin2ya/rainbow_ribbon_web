@@ -21,7 +21,6 @@ export const Calendar = function () {
   const [selectedDate, setSelectedDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), today.getDate()),
   );
-  console.log('selectedDate', selectedDate);
   const selectedMonth = useMemo(() => {
     return `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}`;
   }, [selectedDate]);
