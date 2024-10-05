@@ -32,8 +32,8 @@ export const ChatProvider = function ({ children }: PropsWithChildren) {
       setSelectedRoomId(data?.data[0].roomId);
       setSelectedUserId(data?.data[0].userId);
     }
-  }, [data]);
-  // if (isLoading) return null;
+  }, [isLoading]);
+
   return (
     <ChatStore.Provider
       value={{ selectedRoomId, changeRoom, selectedUserId, changeUser }}

@@ -83,7 +83,7 @@ export const ChatContent = function () {
   >(new Map());
   const [changed, setChanged] = useState(true);
 
-  const { client } = useStomp();
+  const { messages } = useStomp();
 
   const { mutateAsync: send, isPending: sendIsPending } = useSendMessage();
   const { mutateAsync: sendImage, isPending: sendImageIsPending } =
@@ -135,21 +135,53 @@ export const ChatContent = function () {
     }).then(res => {
       const { key } = chatQueryKey.chatList();
       const originalChatList = queryClient.getQueryData(key) as GetRoomListRes;
+      console.log(
+        originalChatList.data
+          .map(chatRoom => {
+            return {
+              ...chatRoom,
+              lastMessage:
+                chatRoom.roomId === selectedRoomId
+                  ? messageStr
+                  : chatRoom.lastMessage,
+              lastMessageDateTime:
+                chatRoom.roomId === selectedRoomId
+                  ? new Date().toISOString()
+                  : chatRoom.lastMessageDateTime,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.lastMessageDateTime).getTime() -
+              new Date(a.lastMessageDateTime).getTime(),
+          ),
+      );
       queryClient.setQueryData(key, {
         msg: originalChatList.msg,
         statusCode: originalChatList.statusCode,
-        data: originalChatList.data.map(chatRoom => {
-          return {
-            ...chatRoom,
-            lastMessage:
-              chatRoom.roomId === selectedRoomId
-                ? messageStr
-                : chatRoom.lastMessage,
-          };
-        }),
+        data: originalChatList.data
+          .map(chatRoom => {
+            return {
+              ...chatRoom,
+              lastMessage:
+                chatRoom.roomId === selectedRoomId
+                  ? messageStr
+                  : chatRoom.lastMessage,
+              lastMessageDateTime:
+                chatRoom.roomId === selectedRoomId
+                  ? new Date().toISOString()
+                  : chatRoom.lastMessageDateTime,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.lastMessageDateTime).getTime() -
+              new Date(a.lastMessageDateTime).getTime(),
+          ),
       });
       return res;
     });
+
     const messageData = res.data;
     const newMap = new Map(messageMap);
     const now = new Date(); // TODO: createAt도 보내달라 요청 후 제거
@@ -205,12 +237,19 @@ export const ChatContent = function () {
           queryClient.setQueryData(key, {
             msg: originalChatList.msg,
             statusCode: originalChatList.statusCode,
-            data: originalChatList.data.map(chatRoom => {
-              return {
-                ...chatRoom,
-                lastMessage: '사진',
-              };
-            }),
+            data: originalChatList.data
+              .map(chatRoom => {
+                return {
+                  ...chatRoom,
+                  lastMessage: '사진',
+                  lastMessageDateTime: new Date().toISOString(),
+                };
+              })
+              .sort(
+                (a, b) =>
+                  new Date(b.lastMessageDateTime).getTime() -
+                  new Date(a.lastMessageDateTime).getTime(),
+              ),
           });
           return res;
         })
@@ -322,6 +361,10 @@ export const ChatContent = function () {
       setChanged(false);
     }
   }, [messageArray.length]);
+
+  useEffect(() => {
+    // 메세지 수신
+  }, [messages.length]);
 
   return (
     <section className="box-border w-full h-full flex flex-col relative border-l-[1px] border-l-reborn-gray1">
