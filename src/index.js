@@ -30,7 +30,9 @@ root.render(
         <App />
       </RecoilRoot>
       {/* ReactQueryDevtools는 QueryClientProvider 내부에 위치해야 합니다. */}
-      <ReactQueryDevtools initialIsOpen={false} />
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
     {/* </React.StrictMode> */}
   </>,
