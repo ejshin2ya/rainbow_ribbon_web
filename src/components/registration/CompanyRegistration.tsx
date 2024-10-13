@@ -1,11 +1,84 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { CompanyRegistrationModal } from './CompanyRegistraionModal';
 import { FuneralCompositionModal } from './FuneralCompositionModal';
+import { registrationDataState } from '../../atoms/registrationDataState';
+import { funeralCompositionState } from '../../atoms/funeralCompositionState';
+import { fetchCompanyInfo } from '../../services/companyService';
+import { fetchFuneralInfo } from '../../services/FuneralCompositionService';
+import {
+  mapCompanyInfoToRegistrationData,
+  mapFuneralInfoToFuneralComposition,
+  isValidCompanyInfo,
+  isValidFuneralInfo,
+} from '../../utils/dataMappingUtils';
 
 const CompanyRegistration = () => {
+  const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [registrationData, setRegistrationData] = useRecoilState(
+    registrationDataState,
+  );
+  const [funeralComposition, setFuneralComposition] = useRecoilState(
+    funeralCompositionState,
+  );
+  const [hasCompanyInfo, setHasCompanyInfo] = useState(false);
+  const [hasFuneralInfo, setHasFuneralInfo] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitActive, setIsSubmitActive] = useState(false);
+
+  useEffect(() => {
+    // 모든 필드가 채워져 있는지 확인
+    const isRegistrationComplete = Object.values(registrationData).every(
+      value => value !== null && value !== undefined && value !== '',
+    );
+    const isFuneralComplete = Object.values(funeralComposition).every(
+      value => value !== null && value !== undefined && value !== '',
+    );
+
+    setIsSubmitActive(isRegistrationComplete && isFuneralComplete);
+  }, [registrationData, funeralComposition]);
+
+  const fetchInitialData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const companyInfo = await fetchCompanyInfo();
+      console.log('Fetched company info:', companyInfo);
+      if (companyInfo && isValidCompanyInfo(companyInfo)) {
+        setRegistrationData(prevState => ({
+          ...prevState,
+          ...mapCompanyInfoToRegistrationData(companyInfo),
+        }));
+        setHasCompanyInfo(true);
+      } else {
+        setHasCompanyInfo(false);
+      }
+
+      const funeralInfo = await fetchFuneralInfo();
+      if (funeralInfo && isValidFuneralInfo(funeralInfo)) {
+        setFuneralComposition(prevState => ({
+          ...prevState,
+          ...mapFuneralInfoToFuneralComposition(funeralInfo),
+        }));
+        setHasFuneralInfo(true);
+      } else {
+        setHasFuneralInfo(false);
+      }
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+      setHasCompanyInfo(false);
+      setHasFuneralInfo(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setRegistrationData, setFuneralComposition]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   const handleOpenModal = type => {
     setModalType(type);
@@ -15,11 +88,18 @@ const CompanyRegistration = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
     setModalType(null);
+    fetchInitialData();
+  };
+
+  const handleRegistrationComplete = () => {
+    fetchInitialData();
   };
 
   const handleSubmit = e => {
     e.preventDefault();
-    console.log('제출');
+    if (isSubmitActive) {
+      navigate('/reservation'); // 예약 페이지로 이동
+    }
   };
 
   return (
@@ -53,9 +133,14 @@ const CompanyRegistration = () => {
                 </Icon>
                 <span>업체 정보</span>
               </InfoContainer>
-              <Button onClick={() => handleOpenModal('companyInfo')}>
-                등록하기
-              </Button>
+              {!isLoading && (
+                <Button
+                  onClick={() => handleOpenModal('companyInfo')}
+                  type="button"
+                >
+                  {hasCompanyInfo ? '수정하기' : '등록하기'}
+                </Button>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -74,21 +159,34 @@ const CompanyRegistration = () => {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                   />
                 </Icon>
-                <span>장례구성</span>
+                <span>장례 구성</span>
               </InfoContainer>
-              <Button onClick={() => handleOpenModal('participationRules')}>
-                등록하기
-              </Button>
+              {!isLoading && (
+                <Button
+                  onClick={() => handleOpenModal('participationRules')}
+                  type="button"
+                >
+                  {hasFuneralInfo ? '수정하기' : '등록하기'}
+                </Button>
+              )}
             </CardContent>
           </Card>
-          <SubmitButton type="submit">입점 신청하기</SubmitButton>
+          <SubmitButton type="submit" disabled={!isSubmitActive}>
+            입점 신청하기
+          </SubmitButton>
         </Form>
 
         {openModal && modalType === 'companyInfo' && (
-          <CompanyRegistrationModal onClose={handleCloseModal} />
+          <CompanyRegistrationModal
+            onClose={handleCloseModal}
+            onRegistrationComplete={handleRegistrationComplete}
+          />
         )}
         {openModal && modalType === 'participationRules' && (
-          <FuneralCompositionModal onClose={handleCloseModal} />
+          <FuneralCompositionModal
+            onClose={handleCloseModal}
+            onRegistrationComplete={handleRegistrationComplete}
+          />
         )}
       </Container>
     </div>
@@ -160,12 +258,13 @@ const Button = styled.button`
 
 const SubmitButton = styled(Button)`
   width: 100%;
-  background-color: #e0e0e0;
-  color: #333;
+  background-color: ${props => (props.disabled ? '#ebebeb' : '#ff6632')};
+  color: ${props => (props.disabled ? '#333' : 'white')};
   border: none;
   margin-top: 16px;
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
   &:hover {
-    background-color: #d0d0d0;
+    background-color: ${props => (props.disabled ? '#e0e0e0' : '#ff6b6b')};
   }
 `;
 

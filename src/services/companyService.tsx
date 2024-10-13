@@ -1,11 +1,28 @@
 import axios, { AxiosResponse } from 'axios';
-import { ENDPOINT_COMPANY_REGISTRATION } from '../api/endpoints'; // API 엔드포인트 상수를 정의해야 합니다
+import { ENDPOINT_COMPANY_REGISTRATION } from '../api/endpoints';
 import { RegistrationData } from '../atoms/registrationDataState';
 
 interface ApiResponse {
   statusCode: number;
   msg: string;
   data: any;
+}
+
+export interface CompanyInfo {
+  id: string;
+  companyName: string;
+  contact: string;
+  postalCode: string;
+  address: string;
+  addressDetail: string;
+  offDay: [];
+  weekdayOpen: string;
+  weekdayClose: string;
+  weekendOpen: string;
+  weekendClose: string;
+  parallel: number;
+  notification: string;
+  logoImage: string;
 }
 
 export const registerCompany = async (
@@ -15,29 +32,11 @@ export const registerCompany = async (
     const formData = new FormData();
 
     // logoImage 처리
-    if (registrationData.logoImage) {
-      // logoImage가 File 객체인 경우
-      if (registrationData.logoImage instanceof File) {
-        formData.append('logoImage', registrationData.logoImage);
-      }
-      // logoImage가 base64 문자열인 경우
-      else if (
-        typeof registrationData.logoImage === 'string' &&
-        registrationData.logoImage.startsWith('data:image')
-      ) {
-        const byteString = atob(registrationData.logoImage.split(',')[1]);
-        const mimeString = registrationData.logoImage
-          .split(',')[0]
-          .split(':')[1]
-          .split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-        const blob = new Blob([ab], { type: mimeString });
-        formData.append('logoImage', blob, 'logo.jpg');
-      }
+    if (registrationData.logoImage instanceof File) {
+      formData.append('logoImage', registrationData.logoImage);
+      console.log('logoImage는 파일객체입니다');
+    } else {
+      console.log('logoImage가 파일객체가 아니므로 null로 전송합니다.');
     }
 
     // companyInfoEditReq 처리
@@ -46,13 +45,23 @@ export const registerCompany = async (
       JSON.stringify(registrationData.companyInfoEditReq),
     );
 
+    // FormData 내용 로깅
+    console.log('FormData 내용:');
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(key, ':', value.name, '(File)');
+      } else {
+        console.log(key, ':', value);
+      }
+    }
+
     const response: AxiosResponse<ApiResponse> = await axios.post<ApiResponse>(
       `${ENDPOINT_COMPANY_REGISTRATION}`,
       formData,
       {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`, // 액세스 토큰이 필요한 경우
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       },
     );
@@ -67,6 +76,33 @@ export const registerCompany = async (
     } else {
       console.error('Unexpected error:', error);
     }
+    throw error;
+  }
+};
+
+export const fetchCompanyInfo = async (): Promise<CompanyInfo> => {
+  try {
+    const response = await axios.get(`${ENDPOINT_COMPANY_REGISTRATION}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        Accept: 'application/json;charset=UTF-8',
+      },
+    });
+
+    // HTTP 상태 코드 확인
+    if (response.status === 200) {
+      // API 응답 구조 확인
+      if (response.data && response.data.data) {
+        console.log(response.data.data);
+        return response.data.data as CompanyInfo;
+      } else {
+        throw new Error('Invalid response structure');
+      }
+    } else {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error fetching company info:', error);
     throw error;
   }
 };
