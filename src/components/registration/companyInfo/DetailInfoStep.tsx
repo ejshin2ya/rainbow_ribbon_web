@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRecoilState } from 'recoil';
+import axios, { AxiosError } from 'axios';
 import {
   StepProps,
   FormTitle,
@@ -14,9 +15,19 @@ import { registerCompany } from '../../../services/companyService';
 
 interface DetailInfoStepProps extends StepProps {
   onClose: () => void;
+  onRegistrationComplete: () => void;
+}
+interface ApiErrorResponse {
+  timestamp: string;
+  status: number;
+  error: string;
+  path: string;
 }
 
-const DetailInfoStep: React.FC<DetailInfoStepProps> = ({ onClose }) => {
+const DetailInfoStep: React.FC<DetailInfoStepProps> = ({
+  onClose,
+  onRegistrationComplete,
+}) => {
   const [registrationData, setRegistrationData] = useRecoilState(
     registrationDataState,
   );
@@ -46,14 +57,28 @@ const DetailInfoStep: React.FC<DetailInfoStepProps> = ({ onClose }) => {
     e.preventDefault();
     if (isNextButtonActive) {
       try {
+        console.log('Submitting data:', registrationData);
         const response = await registerCompany(registrationData);
         console.log('Registration successful:', response);
         alert('등록 성공');
+        onRegistrationComplete();
         onClose();
       } catch (error) {
         console.error('Registration failed:', error);
-        console.log(registrationData); // 에러 처리 로직
-        alert('등록실패');
+        if (axios.isAxiosError(error)) {
+          const axiosError = error as AxiosError<ApiErrorResponse>;
+          if (axiosError.response) {
+            alert(
+              `등록 실패: ${axiosError.response.data.error || axiosError.message}`,
+            );
+          } else {
+            alert(`등록 실패: ${axiosError.message}`);
+          }
+        } else if (error instanceof Error) {
+          alert(`등록 실패: ${error.message}`);
+        } else {
+          alert('등록 실패: 알 수 없는 오류가 발생했습니다.');
+        }
       }
     }
   };

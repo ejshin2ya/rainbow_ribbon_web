@@ -31,7 +31,7 @@ const SalesInfoStep: React.FC<StepProps> = ({ nextStep }) => {
       weekendClose: weClose,
     } = registrationData.companyInfoEditReq;
 
-    if (offDay) {
+    if (offDay.length !== 0) {
       setHasDayOff(true);
       setDayOff(offDay);
     }

@@ -26,10 +26,9 @@ export interface CompanyInfoEditReq {
 export interface RegistrationData {
   logoImage: string | File | null;
   companyInfoEditReq: CompanyInfoEditReq;
-  currentStep: CompanyRegistrationStep;
 }
 
-const initialRegistrationData: RegistrationData = {
+export const initialRegistrationData: RegistrationData = {
   logoImage: null,
   companyInfoEditReq: {
     companyName: '',
@@ -45,7 +44,6 @@ const initialRegistrationData: RegistrationData = {
     parallel: 0,
     notification: '',
   },
-  currentStep: CompanyRegistrationStep.CompanyInfo,
 };
 
 export const registrationDataState = atom<RegistrationData>({

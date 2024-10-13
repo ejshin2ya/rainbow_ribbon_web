@@ -15,6 +15,7 @@ const StyledInput = styled.input`
   padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  margin-bottom: 10px;
   font-size: 1rem;
   flex: 1;
 `;

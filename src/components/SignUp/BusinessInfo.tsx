@@ -205,7 +205,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
               required
               disabled
             />
-            <Button addTopMargin={true} type="button" onClick={openModal}>
+            <Button addTopMargin={'1.8rem'} type="button" onClick={openModal}>
               주소 찾기
             </Button>
           </InputBox>

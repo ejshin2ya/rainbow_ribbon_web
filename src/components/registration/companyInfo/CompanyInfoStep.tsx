@@ -23,8 +23,18 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (typeof registrationData.logoImage === 'string') {
-      setPreviewUrl(registrationData.logoImage);
+    if (registrationData.logoImage) {
+      if (typeof registrationData.logoImage === 'string') {
+        setPreviewUrl(registrationData.logoImage);
+      } else if (registrationData.logoImage instanceof File) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(registrationData.logoImage);
+      }
+    } else {
+      setPreviewUrl(null);
     }
   }, [registrationData.logoImage]);
 
@@ -39,6 +49,13 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
 
     if (validateCompanyName(newName)) {
       setCompanyNameError('');
+      setRegistrationData(prev => ({
+        ...prev,
+        companyInfoEditReq: {
+          ...prev.companyInfoEditReq,
+          companyName: newName,
+        },
+      }));
     } else {
       setCompanyNameError('한글, 영문, 특수기호만 사용 가능합니다.');
     }
@@ -47,15 +64,10 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setRegistrationData(prev => ({
-          ...prev,
-          logoImage: base64String,
-        }));
-      };
-      reader.readAsDataURL(file);
+      setRegistrationData(prev => ({
+        ...prev,
+        logoImage: file,
+      }));
     }
   };
 

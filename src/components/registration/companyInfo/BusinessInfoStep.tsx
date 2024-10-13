@@ -96,7 +96,7 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
             disabled
             required
           />
-          <Button onClick={openModal} type="button">
+          <Button onClick={openModal} type="button" addBottomMargin="0.6rem">
             주소 찾기
           </Button>
         </InputBox>

@@ -1,5 +1,11 @@
 import { atom } from 'recoil';
 
+export enum FuneralCompositionStep {
+  FuneralItem = 1,
+  FuneralService,
+  MemorialService,
+}
+
 export interface FuneralInfoUpdateReq {
   funeralDescription: string;
   durationMin: number;
@@ -10,13 +16,13 @@ export interface FuneralInfoUpdateReq {
 }
 
 export interface FuneralCompositionState {
-  funeralImage: File | null;
-  shroudCoffinImage: File | null;
-  memorialImage: File[];
+  funeralImage: File | string | null;
+  shroudCoffinImage: string | File | null;
+  memorialImage: (File | string)[];
   funeralInfoUpdateReq: FuneralInfoUpdateReq;
 }
 
-const initialFuneralCompositionState: FuneralCompositionState = {
+export const initialFuneralCompositionState: FuneralCompositionState = {
   funeralImage: null,
   shroudCoffinImage: null,
   memorialImage: [],

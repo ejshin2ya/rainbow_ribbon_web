@@ -15,17 +15,23 @@ const FuneralItemStep: React.FC<StepProps> = ({ nextStep }) => {
   const [funeralComposition, setFuneralComposition] = useRecoilState(
     funeralCompositionState,
   );
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isNextButtonActive, setIsNextButtonActive] = useState<boolean>(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (funeralComposition.funeralImage instanceof File) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(funeralComposition.funeralImage);
+    if (funeralComposition.funeralImage) {
+      if (typeof funeralComposition.funeralImage === 'string') {
+        setPreviewUrl(funeralComposition.funeralImage);
+      } else if (funeralComposition.funeralImage instanceof File) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(funeralComposition.funeralImage);
+      }
+    } else {
+      setPreviewUrl(null);
     }
   }, [funeralComposition.funeralImage]);
 
@@ -39,14 +45,15 @@ const FuneralItemStep: React.FC<StepProps> = ({ nextStep }) => {
     }
   };
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     fileInputRef.current?.click();
   };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // 한글, 영문, 공백만 남기고 모두 제거
-    const filteredValue = value.replace(/[^가-힣a-zA-Z\s]/g, '');
+    const filteredValue = value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z\s]/g, '');
 
     setFuneralComposition(prev => ({
       ...prev,
