@@ -43,6 +43,29 @@ export interface CompanyInfo {
   logoImage: string;
 }
 
+export const getCompanyInfo = async function () {
+  return (
+    await api.get<
+      ApiResponse<{
+        id: string;
+        companyName: string;
+        contact: string;
+        postalCode: string;
+        address: string;
+        addressDetail: string;
+        offDay: string;
+        weekdayOpen: string;
+        weekdayClose: string;
+        weekendOpen: string;
+        weekendClose: string;
+        parallel: number;
+        notification: string;
+        logoImage: string;
+      }>
+    >('/api/account/company/info')
+  ).data;
+};
+
 export const registerCompany = async (
   registrationData: RegistrationData,
 ): Promise<ApiResponse> => {
