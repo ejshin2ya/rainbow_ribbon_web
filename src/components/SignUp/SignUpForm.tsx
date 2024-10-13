@@ -2,7 +2,6 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
 import { signUpFormState } from '../../atoms/signupFormState';
-import { authState } from '../../atoms/authState';
 import { SignUpFormData, LoginReq } from '../../services/apiService';
 import TermsAgreement from './TermsAgreement';
 import UserInfo from './UserInfo';
@@ -12,7 +11,8 @@ import { GoArrowLeft } from 'react-icons/go';
 import { useNavigate } from 'react-router-dom';
 import { useSignUpMutation } from '../../hooks/useSignUpMutation';
 import { useLoginMutation } from '../../hooks/useLoginMutation';
-import api from 'src/api/axios';
+import ProgressBar from '../common/ProgressBar';
+import { useAuth } from '../../contexts/AuthContext';
 
 // 회원가입 컴포넌트 스텝을 enum 형태로 저장하여 순서를 숫자로 인식합니다.
 enum SignUpStep {
@@ -29,10 +29,10 @@ const SignUpForm: React.FC = () => {
   );
   //recoil로 관리되는 회원가입 모든 정보를 가져와서 상태를 관리하는 함수
   const [formData] = useRecoilState<SignUpFormData>(signUpFormState);
-  //recoil로 관리되는 로그인 응답값 상태를 관리하는 함수
-  const [, setAuth] = useRecoilState(authState);
+
   //router를 통해 화면 전환하는 함수
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
   const {
     mutate: signUp,
@@ -44,7 +44,7 @@ const SignUpForm: React.FC = () => {
   } = useSignUpMutation();
 
   const {
-    mutate: login,
+    mutate: loginMutate,
     // isPending: isLoginPending,
     // isError: isLoginError,
     // isSuccess: isLoginSuccess,
@@ -70,24 +70,18 @@ const SignUpForm: React.FC = () => {
     const latestFormData = formData;
 
     signUp(latestFormData, {
-      onSuccess: data => {
+      onSuccess: () => {
         const loginData: LoginReq = {
           loginId: latestFormData.companySignUpReq.email,
           password: latestFormData.companySignUpReq.password,
         };
 
-        login(loginData, {
+        loginMutate(loginData, {
           onSuccess: data => {
-            setAuth({
-              accessToken: data.data.accessToken,
-              refreshToken: data.data.refreshToken,
-              userType: data.data.userType,
-              name: data.data.name,
-              phone: data.data.phone,
-            });
-
-            api.defaults.headers.common.Authorization = data.data.accessToken;
-
+            authLogin(data.data.accessToken, data.data.refreshToken); // AuthContext의 login 함수 사용
+            localStorage.setItem('userType', data.data.userType);
+            localStorage.setItem('userName', data.data.name);
+            localStorage.setItem('userPhone', data.data.phone);
             navigate('/registration');
           },
           onError: error => {
@@ -116,38 +110,46 @@ const SignUpForm: React.FC = () => {
     }
   };
 
-  return currentStep === SignUpStep.termsAgreedInfo ? (
-    <FormContainer>{renderCurrentStep()}</FormContainer>
-  ) : (
-    <FormContainer>
-      <HeadBox>
-        <IconWrapper>
-          <GoArrowLeft size="2rem" type="button" onClick={handlePrevStep}>
-            이전
-          </GoArrowLeft>
-        </IconWrapper>
-        <TextWrapper>
-          <Title>회원가입</Title>
-        </TextWrapper>
-      </HeadBox>
+  return (
+    <div>
+      <Logo>
+        <img src="/assets/images/ic_logo_white.png" alt="reborn" />
+        <img
+          src="/assets/images/partners.png"
+          alt="partners"
+          style={{ paddingLeft: '5px' }}
+        />
+      </Logo>
+      {currentStep === SignUpStep.termsAgreedInfo ? (
+        <FormContainer>{renderCurrentStep()}</FormContainer>
+      ) : (
+        <FormContainer>
+          <HeadBox>
+            <IconWrapper>
+              <GoArrowLeft size="2rem" type="button" onClick={handlePrevStep}>
+                이전
+              </GoArrowLeft>
+            </IconWrapper>
+            <TextWrapper>
+              <Title>회원가입</Title>
+            </TextWrapper>
+          </HeadBox>
 
-      <ProgressBox>
-        <span>{currentStep}/3</span>
-        <ProgressBar
-          id="progress"
-          value={(currentStep / 3) * 100}
-          max="100"
-        ></ProgressBar>
-      </ProgressBox>
+          <ProgressBox>
+            <span>{currentStep}/3</span>
+            <ProgressBar value={(currentStep / 3) * 100} />
+          </ProgressBox>
 
-      <SubTitle>{stepName[currentStep - 1]} 정보를 작성해 주세요.</SubTitle>
-      {renderCurrentStep()}
-    </FormContainer>
+          <SubTitle>{stepName[currentStep - 1]} 정보를 작성해 주세요.</SubTitle>
+          {renderCurrentStep()}
+        </FormContainer>
+      )}
+    </div>
   );
 };
 
 const FormContainer = styled.div`
-  max-width: 500px;
+  width: 500px;
   margin: 0 auto;
   padding: 20px;
   border-radius: 8px;
@@ -186,12 +188,6 @@ const ProgressBox = styled.div`
   align-items: center;
 `;
 
-const ProgressBar = styled.progress`
-  width: 440px;
-  background-color: 10px;
-  color: #ff6632;
-`;
-
 const Title = styled.h1`
   font-size: 1.5rem;
   color: #333;
@@ -201,6 +197,14 @@ const SubTitle = styled.h2`
   font-size: 1rem;
   color: #666;
   margin-bottom: 1rem;
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-bottom: 30px;
+  margin-top: 30px;
 `;
 
 export default SignUpForm;

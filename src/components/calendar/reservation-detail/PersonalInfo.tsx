@@ -1,28 +1,29 @@
+import { useCalendarBookingDetail } from 'src/queries/reservation';
 import { ReactComponent as FaceIcon } from '../../../assets/Person.svg';
+import { useFuneralEventStore } from '../store/event-store';
 
-interface InputProps {
+interface InfoProps {
   label?: string;
-  placeholder?: string;
+  value?: string;
 }
 
 interface RecordInfoProps {
   date: string;
   title: string;
   price: string;
-  status: '완료';
+  status: string;
 }
 
-const InputInfo = function ({ label, placeholder }: InputProps) {
+const InfoBox = function ({ label, value }: InfoProps) {
   return (
     <div className={`flex flex-col gap-[8px] ${label ? '' : 'mt-[-16px]'}`}>
       {label && (
         <label className="font-medium text-reborn-gray4">{label}</label>
       )}
       {/* TODO: input이 아니라 일반 Box라고 함 */}
-      <input
-        className="rounded-[4px] border-[1.26px] border-reborn-gray1 w-full outline-none py-[6px] px-[12px] text-[12px]"
-        placeholder={placeholder}
-      />
+      <div className="rounded-[4px] border-[1.26px] border-reborn-gray1 w-full outline-none py-[6px] px-[12px] text-[12px] h-[32px]">
+        {value}
+      </div>
     </div>
   );
 };
@@ -43,40 +44,43 @@ const RecordInfo = function ({ price, date, status, title }: RecordInfoProps) {
 };
 
 export const PersonalInfo = function () {
+  const { selectedEvent } = useFuneralEventStore();
+  const { data } = useCalendarBookingDetail(selectedEvent);
   return (
     <div className="flex flex-col w-full h-full pt-[31px] pl-[30px] pr-[27px] gap-[20px]">
       <div className="flex flex-row gap-[4px] text-reborn-gray8 text-[14px] leading-[17px] font-semibold mb-[-4px]">
         <FaceIcon width={16} height={16} />
         예약자
       </div>
-      <InputInfo label="아이디" placeholder="아이디" />
-      <InputInfo label="이름" placeholder="이름" />
-      <InputInfo label="연락처" placeholder="연락처" />
-      <InputInfo label="주소" placeholder="12345" />
-      <InputInfo label="" placeholder="OO시 OO동 1234" />
-      <InputInfo label="" placeholder="OO동 OO호" />
+      <InfoBox label="아이디" value={data?.data.userInfo.id} />
+      <InfoBox label="이름" value={data?.data.userInfo.name} />
+      <InfoBox label="연락처" value={data?.data.userInfo.phoneNumber} />
+      <InfoBox label="주소" value={data?.data.userInfo.address} />
+      <InfoBox label="" />
+      <InfoBox label="" />
       <div className="overflow-y-auto w-full">
         <h3 className="flex flex-row gap-[4px] text-reborn-gray8 text-[14px] leading-[17px] font-semibold mb-[12px]">
-          지난 내역 (2)
+          지난 내역 ({data?.data.userInfo.bookingHistory.length})
         </h3>
-        <RecordInfo
+        {data?.data.userInfo.bookingHistory.map((booking, idx) => {
+          return (
+            <RecordInfo
+              date={booking.bookingDate}
+              price={booking.totalFee
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              status={booking.bookingStatus}
+              title={booking.packageName}
+              key={`user-history-${idx}`}
+            />
+          );
+        })}
+        {/* <RecordInfo
           price={`150,000원`}
           date="2023.06.12 (목)"
           status="완료"
           title="기본패키지"
-        />
-        <RecordInfo
-          price={`150,000원`}
-          date="2023.06.12 (목)"
-          status="완료"
-          title="기본패키지"
-        />
-        <RecordInfo
-          price={`150,000원`}
-          date="2023.06.12 (목)"
-          status="완료"
-          title="기본패키지"
-        />
+        /> */}
       </div>
     </div>
   );

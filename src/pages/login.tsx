@@ -1,26 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
 import { useLoginMutation } from '../hooks/useLoginMutation';
-import { useRecoilState } from 'recoil';
-import { authState } from '../atoms/authState';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
-import { LoginReq } from '../services/apiService';
 import Modal from '../components/common/Modal';
+import Input from '../components/common/Input';
 import useModal from '../hooks/useModal';
-import api from 'src/api/axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>(''); // 에러 메시지 상태 추가
-  const [, setAuth] = useRecoilState(authState);
   const navigate = useNavigate();
   const { isOpen, openModal, closeModal } = useModal();
+  const { login: authLogin } = useAuth();
   const {
-    mutate: login,
+    mutate: loginMutate,
     // isPending,
     // isError,
     // isSuccess,
@@ -48,33 +46,29 @@ const LoginPage: React.FC = () => {
       localStorage.removeItem('savedEmail');
     }
 
-    login(
+    loginMutate(
       {
         loginId: email,
         password: password,
       },
       {
         onSuccess: data => {
-          setAuth({
-            accessToken: data.data.accessToken,
-            refreshToken: data.data.refreshToken,
-            userType: data.data.userType,
-            name: data.data.name,
-            phone: data.data.phone,
-          });
-
-          api.defaults.headers.common.Authorization = data.data.accessToken;
+          authLogin(data.data.accessToken, data.data.refreshToken); // AuthContext의 login 함수 사용
+          // 추가 정보 저장이 필요하다면 별도의 상태 관리나 로컬 스토리지를 사용
+          localStorage.setItem('userType', data.data.userType);
+          localStorage.setItem('userName', data.data.name);
+          localStorage.setItem('userPhone', data.data.phone);
 
           navigate('/registration');
         },
-        onError: (error: Error, variables: LoginReq, context: unknown) => {
+        onError: (error: Error) => {
           if (axios.isAxiosError(error)) {
-            const msg = error.response?.data?.msg;
+            const msg = error.response?.data?.msg || '로그인에 실패했습니다.';
             setErrorMessage(msg);
-            openModal();
           } else {
             setErrorMessage('알 수 없는 오류가 발생했습니다.');
           }
+          openModal();
         },
       },
     );
@@ -170,14 +164,6 @@ const Logo = styled.div`
   font-size: 3rem;
   font-weight: bold;
   color: #ff6632;
-`;
-
-const Input = styled.input`
-  width: 412px;
-  height: 50px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 `;
 
 const LoginButton = styled(Button)`

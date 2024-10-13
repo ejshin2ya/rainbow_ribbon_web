@@ -1,13 +1,16 @@
 export interface RoomListDto {
+  // api/chatting/room/list
+  // 현재 제공중인 값
   roomId: string;
   userId: string;
   companyId: string;
   imgUrl: string;
-  companyName: string;
-  companyAddress: string;
-  isReserved: boolean;
+  name: string;
+  booked: boolean;
   unreadCount: number;
+  address: string;
   lastMessage: string;
+  lastMessageDateTime: string;
 }
 
 export interface GetRoomListRes {
@@ -28,10 +31,9 @@ export interface StartChatRes {
 }
 
 export interface SendMessageRes {
-  roomId: string;
-  senderType: string;
-  message: string;
-  createdAt: string;
+  msg: string;
+  statusCode: string;
+  data: Message;
 }
 
 export interface GetUnreadMessageRes {
@@ -43,11 +45,20 @@ export interface GetUnreadMessageRes {
   }[];
 }
 
+export interface Message {
+  createAt: string;
+  message: string;
+  messageId: string;
+  receiverId: string;
+  roomId: string;
+  senderType: string;
+}
+
 export interface GetAllMessage {
-  messageList: {
-    roomId: string;
-    senderType: string;
-    message: string;
-    createdAt: string;
-  }[];
+  data: {
+    messages: Message[];
+    hasMore: boolean;
+  };
+  msg: string;
+  statusCode: string;
 }
