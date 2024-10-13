@@ -142,7 +142,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
           type="button"
           onClick={handleVerificationRequest}
           disabled={isPending || (isCodeVerified !== null && isCodeVerified)}
-          addTopMargin={true}
+          addTopMargin={'1.8rem'}
         >
           {countdown !== null && countdown > 0 ? '다시받기' : '인증요청'}
         </Button>
@@ -165,6 +165,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ onNext }) => {
               type="button"
               onClick={handleVerificationConfirm}
               disabled={isCodeVerified !== null && isCodeVerified}
+              addBottomMargin={'0.6rem'}
             >
               확인
             </Button>
