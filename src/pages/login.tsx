@@ -5,6 +5,7 @@ import { useLoginMutation } from '../hooks/useLoginMutation';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
+import Input from '../components/common/Input';
 import useModal from '../hooks/useModal';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -163,14 +164,6 @@ const Logo = styled.div`
   font-size: 3rem;
   font-weight: bold;
   color: #ff6632;
-`;
-
-const Input = styled.input`
-  width: 412px;
-  height: 50px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 `;
 
 const LoginButton = styled(Button)`

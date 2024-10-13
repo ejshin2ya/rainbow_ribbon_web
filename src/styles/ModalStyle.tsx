@@ -21,9 +21,31 @@ export const ModalContent = styled.div`
   padding: 24px;
   border-radius: 16px;
   width: 562px;
-  height: 622px;
+  max-height: 90vh; // 뷰포트 높이의 90%로 제한
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+`;
+
+export const ScrollableContent = styled.div`
+  flex: 1;
   overflow-y: auto;
+  padding: 20px;
+
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 `;
 
 export const ModalHeader = styled.div`
@@ -115,6 +137,7 @@ export const Text = styled.h1`
 
 export const ImageUploadArea = styled.div`
   display: flex;
+  position: relative;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -123,6 +146,7 @@ export const ImageUploadArea = styled.div`
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-top: 10px;
+  margin-right: 10px;
   cursor: pointer;
   overflow: hidden;
 `;
@@ -243,8 +267,8 @@ export const NextButton = styled.button<NextButtonProps>`
 `;
 
 export const ImagePreview = styled.img`
-  width: 100%;
-  height: 100%;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
 `;
 
@@ -256,4 +280,9 @@ export const ImageCountText = styled.span`
   font-size: 12px;
   color: #666;
   margin-top: 8px;
+`;
+
+export const ImgBox = styled.div`
+  display: flex;
+  flex-direction: row;
 `;
