@@ -24,12 +24,18 @@ const FuneralServiceStep: React.FC<StepProps> = ({ nextStep }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (funeralComposition.shroudCoffinImage instanceof File) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(funeralComposition.shroudCoffinImage);
+    if (funeralComposition.shroudCoffinImage) {
+      if (typeof funeralComposition.shroudCoffinImage === 'string') {
+        setPreviewUrl(funeralComposition.shroudCoffinImage);
+      } else if (funeralComposition.shroudCoffinImage instanceof File) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(funeralComposition.shroudCoffinImage);
+      }
+    } else {
+      setPreviewUrl(null);
     }
   }, [funeralComposition.shroudCoffinImage]);
 
@@ -43,13 +49,18 @@ const FuneralServiceStep: React.FC<StepProps> = ({ nextStep }) => {
     }
   };
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     fileInputRef.current?.click();
   };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const filteredValue = value.replace(/[^가-힣a-zA-Z\s]/g, '').slice(0, 30);
+    // 한글(자음, 모음 포함), 영문, 공백만 허용
+    const filteredValue = value
+      .replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z\s]/g, '')
+      .slice(0, 30);
 
     setFuneralComposition(prev => ({
       ...prev,

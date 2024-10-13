@@ -50,7 +50,6 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
         (hasMemorialService && hasImages && hasPrice),
     );
 
-    // Cleanup function to revoke object URLs
     return () => {
       funeralComposition.memorialImage.forEach(image => {
         if (typeof image === 'string' && image.startsWith('blob:')) {
