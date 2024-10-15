@@ -19,7 +19,7 @@ class ReservationDomain {
    * @description get
    */
   get availableHours() {
-    return Domain.getPath(`/api/booking/check`);
+    return Domain.getPath(`/api/no-auth/booking/check`);
   }
   /**
    * @description put
