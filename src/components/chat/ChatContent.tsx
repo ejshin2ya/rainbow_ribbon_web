@@ -343,6 +343,16 @@ export const ChatContent = function () {
 
   useEffect(() => {
     // 메세지 수신
+    setMessageMap(prevMap => {
+      const newMap = new Map(prevMap);
+      messages.forEach(msg => {
+        const existingRoomMessages = new Map(newMap.get(msg.roomId) ?? []);
+        const { messageId: id } = msg;
+        existingRoomMessages.set(id, msg);
+        newMap.set(selectedRoomId, existingRoomMessages);
+      });
+      return newMap;
+    });
   }, [messages.length]);
 
   return (
