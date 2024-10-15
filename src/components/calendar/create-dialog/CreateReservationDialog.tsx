@@ -39,12 +39,18 @@ const CreateReservationDialog = function ({ onClose }: Props) {
       memo: '',
     },
   });
-  const { control } = methods;
+  const { handleSubmit } = methods;
+  const submitHandler = function (data) {
+    console.log(data);
+  };
   return (
     <main className="max-h-[828px] min-h-[800px] min-w-[839px] bg-reborn-white rounded-[12px] flex flex-col">
       <CreateHeader onClose={onClose} />
       <FormProvider {...methods}>
-        <form className="flex-1 w-full flex flex-col" {...control}>
+        <form
+          className="flex-1 w-full flex flex-col"
+          onSubmit={handleSubmit(submitHandler)}
+        >
           <CreateMain />
           <CreateFooter />
         </form>

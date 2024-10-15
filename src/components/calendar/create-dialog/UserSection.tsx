@@ -1,4 +1,4 @@
-import { ReactComponent as ArrowDownIcon } from 'src/assets/ArrowDown.svg';
+import { FormInput } from './FormInput';
 
 export const UserSection = function () {
   return (
@@ -9,16 +9,10 @@ export const UserSection = function () {
       </h1>
       <div className="w-full flex-1 h-1 flex flex-col gap-[6px]">
         <h2 className="text-[14px]">이름</h2>
-        <input
-          className="relative w-full h-[46px] border-[1px] py-[12.5px] px-[16px] rounded-[8px] border-reborn-gray1 outline-none"
-          placeholder="이름을 입력해 주세요."
-        />
+        <FormInput name="userName" placeHolder="이름을 입력해 주세요." />
 
         <h2 className="text-[14px]">휴대폰 번호</h2>
-        <input
-          className="relative w-full h-[46px] border-[1px] py-[12.5px] px-[16px] rounded-[8px] border-reborn-gray1 outline-none"
-          placeholder="'-'없이 입력해 주세요."
-        />
+        <FormInput name="phoneNumber" placeHolder="'-' 없이 입력해 주세요." />
 
         <h2 className="text-[14px]">주소</h2>
         <div className="w-full h-[46px] flex flex-row gap-[5px]">
