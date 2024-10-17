@@ -98,12 +98,9 @@ export const ChatContent = function () {
   const fetchMore = async function () {
     const selectedPagingData = pagingData.get(selectedRoomId);
     if (!selectedPagingData || !selectedPagingData.hasMore) return;
-    const { data } = await getAllMessage(
-      selectedRoomId,
-      Array.from(messageMap.get(selectedRoomId) ?? [])?.[
-        messageMap.size - 1
-      ]?.[0] ?? '',
-    );
+    const msgArr = Array.from(messageMap.get(selectedRoomId) ?? []);
+    const oldMessageId = msgArr?.[msgArr.length - 1]?.[0] ?? '';
+    const { data } = await getAllMessage(selectedRoomId, oldMessageId);
     if (!data || !data.messages.length) return;
     const sortedMessages = data.messages.sort(
       (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime(),
@@ -343,6 +340,8 @@ export const ChatContent = function () {
     }
   }, [messageArray.length]);
 
+  console.log(messageArray);
+
   useEffect(() => {
     // 메세지 수신
     setMessageMap(prevMap => {
@@ -355,6 +354,8 @@ export const ChatContent = function () {
       });
       return newMap;
     });
+    const { key } = chatQueryKey.chatList();
+    queryClient.invalidateQueries({ queryKey: key });
   }, [messages.length]);
 
   return (
