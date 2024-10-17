@@ -147,7 +147,11 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
 
   return (
     <CalendarContainer>
-      <CommonRouteDialog isOpen={createDialogOpen} onClose={closeCreateDialog}>
+      <CommonRouteDialog
+        isOpen={createDialogOpen}
+        onClose={closeCreateDialog}
+        dimCloseBlock
+      >
         <CreateReservationDialog onClose={closeCreateDialog} />
       </CommonRouteDialog>
       <div className="w-full font-semibold text-[14px] leading-[21px] text-reborn-gray3 mb-[12px] flex-shrink-0">
