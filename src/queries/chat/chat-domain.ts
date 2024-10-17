@@ -40,9 +40,9 @@ class ChatDomain {
   /**
    * @description get
    */
-  getAllMessage(roomId: string, pageNo: number) {
+  getAllMessage(roomId: string, lastId: string) {
     return Domain.getPath(
-      `/api/chatting/${roomId}/message/list/v2?pageNo=${pageNo}`,
+      `/api/chatting/${roomId}/message/list/v2?lastId=${lastId}`,
     );
   }
   /**

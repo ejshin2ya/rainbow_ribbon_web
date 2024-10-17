@@ -100,7 +100,9 @@ export const ChatContent = function () {
     if (!selectedPagingData || !selectedPagingData.hasMore) return;
     const { data } = await getAllMessage(
       selectedRoomId,
-      selectedPagingData.page,
+      Array.from(messageMap.get(selectedRoomId) ?? [])?.[
+        messageMap.size - 1
+      ]?.[0] ?? '',
     );
     if (!data || !data.messages.length) return;
     const sortedMessages = data.messages.sort(

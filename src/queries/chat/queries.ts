@@ -36,14 +36,14 @@ export const useUnreadMessage = function (
 
 export const useAllMessage = function (
   roomId: string,
-  pageNo: number,
+  lastId: string,
   options?: Parameters<typeof useQuery>,
 ) {
-  const { key } = chatQueryKey.roomMessage(roomId, pageNo);
+  const { key } = chatQueryKey.roomMessage(roomId, lastId);
   return useQuery({
     ...options,
     queryKey: key,
-    queryFn: () => getAllMessage(roomId, pageNo),
+    queryFn: () => getAllMessage(roomId, lastId),
     enabled: !!roomId,
   });
 };
