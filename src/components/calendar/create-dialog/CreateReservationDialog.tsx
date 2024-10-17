@@ -6,24 +6,25 @@ import { CreateMain } from './CreateMain';
 interface Props {
   onClose: () => void;
 }
+interface FormContext {
+  package: string;
+  option: string;
+  bookingStart: string;
+  bookingEnd: string;
+  userName: string;
+  phoneNumber: string;
+  address: string;
+  postalCode: string;
+  petName: string;
+  petWeight: string;
+  petType: string;
+  petAgeYear: string;
+  petAgeMonth: string;
+  memo: string;
+}
 
 const CreateReservationDialog = function ({ onClose }: Props) {
-  const methods = useForm<{
-    package: string;
-    option: string;
-    bookingStart: string;
-    bookingEnd: string;
-    userName: string;
-    phoneNumber: string;
-    address: string;
-    postalCode: string;
-    petName: string;
-    petWeight: string;
-    petType: string;
-    petAgeYear: string;
-    petAgeMonth: string;
-    memo: string;
-  }>({
+  const methods = useForm<FormContext>({
     defaultValues: {
       package: '',
       option: '',
@@ -54,7 +55,7 @@ const CreateReservationDialog = function ({ onClose }: Props) {
     mode: 'onChange',
   });
   const { handleSubmit } = methods;
-  const submitHandler = function (data) {
+  const submitHandler = function (data: FormContext) {
     console.log(data);
   };
   return (
