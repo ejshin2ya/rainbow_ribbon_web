@@ -130,3 +130,15 @@ a:hover {
     transform: rotate(360deg);
   }
 }
+
+@layer utilities {
+  .no-input-spinner::-webkit-inner-spin-button,
+  .no-input-spinner::-webkit-outer-spin-button {
+    @apply appearance-none;
+    margin: 0;
+  }
+
+  .no-input-spinner {
+    @apply appearance-none;
+  }
+}
