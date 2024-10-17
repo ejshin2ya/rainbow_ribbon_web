@@ -123,10 +123,24 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
 
   useEffect(() => {
     if (!data?.data) return;
-    // data.data.weekdayOpen
-    // data.data.weekdayClose
-    // data.data.weekendOpen
-    // data.data.weekendClose
+    let open = '';
+    let close = '';
+    // formatting: hh:mm
+    if (selectedDate.getDay() % 6) {
+      open = data.data.weekdayOpen ?? '07:00';
+      close = data.data.weekdayClose ?? '24:00';
+    } else {
+      open = data.data.weekendOpen ?? '07:00';
+      close = data.data.weekendClose ?? '24:00';
+    }
+    const start = parseInt(open.split(':')?.[0] ?? 7);
+    const end = parseInt(close.split(':')?.[0] ?? 24);
+    const ts: string[] = [];
+    for (let i = start; i <= end; i++) {
+      const timeString = `${i < 12 ? '오전' : '오후'} ${i % 12}:00`;
+      ts.push(timeString);
+    }
+    setTimes([...ts]);
   }, [data?.data]);
 
   const openConfirmBlockDialogHandler = function () {
@@ -194,7 +208,20 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
 
       <div className="grid__container grid grid-rows-36 grid-cols-[55px_1fr]">
         {timeBlockData?.data?.map((canBook, idx) => {
-          if (canBook) return;
+          if (canBook) return null;
+          let open = '';
+          let close = '';
+          // formatting: hh:mm
+          if (selectedDate.getDay() % 6) {
+            open = data?.data.weekdayOpen ?? '07:00';
+            close = data?.data.weekdayClose ?? '24:00';
+          } else {
+            open = data?.data.weekendOpen ?? '07:00';
+            close = data?.data.weekendClose ?? '24:00';
+          }
+          const start = parseInt(open.split(':')?.[0] ?? 7);
+          const end = parseInt(close.split(':')?.[0] ?? 24);
+          if (idx > end || idx < start) return null;
           const startDate = new Date(
             selectedDate.getFullYear(),
             selectedDate.getMonth(),
@@ -208,7 +235,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
             idx + 1,
           );
           const height = 46;
-          const top = (idx - 7) * 46;
+          const top = (idx - start) * 46;
           const width = `calc((100% - 55px))`;
           const left = '55px';
           return (
@@ -228,10 +255,24 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
         {processedEvents.map((td, idx) => {
           if (selectedDate.toDateString() !== td.startDate.toDateString())
             return null;
+          let open = '';
+          let close = '';
+          // formatting: hh:mm
+          if (selectedDate.getDay() % 6) {
+            open = data?.data.weekdayOpen ?? '07:00';
+            close = data?.data.weekdayClose ?? '24:00';
+          } else {
+            open = data?.data.weekendOpen ?? '07:00';
+            close = data?.data.weekendClose ?? '24:00';
+          }
+          const start = parseInt(open.split(':')?.[0] ?? 7);
+          const end = parseInt(close.split(':')?.[0] ?? 24);
+          if (td.startDate.getHours() > end || td.startDate.getHours() < start)
+            return null;
           const diffDate = td.endDate.getTime() - td.startDate.getTime();
           const diffHours = diffDate / (1000 * 60 * 60);
           const height = diffHours * 46;
-          const top = (td.startDate.getHours() - 7) * 46;
+          const top = (td.startDate.getHours() - start) * 46;
           const width = `calc((100% - 55px) / ${data?.data.parallel ?? 1})`;
           const left = `calc(55px + (100% - 55px) / ${data?.data.parallel ?? 1} * ${td.layer})`;
 
@@ -251,26 +292,7 @@ export const CalendarDetail = function ({ selectedDate }: Props) {
           );
         })}
 
-        {[
-          '오전 7시',
-          '오전 8시',
-          '오전 9시',
-          '오전 10시',
-          '오전 11시',
-          '오후 12시',
-          '오후 1시',
-          '오후 2시',
-          '오후 3시',
-          '오후 4시',
-          '오후 5시',
-          '오후 6시',
-          '오후 7시',
-          '오후 8시',
-          '오후 9시',
-          '오후 10시',
-          '오후 11시',
-          '오전 12시',
-        ].map((title, idx) => {
+        {times.map((title, idx) => {
           return createElement(Fragment, {
             children: (
               <>
@@ -304,7 +326,8 @@ const CalendarContainer = styled.div`
   .grid__container {
     width: 100%;
     height: 1;
-    flex: 1;
+    /* flex: 1; */
+    flex-shrink: 0;
     overflow-y: auto;
     overflow-x: hidden;
     margin-top: 16px;
