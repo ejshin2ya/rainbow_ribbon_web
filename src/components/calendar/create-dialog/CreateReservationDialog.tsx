@@ -43,11 +43,17 @@ const CreateReservationDialog = function ({ onClose }: Props) {
     },
     resolver: data => {
       const errors: Record<string, { type?: string; message: string }> = {};
-      if (!data.petAgeYear) {
-        errors.petAgeYear = { type: 'required', message: 'Year is required' };
+      if (!data.bookingStart) {
+        errors.bookingStart = {
+          type: 'required',
+          message: 'bookingStart is required',
+        };
       }
-      if (!data.petAgeMonth) {
-        errors.petAgeMonth = { type: 'required', message: 'Month is required' };
+      if (!data.bookingEnd) {
+        errors.bookingEnd = {
+          type: 'required',
+          message: 'bookingEnd is required',
+        };
       }
       const values = Object.keys(errors).length === 0 ? data : {};
       return { errors, values };
