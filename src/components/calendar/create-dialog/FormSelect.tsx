@@ -1,11 +1,11 @@
-import { SelectHTMLAttributes, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { ReactComponent as ArrowDownIcon } from 'src/assets/ArrowDown.svg';
 
-interface Props extends SelectHTMLAttributes<HTMLSelectElement> {
+interface Props {
   name: string;
   placeHolder?: string;
-  optionList?: { value: string; title: string }[];
+  optionList?: { value: any; title: string }[];
   className?: string;
 }
 
@@ -14,11 +14,10 @@ export const FormSelect = function ({
   optionList = [],
   placeHolder,
   className,
-  ...rest
 }: Props) {
   const dropdownRef = useRef<HTMLUListElement>(null);
   const [dropdown, setDropdown] = useState(false);
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
   const { field } = useController({ name, control });
   const toggleDropdown = function () {
     setDropdown(prev => !prev);
@@ -42,13 +41,16 @@ export const FormSelect = function ({
       className={`relative w-full h-[46px] border-[1px] py-[12.5px] px-[16px] rounded-[8px] border-reborn-gray1 cursor-pointer hover:bg-reborn-gray0 active:bg-reborn-gray1 duration-200 ${className ?? ''} ${field.value ? 'text-reborn-gray8' : 'text-reborn-gray3'}`}
       onClick={toggleDropdown}
     >
-      <div>{field.value || placeHolder}</div>
+      <div className="text-[14px]">
+        {optionList.filter(opt => opt.value === field.value)?.[0]?.title ||
+          placeHolder}
+      </div>
       {!!optionList.length && dropdown && (
         <ul
           className="absolute mt-[8px] left-0 w-full bg-white border border-gray-300 rounded-md shadow-lg z-[1422] max-h-[170px] overflow-y-auto animate-scaleUp"
           onClick={e => {
             e.stopPropagation();
-            field.onChange(`${(e.target as HTMLLIElement).value}`);
+            setValue(name, `${(e.target as HTMLLIElement).value}`);
             setDropdown(false);
           }}
           ref={dropdownRef}
