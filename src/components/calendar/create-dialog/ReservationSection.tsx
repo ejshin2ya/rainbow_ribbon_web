@@ -3,8 +3,8 @@ import { FormSelect } from './FormSelect';
 
 export const ReservationSection = function () {
   const { watch } = useFormContext();
-  const start = watch('bookingStart') || `${-2}`;
-  const end = watch('bookingEnd') || `${-1}`;
+  const start = watch('bookingStart') || `0`;
+  const end = watch('bookingEnd') || `0.1`;
 
   const timeArray = new Array(25).fill(0).map((_, idx) => {
     return {
@@ -41,7 +41,7 @@ export const ReservationSection = function () {
             optionList={timeArray}
           />
         </div>
-        {parseInt(start) >= parseInt(end) && (
+        {start >= end && (
           <div className="w-full text-[12px] text-reborn-orange3 translate-y-[-4px] px-[4px]">
             예약 종료 시간은 예약 시작 시간보다 이를 수 없습니다.
           </div>

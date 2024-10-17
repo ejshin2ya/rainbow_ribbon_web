@@ -55,6 +55,16 @@ const CreateReservationDialog = function ({ onClose }: Props) {
           message: 'bookingEnd is required',
         };
       }
+      if (
+        data.bookingStart &&
+        data.bookingEnd &&
+        data.bookingStart >= data.bookingEnd
+      ) {
+        errors.bookingStart = {
+          type: 'nonValid',
+          message: 'bookingStart must be smaller then bookingEnd',
+        };
+      }
       const values = Object.keys(errors).length === 0 ? data : {};
       return { errors, values };
     },

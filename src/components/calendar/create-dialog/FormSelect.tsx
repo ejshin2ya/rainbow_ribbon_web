@@ -17,7 +17,7 @@ export const FormSelect = function ({
 }: Props) {
   const dropdownRef = useRef<HTMLUListElement>(null);
   const [dropdown, setDropdown] = useState(false);
-  const { control, setValue } = useFormContext();
+  const { control } = useFormContext();
   const { field } = useController({ name, control });
   const toggleDropdown = function () {
     setDropdown(prev => !prev);
@@ -50,7 +50,7 @@ export const FormSelect = function ({
           className="absolute mt-[8px] left-0 w-full bg-white border border-gray-300 rounded-md shadow-lg z-[1422] max-h-[170px] overflow-y-auto animate-scaleUp"
           onClick={e => {
             e.stopPropagation();
-            setValue(name, `${(e.target as HTMLLIElement).value}`);
+            field.onChange(`${(e.target as HTMLLIElement).value}`);
             setDropdown(false);
           }}
           ref={dropdownRef}
