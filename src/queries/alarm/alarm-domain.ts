@@ -4,9 +4,9 @@ class AlarmDomain {
   /**
    * @description get
    */
-  alarmList(category: 'BOOKING' | 'CHAT', pageNo: number) {
+  alarmList(category: 'BOOKING' | 'CHAT', lastId: string) {
     return Domain.getPath(
-      `/api/alert/list?category=${category}&pageNo=${pageNo}`,
+      `/api/alert/list?category=${category}&lastId=${lastId}`,
     );
   }
   /**

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alarm, useAlarmList } from 'src/queries/alarm';
 import {
   conversionAlarmDate,
   conversionNormalDate,
 } from 'src/utils/conversion';
+import Loader from '../common/Loader';
 
 interface Props {
   tab: '예약' | '채팅';
@@ -23,13 +24,16 @@ const AlarmItem = function ({ alarm, tab }: { alarm: Alarm } & Props) {
 };
 
 export const AlarmPopoverContent = function ({ tab }: Props) {
-  const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [contents, setContents] = useState<Alarm[]>([]);
-  const { data, isLoading } = useAlarmList(
-    tab === '예약' ? 'BOOKING' : 'CHAT',
-    page,
+  const [contents, setContents] = useState<Map<string, Alarm>>(
+    new Map<string, Alarm>(),
   );
+  const [lastId, setLastId] = useState('');
+  const { data, isFetching } = useAlarmList(
+    tab === '예약' ? 'BOOKING' : 'CHAT',
+    lastId,
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const parseHandler = function (info: Alarm) {
     switch (info.type) {
@@ -43,24 +47,44 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
     }
   };
 
+  const contentsArray = Array.from(contents).map(([id, alm]) => alm);
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
+        setLastId(contentsArray[contentsArray.length - 1].id);
+      }
+    }
+  };
+
   useEffect(() => {
-    setPage(0);
+    setLastId('');
+    setHasMore(true);
+    setContents(new Map<string, Alarm>());
   }, [tab]);
+
   useEffect(() => {
     if (data) {
-      setHasMore(!!data.data.hasMore);
-      setContents(data.data.alerts);
+      setHasMore(data.data.hasMore);
+      setContents(prev => {
+        const newMap = new Map<string, Alarm>(prev);
+        data.data.alerts.forEach(alm => {
+          newMap.set(alm.id, alm);
+        });
+        return newMap;
+      });
     }
   }, [data]);
+
   return (
-    <div className="w-full h-[50px] flex-1 overflow-y-auto overflow-x-hidden">
-      {isLoading ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="spinner" />
-        </div>
-      ) : (
-        !!data?.data.alerts.length &&
-        data?.data.alerts.map(alarm => {
+    <div
+      ref={containerRef}
+      className="w-full h-[50px] flex-1 overflow-y-auto overflow-x-hidden"
+      onScroll={handleScroll}
+    >
+      {!!contentsArray.length &&
+        contentsArray.map(alarm => {
           return (
             <div
               className="w-full h-[80px] flex flex-col py-[17px] px-[20px] items-start gap-[2px] border-b-[1px] border-b-reborn-gray0 text-reborn-gray8"
@@ -74,7 +98,11 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
               </span>
             </div>
           );
-        })
+        })}
+      {hasMore && (
+        <div className="w-full my-[30px]">
+          <Loader />
+        </div>
       )}
     </div>
   );

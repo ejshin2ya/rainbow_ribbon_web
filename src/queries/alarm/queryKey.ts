@@ -5,10 +5,10 @@ export const alarmQueryKey = {
       initialize: ['alarm', 'count'],
     };
   },
-  alarmList(category: string, pageNo: number) {
+  alarmList(category: string, lastId: string) {
     return {
-      key: ['alarm', 'list', category, `${pageNo}`],
-      initialize: ['alarm', 'list', category, `${pageNo}`],
+      key: ['alarm', 'list', category, `${lastId}`],
+      initialize: ['alarm', 'list', category, `${lastId}`],
     };
   },
 };
