@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { reservationQueryKey } from '.';
+import { CreateReservation, reservationQueryKey } from '.';
 import {
   changeBookingMemo,
   changeBookingStatus,
+  createReservation,
   getAvailableHours,
   getBookingDetail,
   getCalendarBookingList,
+  getFuneralOptions,
   reservationBlock,
   reservationBlockList,
 } from 'src/services/reservationService';
@@ -49,6 +51,19 @@ export const useAvailableHours = function (
     queryKey: key,
     queryFn: () => getAvailableHours(companyId, bookingDate),
     enabled: !!bookingDate && !!companyId,
+  });
+};
+
+/**
+ * query
+ * @param partnerId string
+ */
+export const useFuneralOptions = function (partnerId: string) {
+  const { key } = reservationQueryKey.getFuneralOptions(partnerId);
+  return useQuery({
+    queryKey: key,
+    queryFn: () => getFuneralOptions(partnerId),
+    enabled: !!partnerId,
   });
 };
 
@@ -124,6 +139,24 @@ export const useReservationBlockList = function (
     ...options,
     mutationFn: ({ restrictTimes }: { restrictTimes: string[] }) =>
       reservationBlockList(restrictTimes),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
+    onError: () => console.log(`Cannot change status`),
+  });
+};
+
+/**
+ * mutation
+ * @param data CreateReservation
+ */
+export const useCreateReservation = function (
+  options?: Parameters<typeof useMutation>,
+) {
+  const queryClient = useQueryClient();
+  const { initialize } = reservationQueryKey.createReservation();
+  return useMutation({
+    ...options,
+    mutationFn: ({ data }: { data: CreateReservation }) =>
+      createReservation(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: initialize }),
     onError: () => console.log(`Cannot change status`),
   });

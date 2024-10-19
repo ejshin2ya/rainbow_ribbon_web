@@ -12,6 +12,12 @@ class ReservationDomain {
   /**
    * @description get
    */
+  funeralOptions(partnerId: string) {
+    return Domain.getPath(`/api/no-auth/funeral/list/partner/${partnerId}`);
+  }
+  /**
+   * @description get
+   */
   get bookingList() {
     return Domain.getPath(`/api/booking/calendar`);
   }
@@ -41,6 +47,10 @@ class ReservationDomain {
   }
   get bookingTimeBlockList() {
     return Domain.getPath(`/api/booking/calendar/restrict/list`);
+  }
+
+  get createReservation() {
+    return Domain.getPath(`/api/booking/extract/funeral`);
   }
 }
 
