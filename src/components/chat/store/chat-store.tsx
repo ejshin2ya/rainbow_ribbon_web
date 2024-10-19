@@ -6,7 +6,6 @@ import {
   useState,
 } from 'react';
 import { useChatList } from 'src/queries';
-import { GetRoomListRes } from 'src/queries/chat/types';
 
 interface ChatStoreType {
   selectedRoomId: string;
@@ -29,10 +28,23 @@ export const ChatProvider = function ({ children }: PropsWithChildren) {
   };
   useEffect(() => {
     if (data?.data.length) {
-      setSelectedRoomId(data?.data[0].roomId);
-      setSelectedUserId(data?.data[0].userId);
+      setSelectedRoomId(prev => prev || data?.data[0].roomId);
+      setSelectedUserId(prev => prev || data?.data[0].userId);
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    const handler = function (e: MessageEvent) {
+      if (e.data?._typeFlag === 'clickChat') {
+        changeRoom(e.data?.roomId);
+        changeUser(e.data?.userId);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => {
+      window.removeEventListener('message', handler);
+    };
+  }, []);
 
   return (
     <ChatStore.Provider
