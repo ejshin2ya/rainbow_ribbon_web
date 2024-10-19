@@ -94,6 +94,14 @@ const CreateReservationDialog = function ({ onClose }: Props) {
       parseInt(data.bookingStart) + 9,
       0,
     );
+    let majorType = '';
+    let minorType = '';
+    const regex = /^([가-힣a-zA-Z0-9]+)\((.+)\)$/;
+    if (data.petType) {
+      const match = data.petType.match(regex);
+      majorType = match?.[1] ?? '';
+      minorType = match?.[2] ?? '';
+    }
     mutateAsync({
       data: {
         bookingDate: newDate.toISOString(),
@@ -109,8 +117,8 @@ const CreateReservationDialog = function ({ onClose }: Props) {
         memo: data.memo,
         packageName: data.package,
         petInfo: {
-          majorType: '강아지',
-          minorType: '포메라니안',
+          majorType,
+          minorType,
           name: data.petName,
           // gender: '',
           weight: data.petWeight,

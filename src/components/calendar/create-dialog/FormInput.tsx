@@ -17,7 +17,6 @@ export const FormInput = function ({
 }: Props) {
   const { control } = useFormContext();
   const { field, fieldState } = useController({ name, control });
-  console.log(name, fieldState.error);
   return (
     <>
       <input
