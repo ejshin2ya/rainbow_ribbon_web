@@ -44,7 +44,10 @@ export const AppBar = function () {
     <AppBarContainer className="border-b-reborn-gray2 border-b-[1px] bg-reborn-white">
       <CommonRouteDialog
         isOpen={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => {
+          setDialogOpen(false);
+          setReservationId('');
+        }}
       >
         <ReservationDetail
           loading={isFetching}
