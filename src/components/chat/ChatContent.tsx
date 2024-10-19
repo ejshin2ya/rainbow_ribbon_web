@@ -340,8 +340,6 @@ export const ChatContent = function () {
     }
   }, [messageArray.length]);
 
-  console.log(messageArray);
-
   useEffect(() => {
     // 메세지 수신
     setMessageMap(prevMap => {

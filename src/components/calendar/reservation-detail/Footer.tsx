@@ -132,7 +132,6 @@ export const Footer = function ({
                       text: '예약 제한',
                       onClick: () => {
                         reservationBlock({
-                          // TODO: 확인 필요 이 부분의 new Date는 서버에서 받은 time으로 만들기에 자동으로 KST로 맞춰져 있어서 ㄱㅊ은듯 아마도....?
                           restrictTime: new Date(
                             reservationInfo.bookingInfo.bookingDate,
                           ).toISOString(),

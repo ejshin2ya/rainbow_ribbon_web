@@ -53,7 +53,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
       stompClient?.subscribe(
         '/user/queue/notifications',
         (message: Message) => {
-          console.log('유저 큐 노티 메세지', message);
+          // console.log('유저 큐 노티 메세지', message);
           // {"messageId":"0HK33SD4R576T","receiverId":"0GA8FQP9J1KJD","roomId":"0HHHFF4P7PB2S","senderType":"CUSTOMER","message":"aa","images":[]}
           if (message.body) {
             const body: ImageMessage = JSON.parse(message.body);
@@ -61,7 +61,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
               ...prevMessages,
               { ...body, createAt: new Date().toISOString() },
             ]);
-            console.log('Received', message.body);
+            // console.log('Received', message.body);
             // TODO: 메세지에 따라 세세하게 refetch
             queryClient.invalidateQueries({ queryKey: ['chat'] });
           }

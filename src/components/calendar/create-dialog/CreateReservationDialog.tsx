@@ -64,7 +64,6 @@ const CreateReservationDialog = function ({ onClose }: Props) {
         data.bookingEnd &&
         parseInt(data.bookingStart) >= parseInt(data.bookingEnd)
       ) {
-        console.log(data.bookingStart, data.bookingEnd);
         errors.bookingStart = {
           type: 'nonValid',
           message: 'bookingStart must be smaller then bookingEnd',
@@ -79,7 +78,6 @@ const CreateReservationDialog = function ({ onClose }: Props) {
   });
   const { handleSubmit } = methods;
   const submitHandler = async function (data: FormContext) {
-    console.log(data);
     const newDate = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth(),
