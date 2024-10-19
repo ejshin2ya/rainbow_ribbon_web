@@ -1,8 +1,12 @@
+import { useController, useFormContext } from 'react-hook-form';
 import { FormInput } from './FormInput';
 import { FormSelect } from './FormSelect';
 import { FormTextArea } from './FormTextArea';
 
 export const PetSection = function () {
+  const { control } = useFormContext();
+  const { fieldState } = useController({ name: 'petType', control });
+
   return (
     <div className="w-full h-full flex flex-col gap-[16px]">
       <h1 className="font-semibold text-[16px] text-reborn-gray8 flex-shrink-0">
@@ -16,12 +20,18 @@ export const PetSection = function () {
         />
 
         <h2 className="text-[14px] mt-[6px]">체중</h2>
-        <FormInput name="petWeight" placeHolder="숫자나 .을 사용해 주세요." />
+        <FormInput
+          name="petWeight"
+          placeHolder="숫자나 .을 사용해 주세요."
+          type="number"
+        />
 
         <h2 className="text-[14px] mt-[6px]">구분(종)</h2>
-        <div className="w-full h-[46px] flex flex-row gap-[5px]">
-          <FormInput name="petType" placeHolder="고양이(페르시안)" />
-        </div>
+        <FormInput
+          name="petType"
+          placeHolder="고양이(페르시안)"
+          hasErrorMessage
+        />
         <h2 className="text-[14px] mt-[6px]">나이</h2>
         <div className="w-full h-[46px] flex felx-row gap-[10px] items-center">
           <FormSelect

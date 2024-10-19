@@ -50,13 +50,13 @@ const CreateReservationDialog = function ({ onClose }: Props) {
       if (!data.bookingStart) {
         errors.bookingStart = {
           type: 'required',
-          message: 'bookingStart is required',
+          message: '예약 시작 시간은 필수값입니다.',
         };
       }
       if (!data.bookingEnd) {
         errors.bookingEnd = {
           type: 'required',
-          message: 'bookingEnd is required',
+          message: '예약 종료 시간은 필수값입니다.',
         };
       }
       if (
@@ -66,10 +66,19 @@ const CreateReservationDialog = function ({ onClose }: Props) {
       ) {
         errors.bookingStart = {
           type: 'nonValid',
-          message: 'bookingStart must be smaller then bookingEnd',
+          message: '예약 종료 시간은 예약 시작 시간보다 이를 수 없습니다.',
         };
       } else {
         delete errors.bookingStart;
+      }
+      if (data.petType) {
+        const petNameRegex = /^[가-힣a-zA-Z0-9]+\(.*\)$/;
+        if (!petNameRegex.test(data.petType)) {
+          errors.petType = {
+            type: 'nonValid',
+            message: '구분(종) 형태로 작성해주세요.',
+          };
+        }
       }
       const values = Object.keys(errors).length === 0 ? data : {};
       return { errors, values };
