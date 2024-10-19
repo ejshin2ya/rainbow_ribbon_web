@@ -30,7 +30,6 @@ import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 import { conversionDateYearToDay } from 'src/utils/conversion';
 import { useQueryClient } from '@tanstack/react-query';
 import { chatQueryKey } from 'src/queries/chat/queryKey';
-import { IStompSocket } from '@stomp/stompjs';
 import { CommonRouteDialog } from '../CommonRouteDialog';
 import { ReservationDetail } from '../calendar/reservation-detail/ReservationDetail';
 
@@ -354,6 +353,7 @@ export const ChatContent = function () {
     });
     const { key } = chatQueryKey.chatList();
     queryClient.invalidateQueries({ queryKey: key });
+    queryClient.invalidateQueries({ queryKey: ['alarm'] });
   }, [messages.length]);
 
   return (
