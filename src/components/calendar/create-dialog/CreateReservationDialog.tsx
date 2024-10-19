@@ -2,6 +2,8 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { CreateFooter } from './CreateFooter';
 import { CreateHeader } from './CreateHeader';
 import { CreateMain } from './CreateMain';
+import { useCreateReservation } from 'src/queries/reservation';
+import { useFuneralEventStore } from '../store/event-store';
 
 interface Props {
   onClose: () => void;
@@ -24,6 +26,8 @@ interface FormContext {
 }
 
 const CreateReservationDialog = function ({ onClose }: Props) {
+  const { mutateAsync, isPending } = useCreateReservation();
+  const { selectedDate } = useFuneralEventStore();
   const methods = useForm<FormContext>({
     defaultValues: {
       package: '',
@@ -58,12 +62,15 @@ const CreateReservationDialog = function ({ onClose }: Props) {
       if (
         data.bookingStart &&
         data.bookingEnd &&
-        data.bookingStart >= data.bookingEnd
+        parseInt(data.bookingStart) >= parseInt(data.bookingEnd)
       ) {
+        console.log(data.bookingStart, data.bookingEnd);
         errors.bookingStart = {
           type: 'nonValid',
           message: 'bookingStart must be smaller then bookingEnd',
         };
+      } else {
+        delete errors.bookingStart;
       }
       const values = Object.keys(errors).length === 0 ? data : {};
       return { errors, values };
@@ -71,8 +78,41 @@ const CreateReservationDialog = function ({ onClose }: Props) {
     mode: 'onChange',
   });
   const { handleSubmit } = methods;
-  const submitHandler = function (data: FormContext) {
+  const submitHandler = async function (data: FormContext) {
     console.log(data);
+    const newDate = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      parseInt(data.bookingStart) + 9,
+      0,
+    );
+    mutateAsync({
+      data: {
+        bookingDate: newDate.toISOString(),
+        // bookingEnd: '',
+        // bookingStart: '',
+        guardianInfo: {
+          name: data.userName,
+          phoneNumber: data.phoneNumber,
+          postalCode: data.postalCode,
+          address: data.address,
+          addressDetail: '',
+        },
+        memo: data.memo,
+        packageName: data.package,
+        petInfo: {
+          majorType: '강아지',
+          minorType: '포메라니안',
+          name: data.petName,
+          // gender: '',
+          weight: data.petWeight,
+          age: `${data.petAgeYear || 0}y${data.petAgeMonth || 0}m`,
+        },
+      },
+    }).then(() => {
+      onClose();
+    });
   };
   return (
     <main className="max-h-[828px] min-h-[810px] min-w-[839px] bg-reborn-white rounded-[12px] flex flex-col">
@@ -83,7 +123,7 @@ const CreateReservationDialog = function ({ onClose }: Props) {
           onSubmit={handleSubmit(submitHandler)}
         >
           <CreateMain />
-          <CreateFooter />
+          <CreateFooter btnLoading={isPending} />
         </form>
       </FormProvider>
     </main>
