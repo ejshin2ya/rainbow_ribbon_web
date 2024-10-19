@@ -4,22 +4,54 @@ import { CommonRouteDialog } from './CommonRouteDialog';
 import { useEffect, useState } from 'react';
 import AlarmPopover from './alarm-popover/AlarmPopover';
 import { useAlarmCount } from 'src/queries/alarm';
+import { ReservationDetail } from './calendar/reservation-detail/ReservationDetail';
+import { useChatBookingDetail } from 'src/queries';
 
 export const AppBar = function () {
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [reservationId, setReservationId] = useState('');
   const [alarmCount, setAlarmCount] = useState<number>(0);
   const popoverHandler = function (open: boolean) {
     setPopoverOpen(open);
   };
+  const { data: reservationData, isFetching } = useChatBookingDetail(
+    reservationId,
+    'reservation',
+  );
   const { data } = useAlarmCount();
+
   useEffect(() => {
     const chatCount = data?.data.chat ?? 0;
     const bookingCount = data?.data.booking ?? 0;
     setAlarmCount(chatCount + bookingCount);
   }, [data?.data]);
 
+  useEffect(() => {
+    const handler = function (e: MessageEvent) {
+      if (e.data?._typeFlag === 'clickReservation') {
+        setReservationId(e.data?.roomId);
+        setDialogOpen(true);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => {
+      window.removeEventListener('message', handler);
+    };
+  }, []);
+
   return (
     <AppBarContainer className="border-b-reborn-gray2 border-b-[1px] bg-reborn-white">
+      <CommonRouteDialog
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+      >
+        <ReservationDetail
+          loading={isFetching}
+          reservationInfo={reservationData?.data}
+          selectedEventId={reservationData?.data?.bookingInfo?.bookingId ?? ''}
+        />
+      </CommonRouteDialog>
       <CommonRouteDialog
         isOpen={popoverOpen}
         onClose={() => popoverHandler(false)}
@@ -36,8 +68,9 @@ export const AppBar = function () {
           className="relative flex items-center justify-center flex-shrink-0 h-full w-[42px] cursor-pointer"
           onClick={() => popoverHandler(true)}
         >
-          {/* <AlarmPopover open={popoverOpen} /> */}
-          {popoverOpen && <AlarmPopover />}
+          {popoverOpen && (
+            <AlarmPopover onClose={() => popoverHandler(false)} />
+          )}
           <AlarmIcon />
           {!!alarmCount && (
             <div
