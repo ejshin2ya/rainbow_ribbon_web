@@ -5,9 +5,11 @@ import {
   conversionNormalDate,
 } from 'src/utils/conversion';
 import Loader from '../common/Loader';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   tab: '예약' | '채팅';
+  onClose: () => void;
 }
 
 const AlarmItem = function ({ alarm, tab }: { alarm: Alarm } & Props) {
@@ -23,16 +25,14 @@ const AlarmItem = function ({ alarm, tab }: { alarm: Alarm } & Props) {
   );
 };
 
-export const AlarmPopoverContent = function ({ tab }: Props) {
+export const AlarmPopoverContent = function ({ tab, onClose }: Props) {
+  const navigate = useNavigate();
   const [hasMore, setHasMore] = useState(true);
   const [contents, setContents] = useState<Map<string, Alarm>>(
     new Map<string, Alarm>(),
   );
   const [lastId, setLastId] = useState('');
-  const { data, isFetching } = useAlarmList(
-    tab === '예약' ? 'BOOKING' : 'CHAT',
-    lastId,
-  );
+  const { data } = useAlarmList(tab === '예약' ? 'BOOKING' : 'CHAT', lastId);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const parseHandler = function (info: Alarm) {
@@ -87,8 +87,18 @@ export const AlarmPopoverContent = function ({ tab }: Props) {
         contentsArray.map(alarm => {
           return (
             <div
-              className="w-full h-[80px] flex flex-col py-[17px] px-[20px] items-start gap-[2px] border-b-[1px] border-b-reborn-gray0 text-reborn-gray8"
+              className="w-full h-[80px] flex flex-col py-[17px] px-[20px] items-start gap-[2px] border-b-[1px] border-b-reborn-gray0 text-reborn-gray8 bg-reborn-white hover:bg-reborn-gray0 active:bg-reborn-gray1 duration-200"
               key={`${alarm.category}-${alarm.id}`}
+              onClick={e => {
+                e.stopPropagation();
+                onClose();
+                navigate(`/partners/chat`);
+                window.postMessage({
+                  _typeFlag: tab === '채팅' ? 'clickChat' : 'clickReservation',
+                  roomId: alarm.relateId,
+                  userId: alarm.userId,
+                });
+              }}
             >
               <span className="max-w-full text-[16px] font-medium leading-[22px] truncate">
                 {`${parseHandler(alarm)}`}
