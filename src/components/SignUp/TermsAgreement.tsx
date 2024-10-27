@@ -201,7 +201,7 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
   width: 100%;
   padding: 15px;
   background-color: ${props => (!props.disabled ? '#FF6632' : '#EBEBEB')};
-  color: white;
+  color:${props => (!props.disabled ? '#ffffff' : '#adadad')};
   border: none;
   border-radius: 5px;
   font-size: 16px;

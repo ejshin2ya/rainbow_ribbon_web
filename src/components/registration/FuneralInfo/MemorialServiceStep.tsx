@@ -52,8 +52,9 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
 
     return () => {
       funeralComposition.memorialImage.forEach(image => {
-        if (typeof image === 'string' && image.startsWith('blob:')) {
-          URL.revokeObjectURL(image);
+        if ('preview' in image) {
+          // MemorialImage 타입 체크
+          URL.revokeObjectURL(image.preview);
         }
       });
     };
@@ -63,10 +64,16 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       setFuneralComposition(prev => {
+        const newImages = files.map(file => ({
+          file,
+          preview: URL.createObjectURL(file),
+        }));
+
         const updatedImages = [
-          ...(prev.memorialImage as (File | string)[]),
-          ...files.map(file => URL.createObjectURL(file)),
+          ...(prev.memorialImage || []),
+          ...newImages,
         ].slice(0, 3);
+
         return {
           ...prev,
           memorialImage: updatedImages,
@@ -127,11 +134,8 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
     setFuneralComposition(prev => {
       const updatedImages = [...prev.memorialImage];
       const removedImage = updatedImages[index];
-      if (
-        typeof removedImage === 'string' &&
-        removedImage.startsWith('blob:')
-      ) {
-        URL.revokeObjectURL(removedImage);
+      if (removedImage && 'preview' in removedImage) {
+        URL.revokeObjectURL(removedImage.preview);
       }
       updatedImages.splice(index, 1);
       return { ...prev, memorialImage: updatedImages };
@@ -167,11 +171,7 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
               <ImageContainer key={index}>
                 <ImageUploadArea>
                   <ImagePreview
-                    src={
-                      typeof image === 'string'
-                        ? image
-                        : URL.createObjectURL(image)
-                    }
+                    src={'preview' in image ? image.preview : (image as string)}
                     alt={`Memorial preview ${index + 1}`}
                   />
                 </ImageUploadArea>

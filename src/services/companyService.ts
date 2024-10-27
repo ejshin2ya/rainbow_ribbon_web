@@ -16,31 +16,14 @@ export interface CompanyInfo {
   postalCode: string;
   address: string;
   addressDetail: string;
-  offDay: [];
+  offDay: string[];
   weekdayOpen: string;
   weekdayClose: string;
   weekendOpen: string;
   weekendClose: string;
   parallel: number;
   notification: string;
-  logoImage: string;
-}
-
-export interface CompanyInfo {
-  id: string;
-  companyName: string;
-  contact: string;
-  postalCode: string;
-  address: string;
-  addressDetail: string;
-  offDay: [];
-  weekdayOpen: string;
-  weekdayClose: string;
-  weekendOpen: string;
-  weekendClose: string;
-  parallel: number;
-  notification: string;
-  logoImage: string;
+  logoImage: string | File | null;
 }
 
 export const getCompanyInfo = async function () {
@@ -53,7 +36,7 @@ export const getCompanyInfo = async function () {
         postalCode: string;
         address: string;
         addressDetail: string;
-        offDay: string;
+        offDay: string[];
         weekdayOpen: string;
         weekdayClose: string;
         weekendOpen: string;
