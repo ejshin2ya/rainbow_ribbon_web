@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useRecoilState, useResetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import ProgressBar from '../common/ProgressBar';
 import {
   ModalOverlay,
@@ -18,7 +18,6 @@ import FuneralItemStep from './FuneralInfo/FuneralItemStep';
 import FuneralServiceStep from './FuneralInfo/FuneralServiceStep';
 import MemorialServiceStep from './FuneralInfo/MemorialServiceStep';
 import SaveConfirmModal from '../common/SaveConfirmModal';
-import LoadSavedProgressModal from '../common/LoadSavedProgressModal';
 import {
   registerFuneralComposition,
   fetchFuneralInfo,
@@ -46,21 +45,13 @@ export const FuneralCompositionModal: React.FC<
   const [funeralComposition, setFuneralComposition] = useRecoilState(
     funeralCompositionState,
   );
-  const resetfuneralComposition = useResetRecoilState(funeralCompositionState);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-  const [showLoadSavedProgressModal, setShowLoadSavedProgressModal] =
-    useState(false);
 
-  const [shouldLoadSavedData, setShouldLoadSavedData] = useState(false);
-
-  useEffect(() => {
-    setShowLoadSavedProgressModal(true);
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadSavedProgress = async () => {
-      if (!shouldLoadSavedData) return;
-
+      setIsLoading(true);
       try {
         const savedData: FuneralInfo = await fetchFuneralInfo();
         if (savedData) {
@@ -69,11 +60,13 @@ export const FuneralCompositionModal: React.FC<
         }
       } catch (error) {
         console.error('Error loading saved progress:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadSavedProgress();
-  }, [shouldLoadSavedData, setFuneralComposition]);
+  }, [setFuneralComposition]);
 
   const stepName = [
     '업체를 소개해주세요.',
@@ -104,16 +97,7 @@ export const FuneralCompositionModal: React.FC<
 
   const handleCancelClose = () => {
     setShowSaveConfirm(false);
-  };
-
-  const handleLoadSavedProgress = () => {
-    setShowLoadSavedProgressModal(false);
-    setShouldLoadSavedData(true);
-  };
-
-  const handleCancelLoadSavedProgress = () => {
-    setShowLoadSavedProgressModal(false);
-    resetfuneralComposition();
+    onClose();
   };
 
   const nextStep = () => {
@@ -133,7 +117,7 @@ export const FuneralCompositionModal: React.FC<
   };
 
   const renderStepComponent = () => {
-    const props = { nextStep, onClose, onRegistrationComplete };
+    const props = { nextStep, onClose, onRegistrationComplete, isLoading };
     switch (currentStep) {
       case FuneralCompositionStep.FuneralItem:
         return <FuneralItemStep {...props} />;
@@ -170,12 +154,12 @@ export const FuneralCompositionModal: React.FC<
             onCancel={handleCancelClose}
           />
         )}
-        {showLoadSavedProgressModal && (
+        {/* {showLoadSavedProgressModal && (
           <LoadSavedProgressModal
             onConfirm={handleLoadSavedProgress}
             onCancel={handleCancelLoadSavedProgress}
           />
-        )}
+        )} */}
       </ModalContent>
     </ModalOverlay>
   );

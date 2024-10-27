@@ -15,10 +15,15 @@ export interface FuneralInfoUpdateReq {
   memorialPrice: number;
 }
 
+export interface MemorialImage {
+  file: File;
+  preview: string;
+}
+
 export interface FuneralCompositionState {
   funeralImage: File | string | null;
   shroudCoffinImage: string | File | null;
-  memorialImage: (File | string)[];
+  memorialImage: MemorialImage[];
   funeralInfoUpdateReq: FuneralInfoUpdateReq;
 }
 

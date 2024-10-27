@@ -12,11 +12,11 @@ export interface FuneralInfo {
   companyId: string;
   funeralId: string;
   funeralDescription: string;
-  funeralImage: string;
+  funeralImage: File | string | null;
   durationMin: number;
   shroudId: string;
   shroudDescription: string;
-  shroudImage: string;
+  shroudImage: string | File | null;
   shroudPrice: number;
   memorialId: string;
   memorialImages: (File | string)[];
@@ -54,17 +54,16 @@ export const registerFuneralComposition = async (
     // memorialImage 처리
     if (Array.isArray(funeralComposition.memorialImage)) {
       funeralComposition.memorialImage.forEach((image, index) => {
-        if (image instanceof File) {
-          formData.append('memorialImage', image, `memorialImage_${index}.jpg`);
+        if ('file' in image) {
+          // MemorialImage 타입인 경우
+          formData.append(
+            'memorialImage',
+            image.file,
+            `memorialImage_${index}.jpg`,
+          );
           console.log(`memorialImage_${index}는 파일객체입니다`);
-        } else if (typeof image === 'string') {
-          console.log(
-            `memorialImage_${index}는 문자열이므로 전송하지 않습니다.`,
-          );
         } else {
-          console.log(
-            `memorialImage_${index}의 타입이 예상과 다르므로 전송하지 않습니다.`,
-          );
+          console.log(`memorialImage_${index}는 처리할 수 없는 형식입니다.`);
         }
       });
     }
