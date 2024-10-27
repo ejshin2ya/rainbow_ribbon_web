@@ -1,7 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import KakaoMap from './KakaoMap';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
+import MainPage from './pages/main';
 import RegistrationPage from './pages/registraiton';
 import { Reservation } from './pages/Reservation';
 import { CommonRoute } from './components/CommonRoute';
@@ -32,15 +33,7 @@ const App = () => {
             <Route path="business" element={<BusinessManagement />} />
             <Route path="chat" element={<Chat />} />
           </Route>
-          <Route
-            index
-            element={
-              <>
-                <Link to={'partners'}>메인 페이지</Link>
-                <a href="/login">로그인 페이지</a>
-              </>
-            }
-          />
+          <Route index element={<MainPage />} />
           <Route path="*" element={<>Not found</>} />
         </Routes>
       </AuthProvider>
