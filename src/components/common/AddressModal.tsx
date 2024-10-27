@@ -1,5 +1,5 @@
-import DaumPostcode from "react-daum-postcode";
-import styled from "styled-components";
+import DaumPostcode from 'react-daum-postcode';
+import styled from 'styled-components';
 
 interface AddressModalProps {
   isOpen: boolean;

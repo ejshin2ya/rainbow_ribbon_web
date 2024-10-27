@@ -1,4 +1,4 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 //회원가입 요청 타입
 export interface CompanySignUpReq {
@@ -9,6 +9,7 @@ export interface CompanySignUpReq {
   businessRegNum: string;
   address: string;
   addressDetail: string;
+  postalCode: string;
 }
 
 export interface FormData {
@@ -19,18 +20,19 @@ export interface FormData {
 
 //회원가입 요청값 데이터
 export const signUpFormState = atom<FormData>({
-  key: "signUpFormState",
+  key: 'signUpFormState',
   default: {
     businessRegCertificateImage: null,
     animalBurialPermitImage: null,
     companySignUpReq: {
-      name: "",
-      phone: "",
-      email: "",
-      password: "",
-      businessRegNum: "",
-      address: "",
-      addressDetail: "",
+      name: '',
+      phone: '',
+      email: '',
+      password: '',
+      businessRegNum: '',
+      address: '',
+      addressDetail: '',
+      postalCode: '',
     },
   },
 });

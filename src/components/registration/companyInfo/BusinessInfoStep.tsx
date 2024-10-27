@@ -13,6 +13,11 @@ import AddressModal from '../../common/AddressModal';
 import useModal from '../../../hooks/useModal';
 import { registrationDataState } from '../../../atoms/registrationDataState';
 
+interface AddressData {
+  address: string;
+  zonecode: string;
+}
+
 const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   const { isOpen, openModal, closeModal } = useModal();
   const [registrationData, setRegistrationData] = useRecoilState(
@@ -24,11 +29,19 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
     return /^\d+$/.test(value);
   };
 
+  useEffect(() => {
+    console.log('registrationData updated:', registrationData);
+  }, [registrationData]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    console.log(`Input changed - name: ${name}, value: ${value}`);
+
     // contact 필드인 경우에만 유효성 검사를 수행
-    if (name === 'contact' && value !== '' && !validatePhoneNumber(value)) {
-      return; // 유효하지 않은 입력이면 함수를 종료
+    if (name === 'contact') {
+      if (value !== '' && !validatePhoneNumber(value)) {
+        return; // 숫자가 아닌 입력은 무시
+      }
     }
 
     setRegistrationData(prev => ({
@@ -40,10 +53,7 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
     }));
   };
 
-  const handleAddressComplete = (data: {
-    address: string;
-    zonecode: string;
-  }) => {
+  const handleAddressComplete = (data: AddressData) => {
     setRegistrationData(prev => ({
       ...prev,
       companyInfoEditReq: {
@@ -52,6 +62,7 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
         postalCode: data.zonecode,
       },
     }));
+    closeModal();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -79,7 +90,7 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
         type="tel"
         name="contact"
         placeholder="고객이 문의할 수 있는 전화번호를 입력해 주세요."
-        value={registrationData.companyInfoEditReq.contact}
+        value={registrationData.companyInfoEditReq.contact || ''}
         onChange={handleChange}
         required
       />
@@ -90,10 +101,10 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
           <Input
             type="text"
             name="postalCode"
-            value={registrationData.companyInfoEditReq.postalCode}
+            value={registrationData.companyInfoEditReq.postalCode || ''}
             onChange={handleChange}
             placeholder="우편번호"
-            disabled
+            readOnly
             required
           />
           <Button onClick={openModal} type="button" addBottomMargin="0.6rem">
@@ -103,16 +114,16 @@ const BusinessInfoStep: React.FC<StepProps> = ({ nextStep }) => {
         <Input
           type="text"
           name="address"
-          value={registrationData.companyInfoEditReq.address}
+          value={registrationData.companyInfoEditReq.address || ''}
           onChange={handleChange}
           placeholder="주소"
-          disabled
+          readOnly
           required
         />
         <Input
           type="text"
           name="addressDetail"
-          value={registrationData.companyInfoEditReq.addressDetail}
+          value={registrationData.companyInfoEditReq.addressDetail || ''}
           onChange={handleChange}
           placeholder="상세주소"
           required

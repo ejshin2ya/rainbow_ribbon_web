@@ -31,6 +31,7 @@ export interface CompanySignUpReq {
   businessRegNum: string;
   address: string;
   addressDetail: string;
+  postalCode: string;
 }
 
 export interface SignUpFormData {
