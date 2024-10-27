@@ -15,7 +15,7 @@ export default Button;
 const StyledButton = styled.button<ButtonProps>`
   padding: 0.75rem 1rem;
   background-color: #ff6632;
-  color: white;
+  color: ${props => (!props.disabled ? '#ffffff' : '#adadad')};
   border: none;
   border-radius: 4px;
   font-size: 1rem;
