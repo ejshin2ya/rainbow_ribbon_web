@@ -14,7 +14,7 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
       <ModalContent>
         <ModalText>저장하시면 나중에 이어서 입력할 수 있어요.</ModalText>
         <ButtonGroup>
-          <CancelButton onClick={onCancel}>취소</CancelButton>
+          <CancelButton onClick={onCancel}>저장 안하고 나가기</CancelButton>
           <SaveButton onClick={onConfirm}>저장 후 나가기</SaveButton>
         </ButtonGroup>
       </ModalContent>
