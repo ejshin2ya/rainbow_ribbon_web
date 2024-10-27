@@ -38,27 +38,24 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
     }
   }, [registrationData.logoImage]);
 
-  const validateCompanyName = (name: string): boolean => {
-    if (name === '') return true;
-    const regex = /^[가-힣a-zA-Z\s!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/;
-    return regex.test(name);
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
+    const filteredName = newName.replace(
+      /[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z\s!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/g,
+      '',
+    );
 
-    if (validateCompanyName(newName)) {
-      setCompanyNameError('');
-      setRegistrationData(prev => ({
-        ...prev,
-        companyInfoEditReq: {
-          ...prev.companyInfoEditReq,
-          companyName: newName,
-        },
-      }));
-    } else {
-      setCompanyNameError('한글, 영문, 특수기호만 사용 가능합니다.');
-    }
+    setRegistrationData(prev => ({
+      ...prev,
+      companyInfoEditReq: {
+        ...prev.companyInfoEditReq,
+        companyName: filteredName,
+      },
+    }));
+
+    setCompanyNameError(
+      filteredName !== newName ? '한글, 영문, 특수기호만 사용 가능합니다.' : '',
+    );
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,9 +75,7 @@ const CompanyInfoStep: React.FC<StepProps> = ({ nextStep }) => {
   useEffect(() => {
     const { companyName } = registrationData.companyInfoEditReq;
     setIsNextButtonActive(
-      companyName.length > 0 &&
-        validateCompanyName(companyName) &&
-        registrationData.logoImage !== null,
+      companyName.length > 0 && registrationData.logoImage !== null,
     );
   }, [registrationData.companyInfoEditReq, registrationData.logoImage]);
 

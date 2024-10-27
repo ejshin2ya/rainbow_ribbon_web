@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
-import { signUpFormState } from '../../atoms/signupFormState';
 import { SignUpFormData, LoginReq } from '../../services/apiService';
 import TermsAgreement from './TermsAgreement';
 import UserInfo from './UserInfo';
@@ -13,6 +12,13 @@ import { useSignUpMutation } from '../../hooks/useSignUpMutation';
 import { useLoginMutation } from '../../hooks/useLoginMutation';
 import ProgressBar from '../common/ProgressBar';
 import { useAuth } from '../../contexts/AuthContext';
+import { authState } from '../../atoms/authState';
+import {
+  isCompanyInfoComplete,
+  isFuneralInfoComplete,
+} from '../../utils/dataMappingUtils';
+import { fetchCompanyInfo } from '../../services/companyService';
+import { fetchFuneralInfo } from '../../services/FuneralCompositionService';
 
 // 회원가입 컴포넌트 스텝을 enum 형태로 저장하여 순서를 숫자로 인식합니다.
 enum SignUpStep {
@@ -27,12 +33,11 @@ const SignUpForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<SignUpStep>(
     SignUpStep.termsAgreedInfo,
   );
-  //recoil로 관리되는 회원가입 모든 정보를 가져와서 상태를 관리하는 함수
-  const [formData] = useRecoilState<SignUpFormData>(signUpFormState);
 
   //router를 통해 화면 전환하는 함수
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
+  const [, setLogindata] = useRecoilState(authState);
 
   const {
     mutate: signUp,
@@ -64,25 +69,43 @@ const SignUpForm: React.FC = () => {
     setCurrentStep(prevStep => prevStep - 1);
   };
 
-  const handleSubmit = () => {
-    // 회원가입 요청 성공시 로그인 요청
-    // 최신 formData를 가져오기 위해 Recoil state를 다시 가져옵니다
-    const latestFormData = formData;
-
-    signUp(latestFormData, {
-      onSuccess: () => {
+  const handleSubmit = (updatedFormData: SignUpFormData) => {
+    signUp(updatedFormData, {
+      onSuccess: async () => {
         const loginData: LoginReq = {
-          loginId: latestFormData.companySignUpReq.email,
-          password: latestFormData.companySignUpReq.password,
+          loginId: updatedFormData.companySignUpReq.email,
+          password: updatedFormData.companySignUpReq.password,
         };
 
         loginMutate(loginData, {
-          onSuccess: data => {
-            authLogin(data.data.accessToken, data.data.refreshToken); // AuthContext의 login 함수 사용
-            localStorage.setItem('userType', data.data.userType);
-            localStorage.setItem('userName', data.data.name);
-            localStorage.setItem('userPhone', data.data.phone);
-            navigate('/registration');
+          onSuccess: async data => {
+            authLogin(data.data.accessToken, data.data.refreshToken);
+            setLogindata(prevState => ({
+              ...prevState,
+              name: data.data.name,
+              phone: data.data.phone,
+              userType: data.data.userType,
+            }));
+
+            try {
+              const [companyInfo, funeralInfo] = await Promise.all([
+                fetchCompanyInfo(),
+                fetchFuneralInfo(),
+              ]);
+
+              const hasCompleteCompanyInfo = isCompanyInfoComplete(companyInfo);
+              const hasCompleteFuneralInfo = isFuneralInfoComplete(funeralInfo);
+
+              if (hasCompleteCompanyInfo && hasCompleteFuneralInfo) {
+                navigate('/partners'); // 메인 페이지로 이동
+              } else {
+                navigate('/registration'); // 등록 페이지로 이동
+                console.log('로그인 완료시 companyinfo', companyInfo);
+              }
+            } catch (error) {
+              console.error('Error fetching data:', error);
+              navigate('/registration'); // 에러 발생시 등록 페이지로 이동
+            }
           },
           onError: error => {
             console.log('로그인 실패', error);
@@ -94,6 +117,7 @@ const SignUpForm: React.FC = () => {
       },
     });
   };
+
   //컴포넌트 순서에 따라 화면을 전환해주는 함수
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -112,7 +136,7 @@ const SignUpForm: React.FC = () => {
 
   return (
     <div>
-      <Logo>
+      <Logo onClick={() => navigate('/')}>
         <img src="/assets/images/ic_logo_white.png" alt="reborn" />
         <img
           src="/assets/images/partners.png"
@@ -141,7 +165,7 @@ const SignUpForm: React.FC = () => {
           </ProgressBox>
 
           <SubTitle>{stepName[currentStep - 1]} 정보를 작성해 주세요.</SubTitle>
-          {renderCurrentStep()}
+          <ScrollableContent>{renderCurrentStep()}</ScrollableContent>
         </FormContainer>
       )}
     </div>
@@ -205,6 +229,36 @@ const Logo = styled.div`
   justify-content: flex-start;
   margin-bottom: 30px;
   margin-top: 30px;
+  cursor: pointer; // 커서 포인터 추가
+
+  &:hover {
+    opacity: 0.8; // 호버 효과 추가
+    transition: opacity 0.2s ease-in-out;
+  }
+`;
+
+const ScrollableContent = styled.div`
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 `;
 
 export default SignUpForm;

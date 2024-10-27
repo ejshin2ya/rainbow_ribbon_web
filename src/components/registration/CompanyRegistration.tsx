@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
@@ -6,14 +6,16 @@ import { CompanyRegistrationModal } from './CompanyRegistraionModal';
 import { FuneralCompositionModal } from './FuneralCompositionModal';
 import { registrationDataState } from '../../atoms/registrationDataState';
 import { funeralCompositionState } from '../../atoms/funeralCompositionState';
-import { fetchCompanyInfo } from '../../services/companyService';
-import { fetchFuneralInfo } from '../../services/FuneralCompositionService';
 import {
-  mapCompanyInfoToRegistrationData,
-  mapFuneralInfoToFuneralComposition,
+  isCompanyInfoComplete,
+  isFuneralInfoComplete,
   isValidCompanyInfo,
   isValidFuneralInfo,
+  mapCompanyInfoToRegistrationData,
+  mapFuneralInfoToFuneralComposition,
 } from '../../utils/dataMappingUtils';
+import { fetchCompanyInfo } from 'src/services/companyService';
+import { fetchFuneralInfo } from 'src/services/FuneralCompositionService';
 
 const CompanyRegistration = () => {
   const navigate = useNavigate();
@@ -28,79 +30,75 @@ const CompanyRegistration = () => {
   const [hasCompanyInfo, setHasCompanyInfo] = useState(false);
   const [hasFuneralInfo, setHasFuneralInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitActive, setIsSubmitActive] = useState(false);
 
+  // registrationData와 funeralComposition의 완전성 체크
   useEffect(() => {
-    // 모든 필드가 채워져 있는지 확인
-    const isRegistrationComplete = Object.values(registrationData).every(
-      value => value !== null && value !== undefined && value !== '',
-    );
-    const isFuneralComplete = Object.values(funeralComposition).every(
-      value => value !== null && value !== undefined && value !== '',
-    );
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [companyInfo, funeralInfo] = await Promise.all([
+          fetchCompanyInfo(),
+          fetchFuneralInfo(),
+        ]);
 
-    setIsSubmitActive(isRegistrationComplete && isFuneralComplete);
+        if (companyInfo) {
+          const convertedRegistrationData =
+            mapCompanyInfoToRegistrationData(companyInfo);
+          const isValid = isValidCompanyInfo(companyInfo);
+          setRegistrationData(convertedRegistrationData);
+          setHasCompanyInfo(isValid);
+        }
+
+        if (funeralInfo) {
+          const convertedFuneralComposition =
+            mapFuneralInfoToFuneralComposition(funeralInfo);
+          const isValid = isValidFuneralInfo(funeralInfo);
+          setFuneralComposition(convertedFuneralComposition);
+          setHasFuneralInfo(isValid);
+        }
+      } catch (error) {
+        setHasCompanyInfo(false);
+        setHasFuneralInfo(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // isCompanyInfoComplete 함수 내용도 확인해보기
+
+  const isSubmitActive = useMemo(() => {
+    return (
+      isCompanyInfoComplete(registrationData) &&
+      isFuneralInfoComplete(funeralComposition)
+    );
   }, [registrationData, funeralComposition]);
 
-  const fetchInitialData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const companyInfo = await fetchCompanyInfo();
-      console.log('Fetched company info:', companyInfo);
-      if (companyInfo && isValidCompanyInfo(companyInfo)) {
-        setRegistrationData(prevState => ({
-          ...prevState,
-          ...mapCompanyInfoToRegistrationData(companyInfo),
-        }));
-        setHasCompanyInfo(true);
-      } else {
-        setHasCompanyInfo(false);
-      }
-
-      const funeralInfo = await fetchFuneralInfo();
-      if (funeralInfo && isValidFuneralInfo(funeralInfo)) {
-        setFuneralComposition(prevState => ({
-          ...prevState,
-          ...mapFuneralInfoToFuneralComposition(funeralInfo),
-        }));
-        setHasFuneralInfo(true);
-      } else {
-        setHasFuneralInfo(false);
-      }
-    } catch (error) {
-      console.error('Error fetching initial data:', error);
-      setHasCompanyInfo(false);
-      setHasFuneralInfo(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setRegistrationData, setFuneralComposition]);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
-
-  const handleOpenModal = type => {
+  const handleOpenModal = useCallback(type => {
     setModalType(type);
     setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setModalType(null);
-    fetchInitialData();
-  };
+  }, []);
 
   const handleRegistrationComplete = () => {
-    fetchInitialData();
+    // 모달에서 데이터가 업데이트되면 Recoil state가 자동으로 업데이트됨
+    setOpenModal(false);
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    if (isSubmitActive) {
-      navigate('/reservation'); // 예약 페이지로 이동
-    }
-  };
+  const handleSubmit = useCallback(
+    e => {
+      e.preventDefault();
+      if (isSubmitActive) {
+        navigate('/partners');
+      }
+    },
+    [isSubmitActive, navigate],
+  );
+
+  if (isLoading) {
+    return <LoadingIndicator />; // 로딩 중일 때 표시할 컴포넌트
+  }
 
   return (
     <div>
@@ -172,19 +170,19 @@ const CompanyRegistration = () => {
             </CardContent>
           </Card>
           <SubmitButton type="submit" disabled={!isSubmitActive}>
-            입점 신청하기
+            운영 신청하기
           </SubmitButton>
         </Form>
 
         {openModal && modalType === 'companyInfo' && (
           <CompanyRegistrationModal
-            onClose={handleCloseModal}
+            onClose={() => setOpenModal(false)}
             onRegistrationComplete={handleRegistrationComplete}
           />
         )}
         {openModal && modalType === 'participationRules' && (
           <FuneralCompositionModal
-            onClose={handleCloseModal}
+            onClose={() => setOpenModal(false)}
             onRegistrationComplete={handleRegistrationComplete}
           />
         )}
@@ -274,4 +272,7 @@ const Logo = styled.div`
   justify-content: flex-start;
   margin-bottom: 30px;
   margin-top: 30px;
+`;
+const LoadingIndicator = styled.div`
+  // 로딩 인디케이터 스타일
 `;

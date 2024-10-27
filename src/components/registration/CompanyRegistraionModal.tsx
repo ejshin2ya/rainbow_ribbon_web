@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRecoilState } from 'recoil';
 import ProgressBar from '../common/ProgressBar';
 import CompanyInfoStep from './companyInfo/CompanyInfoStep';
@@ -24,12 +24,7 @@ import {
   registrationDataState,
 } from '../../atoms/registrationDataState';
 import SaveConfirmModal from '../common/SaveConfirmModal';
-import {
-  registerCompany,
-  fetchCompanyInfo,
-  CompanyInfo,
-} from 'src/services/companyService';
-import { mapCompanyInfoToRegistrationData } from '../../utils/dataMappingUtils';
+import { registerCompany } from 'src/services/companyService';
 
 interface CompanyRegistrationModalProps {
   onClose: () => void;
@@ -42,30 +37,8 @@ export const CompanyRegistrationModal: React.FC<
   const [currentStep, setCurrentStep] = useState<CompanyRegistrationStep>(
     CompanyRegistrationStep.CompanyInfo,
   );
-  const [registrationData, setRegistrationData] = useRecoilState(
-    registrationDataState,
-  );
+  const [registrationData] = useRecoilState(registrationDataState);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadSavedProgress = async () => {
-      setIsLoading(true);
-      try {
-        const savedData: CompanyInfo = await fetchCompanyInfo();
-        if (savedData) {
-          const convertedData = mapCompanyInfoToRegistrationData(savedData);
-          setRegistrationData(convertedData);
-        }
-      } catch (error) {
-        console.error('Error loading saved progress:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSavedProgress();
-  }, [setRegistrationData]);
 
   const handleCloseClick = () => {
     if (registrationData) {
@@ -115,7 +88,7 @@ export const CompanyRegistrationModal: React.FC<
   };
 
   const renderStepComponent = () => {
-    const props = { nextStep, onClose, onRegistrationComplete, isLoading };
+    const props = { nextStep, onClose, onRegistrationComplete };
     switch (currentStep) {
       case CompanyRegistrationStep.CompanyInfo:
         return <CompanyInfoStep {...props} />;
@@ -156,12 +129,6 @@ export const CompanyRegistrationModal: React.FC<
             onCancel={handleCancelClose}
           />
         )}
-        {/* {showLoadSavedProgressModal && (
-          <LoadSavedProgressModal
-            onConfirm={handleLoadSavedProgress}
-            onCancel={handleCancelLoadSavedProgress}
-          />
-        )} */}
       </ModalContent>
     </ModalOverlay>
   );

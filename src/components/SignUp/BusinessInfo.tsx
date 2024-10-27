@@ -9,16 +9,17 @@ import useModal from '../../hooks/useModal';
 import Input from '../common/Input';
 import { useRecoilState } from 'recoil';
 import { signUpFormState } from '../../atoms/signupFormState';
+import { SignUpFormData } from '../../services/apiService';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 
 // pdf API 버전과 동일한 워커 파일 버전을 사용하도록 설정
 const workerUrl = `https://unpkg.com/pdfjs-dist@3.6.172/build/pdf.worker.min.js`;
 
 interface BusinessInfoProps {
-  onSubmit: () => void;
+  onSubmit: (formData: SignUpFormData) => void;
 }
 
-interface BusinessInfoData {
+export interface BusinessInfoData {
   businessNumber: string;
   address: string;
   zonecode: string;
@@ -38,7 +39,7 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
     licenseProof: null,
   });
   //recoil로 관리되는 회원가입시 요청 데이터
-  const [, setFormData] = useRecoilState(signUpFormState);
+  const [formData, setFormData] = useRecoilState(signUpFormState);
 
   //모달창 hook
   const { isOpen, openModal, closeModal } = useModal();
@@ -133,18 +134,21 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    setFormData(prev => ({
-      ...prev,
+    const updatedFormData: SignUpFormData = {
+      ...formData,
       businessRegCertificateImage: businessData.businessProof,
       animalBurialPermitImage: businessData.licenseProof,
       companySignUpReq: {
-        ...prev.companySignUpReq,
+        ...formData.companySignUpReq,
         businessRegNum: businessData.businessNumber,
         address: businessData.address,
         addressDetail: businessData.detailedAdress,
+        postalCode: businessData.zonecode,
       },
-    }));
-    onSubmit();
+    };
+
+    setFormData(updatedFormData);
+    onSubmit(updatedFormData);
   };
 
   return (

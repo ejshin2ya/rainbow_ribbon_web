@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRecoilState } from 'recoil';
 import axios from 'axios';
 import styled from 'styled-components';
 import { useLoginMutation } from '../hooks/useLoginMutation';
@@ -8,6 +9,13 @@ import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
 import useModal from '../hooks/useModal';
 import { useAuth } from '../contexts/AuthContext';
+import { authState } from '../atoms/authState';
+import { fetchCompanyInfo } from 'src/services/companyService';
+import { fetchFuneralInfo } from 'src/services/FuneralCompositionService';
+import {
+  isCompanyInfoComplete,
+  isFuneralInfoComplete,
+} from 'src/utils/dataMappingUtils';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +25,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { isOpen, openModal, closeModal } = useModal();
   const { login: authLogin } = useAuth();
+  const [, setLogindata] = useRecoilState(authState);
   const {
     mutate: loginMutate,
     // isPending,
@@ -39,7 +48,6 @@ const LoginPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Remember Me가 체크되어 있으면 이메일을 localStorage에 저장합니다.
     if (rememberMe) {
       localStorage.setItem('savedEmail', email);
     } else {
@@ -52,14 +60,33 @@ const LoginPage: React.FC = () => {
         password: password,
       },
       {
-        onSuccess: data => {
-          authLogin(data.data.accessToken, data.data.refreshToken); // AuthContext의 login 함수 사용
-          // 추가 정보 저장이 필요하다면 별도의 상태 관리나 로컬 스토리지를 사용
-          localStorage.setItem('userType', data.data.userType);
-          localStorage.setItem('userName', data.data.name);
-          localStorage.setItem('userPhone', data.data.phone);
+        onSuccess: async data => {
+          authLogin(data.data.accessToken, data.data.refreshToken);
+          setLogindata(prevState => ({
+            ...prevState,
+            name: data.data.name,
+            phone: data.data.phone,
+            userType: data.data.userType,
+          }));
 
-          navigate('/registration');
+          try {
+            const [companyInfo, funeralInfo] = await Promise.all([
+              fetchCompanyInfo(),
+              fetchFuneralInfo(),
+            ]);
+
+            const hasCompleteCompanyInfo = isCompanyInfoComplete(companyInfo);
+            const hasCompleteFuneralInfo = isFuneralInfoComplete(funeralInfo);
+
+            if (hasCompleteCompanyInfo && hasCompleteFuneralInfo) {
+              navigate('/'); // 메인 페이지로 이동
+            } else {
+              navigate('/registration'); // 등록 페이지로 이동
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+            navigate('/registration'); // 에러 발생시 등록 페이지로 이동
+          }
         },
         onError: (error: Error) => {
           if (axios.isAxiosError(error)) {
@@ -72,16 +99,20 @@ const LoginPage: React.FC = () => {
         },
       },
     );
-    console.log('Login submitted', { email, password, rememberMe });
   };
 
   return (
     <Container>
       <InnerContainer>
-        <LogoBox>
-          <Logo>REBORN </Logo>
-          <Logo style={{ fontSize: '30px', color: '#181717' }}>partners</Logo>
-        </LogoBox>
+        <Logo onClick={() => navigate('/')}>
+          <img src="/assets/images/ic_logo_white.png" alt="reborn" />
+          <img
+            src="/assets/images/partners.png"
+            alt="partners"
+            style={{ paddingLeft: '5px' }}
+          />
+        </Logo>
+
         <FormBox onSubmit={handleSubmit}>
           <Input
             type="email"
@@ -150,20 +181,23 @@ const FormBox = styled.form`
   align-items: center;
 `;
 
-const LogoBox = styled.div`
+const Logo = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  margin-bottom: 60px;
-  width: 364.25px;
-  height: 35.97px;
-`;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  cursor: pointer; // 커서 포인터 추가
 
-const Logo = styled.div`
-  font-size: 3rem;
-  font-weight: bold;
-  color: #ff6632;
+  img {
+    height: 35px; // 이미지 크기도 함께 증가
+  }
+
+  &:hover {
+    opacity: 0.8; // 호버 효과 추가
+    transition: opacity 0.2s ease-in-out;
+  }
 `;
 
 const LoginButton = styled(Button)`
