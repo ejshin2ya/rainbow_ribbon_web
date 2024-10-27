@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { AlarmPopoverContent } from './AlarmPopoverContent';
 import { AlarmPopoverTabs } from './AlarmPopoverTabs';
 
-const AlarmPopover = function () {
+interface Props {
+  onClose: () => void;
+}
+
+const AlarmPopover = function ({ onClose }: Props) {
   const [tab, setTab] = useState<'예약' | '채팅'>('예약');
 
   return (
@@ -14,7 +18,7 @@ const AlarmPopover = function () {
         setChat={() => setTab('채팅')}
         setReservation={() => setTab('예약')}
       />
-      <AlarmPopoverContent tab={tab} />
+      <AlarmPopoverContent tab={tab} onClose={onClose} />
     </div>
   );
 };

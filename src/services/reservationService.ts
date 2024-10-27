@@ -7,6 +7,8 @@ import {
   PostChangeBookingMemoOutputDTO,
   GetAvailableHoursOutputDTO,
   OutputDTO,
+  CreateReservation,
+  GetFuneralOptionsOutputDTO,
 } from 'src/queries/reservation';
 
 export const getCalendarBookingList = async function (month: string) {
@@ -86,4 +88,19 @@ export const reservationBlockList = async function (restrictTimes: string[]) {
       url: reservationDomain.bookingTimeBlockList,
     })
   ).data;
+};
+
+export const createReservation = async function (data: CreateReservation) {
+  return await api<OutputDTO>({
+    method: 'post',
+    data,
+    url: reservationDomain.createReservation,
+  });
+};
+
+export const getFuneralOptions = async function (partnerId: string) {
+  return await api<GetFuneralOptionsOutputDTO>({
+    method: 'get',
+    url: reservationDomain.funeralOptions(partnerId),
+  });
 };

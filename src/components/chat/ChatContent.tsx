@@ -30,7 +30,6 @@ import { useConfirmDialog } from '../confirm-dialog/confitm-dialog-store';
 import { conversionDateYearToDay } from 'src/utils/conversion';
 import { useQueryClient } from '@tanstack/react-query';
 import { chatQueryKey } from 'src/queries/chat/queryKey';
-import { IStompSocket } from '@stomp/stompjs';
 import { CommonRouteDialog } from '../CommonRouteDialog';
 import { ReservationDetail } from '../calendar/reservation-detail/ReservationDetail';
 
@@ -83,7 +82,7 @@ export const ChatContent = function () {
   >(new Map());
   const [changed, setChanged] = useState(true);
 
-  const { client } = useStomp();
+  const { messages } = useStomp();
 
   const { mutateAsync: send, isPending: sendIsPending } = useSendMessage();
   const { mutateAsync: sendImage, isPending: sendImageIsPending } =
@@ -98,10 +97,9 @@ export const ChatContent = function () {
   const fetchMore = async function () {
     const selectedPagingData = pagingData.get(selectedRoomId);
     if (!selectedPagingData || !selectedPagingData.hasMore) return;
-    const { data } = await getAllMessage(
-      selectedRoomId,
-      selectedPagingData.page,
-    );
+    const msgArr = Array.from(messageMap.get(selectedRoomId) ?? []);
+    const oldMessageId = msgArr?.[msgArr.length - 1]?.[0] ?? '';
+    const { data } = await getAllMessage(selectedRoomId, oldMessageId);
     if (!data || !data.messages.length) return;
     const sortedMessages = data.messages.sort(
       (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime(),
@@ -138,18 +136,29 @@ export const ChatContent = function () {
       queryClient.setQueryData(key, {
         msg: originalChatList.msg,
         statusCode: originalChatList.statusCode,
-        data: originalChatList.data.map(chatRoom => {
-          return {
-            ...chatRoom,
-            lastMessage:
-              chatRoom.roomId === selectedRoomId
-                ? messageStr
-                : chatRoom.lastMessage,
-          };
-        }),
+        data: originalChatList.data
+          .map(chatRoom => {
+            return {
+              ...chatRoom,
+              lastMessage:
+                chatRoom.roomId === selectedRoomId
+                  ? messageStr
+                  : chatRoom.lastMessage,
+              lastMessageDateTime:
+                chatRoom.roomId === selectedRoomId
+                  ? new Date().toISOString()
+                  : chatRoom.lastMessageDateTime,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.lastMessageDateTime).getTime() -
+              new Date(a.lastMessageDateTime).getTime(),
+          ),
       });
       return res;
     });
+
     const messageData = res.data;
     const newMap = new Map(messageMap);
     const now = new Date(); // TODO: createAt도 보내달라 요청 후 제거
@@ -205,12 +214,19 @@ export const ChatContent = function () {
           queryClient.setQueryData(key, {
             msg: originalChatList.msg,
             statusCode: originalChatList.statusCode,
-            data: originalChatList.data.map(chatRoom => {
-              return {
-                ...chatRoom,
-                lastMessage: '사진',
-              };
-            }),
+            data: originalChatList.data
+              .map(chatRoom => {
+                return {
+                  ...chatRoom,
+                  lastMessage: '사진',
+                  lastMessageDateTime: new Date().toISOString(),
+                };
+              })
+              .sort(
+                (a, b) =>
+                  new Date(b.lastMessageDateTime).getTime() -
+                  new Date(a.lastMessageDateTime).getTime(),
+              ),
           });
           return res;
         })
@@ -322,6 +338,23 @@ export const ChatContent = function () {
       setChanged(false);
     }
   }, [messageArray.length]);
+
+  useEffect(() => {
+    // 메세지 수신
+    setMessageMap(prevMap => {
+      const newMap = new Map(prevMap);
+      messages.forEach(msg => {
+        const existingRoomMessages = new Map(newMap.get(msg.roomId) ?? []);
+        const { messageId: id } = msg;
+        existingRoomMessages.set(id, msg);
+        newMap.set(selectedRoomId, existingRoomMessages);
+      });
+      return newMap;
+    });
+    const { key } = chatQueryKey.chatList();
+    queryClient.invalidateQueries({ queryKey: key });
+    queryClient.invalidateQueries({ queryKey: ['alarm'] });
+  }, [messages.length]);
 
   return (
     <section className="box-border w-full h-full flex flex-col relative border-l-[1px] border-l-reborn-gray1">

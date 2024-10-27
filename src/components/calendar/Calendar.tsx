@@ -17,6 +17,7 @@ interface CalendarEvent {
 
 export const Calendar = function () {
   const today = new Date();
+  const [initial, setInitial] = useState(true);
   const [selectedDate, setSelectedDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), today.getDate()),
   );
@@ -81,6 +82,7 @@ export const Calendar = function () {
   }, [calendarEvents]);
 
   const handleDateSet = function (dateInfo: DatesSetArg) {
+    if (initial) return setInitial(false);
     setSelectedDate(
       new Date(
         dateInfo.view.currentStart.getFullYear(),

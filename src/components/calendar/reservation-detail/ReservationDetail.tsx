@@ -10,11 +10,13 @@ import { CompanyBookingInfo } from 'src/queries/reservation';
 import { ReactComponent as ReservationIcon } from '../../../assets/Reservation.svg';
 
 export interface ReservationDefaultParams {
+  loading?: boolean;
   reservationInfo: CompanyBookingInfo;
   selectedEventId: string;
 }
 
 export const ReservationDetail = function ({
+  loading = false,
   reservationInfo,
   selectedEventId,
 }: Partial<Pick<ReservationDefaultParams, 'reservationInfo'>> &
@@ -65,6 +67,19 @@ export const ReservationDetail = function ({
             selectedEventId={selectedEventId}
           />
         </>
+      ) : loading ? (
+        <div className="w-full h-full flex items-center justify-center text-[20px] font-medium text-reborn-gray3 flex-col gap-[10px]">
+          <ReservationIcon
+            width={64}
+            height={64}
+            style={{
+              fill: '#ebebeb',
+            }}
+            fill="#ebebeb"
+            color="#ebebeb"
+          />
+          <span className="">로딩중...</span>
+        </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-[20px] font-medium text-reborn-gray3 flex-col gap-[10px]">
           <ReservationIcon

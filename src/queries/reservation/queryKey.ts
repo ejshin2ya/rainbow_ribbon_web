@@ -41,4 +41,16 @@ export const reservationQueryKey = {
       initialize: ['calendar', 'detail', bookingId],
     };
   },
+  createReservation() {
+    return {
+      key: ['calendar'],
+      initialize: ['calendar'],
+    };
+  },
+  getFuneralOptions(partnerId: string) {
+    return {
+      key: ['reservation', 'options', partnerId],
+      initialize: ['reservation', 'options', partnerId],
+    };
+  },
 };

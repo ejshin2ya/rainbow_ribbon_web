@@ -85,13 +85,29 @@ export const conversionAlarmDate = function (dateString): string {
  * @param dateString ISODateString
  * @returns `yyyy.MM.dd || a hh:mm`
  */
-export const conversionNormalDate = function (dateString): string {
+export const conversionNormalDate = function (dateString: string): string {
   if (!dateString) return '날짜 정보가 없습니다.';
   const date = new Date(dateString);
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1);
   const dd = String(date.getDate());
   return `${yyyy}년 ${MM}월 ${dd}일`;
+};
+
+/**
+ * @param date Date
+ * @returns `yyyy-MM-dd`
+ */
+export const conversionKST = function (date: Date): string {
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+};
+
+/**
+ * @param date Date
+ * @returns `yyyy-MM-dd`
+ */
+export const conversionKSTISO = function (date: Date): string {
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${date.getTime().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}.${date.getMilliseconds().toString().padStart(3, '0')}Z`;
 };
 
 export const formatPhoneNumber = function (phoneNumber: string) {

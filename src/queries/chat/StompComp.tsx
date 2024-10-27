@@ -5,10 +5,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import api from 'src/api/axios';
 import { useAuth } from 'src/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ImageMessage } from './types';
 
 interface StompContextProps {
   client: Client;
-  messages: string[];
+  messages: ImageMessage[];
 }
 
 const StompContext = createContext<StompContextProps | null>(null);
@@ -19,7 +20,7 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   // TODO: messages는 추후 삭제해야 함
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<ImageMessage[]>([]);
   const { accessToken } = useAuth();
   const [client, setClient] = useState<Client>();
 
@@ -52,10 +53,15 @@ export const StompProvider: React.FC<{ children: React.ReactNode }> = ({
       stompClient?.subscribe(
         '/user/queue/notifications',
         (message: Message) => {
-          console.log('유저 큐 노티 메세지', message);
+          // console.log('유저 큐 노티 메세지', message);
+          // {"messageId":"0HK33SD4R576T","receiverId":"0GA8FQP9J1KJD","roomId":"0HHHFF4P7PB2S","senderType":"CUSTOMER","message":"aa","images":[]}
           if (message.body) {
-            setMessages(prevMessages => [...prevMessages, message.body]);
-            console.log('Received', message.body);
+            const body: ImageMessage = JSON.parse(message.body);
+            setMessages(prevMessages => [
+              ...prevMessages,
+              { ...body, createAt: new Date().toISOString() },
+            ]);
+            // console.log('Received', message.body);
             // TODO: 메세지에 따라 세세하게 refetch
             queryClient.invalidateQueries({ queryKey: ['chat'] });
           }
