@@ -37,11 +37,12 @@ const DetailInfoStep: React.FC<DetailInfoStepProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
+    const numericValue = value.replace(/[^0-9]/g, '');
     setRegistrationData(prev => ({
       ...prev,
       companyInfoEditReq: {
         ...prev.companyInfoEditReq,
-        [name]: name === 'parallel' ? parseInt(value) : value,
+        [name]: name === 'parallel' ? parseInt(numericValue) : value,
       },
     }));
   };
@@ -87,7 +88,7 @@ const DetailInfoStep: React.FC<DetailInfoStepProps> = ({
     <form onSubmit={handleSubmit}>
       <HintText>동시 진행 가능한 장례 수</HintText>
       <Input
-        type="number"
+        type="text"
         name="parallel"
         placeholder="숫자만 입력해 주세요."
         value={registrationData.companyInfoEditReq.parallel || ''}
