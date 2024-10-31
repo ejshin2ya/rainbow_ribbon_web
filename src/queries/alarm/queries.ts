@@ -17,12 +17,12 @@ export const useAlarmCount = function () {
  */
 export const useAlarmList = function (
   category: 'BOOKING' | 'CHAT',
-  pageNo: number,
+  lastId: string,
 ) {
-  const { key } = alarmQueryKey.alarmList(category, pageNo);
+  const { key } = alarmQueryKey.alarmList(category, lastId);
   return useQuery({
     queryKey: key,
-    queryFn: () => getAlarmList(category, pageNo),
+    queryFn: () => getAlarmList(category, lastId),
     enabled: !!category,
   });
 };

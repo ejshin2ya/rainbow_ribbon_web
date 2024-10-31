@@ -11,6 +11,7 @@ import {
   startChat,
 } from '../../services/chatService';
 import { chatQueryKey } from './queryKey';
+import { getBookingDetail } from 'src/services/reservationService';
 
 export const useChatList = function (options?: Parameters<typeof useQuery>) {
   const { key } = chatQueryKey.chatList();
@@ -36,23 +37,32 @@ export const useUnreadMessage = function (
 
 export const useAllMessage = function (
   roomId: string,
-  pageNo: number,
+  lastId: string,
   options?: Parameters<typeof useQuery>,
 ) {
-  const { key } = chatQueryKey.roomMessage(roomId, pageNo);
+  const { key } = chatQueryKey.roomMessage(roomId, lastId);
   return useQuery({
     ...options,
     queryKey: key,
-    queryFn: () => getAllMessage(roomId, pageNo),
+    queryFn: () => getAllMessage(roomId, lastId),
     enabled: !!roomId,
   });
 };
 
-export const useChatBookingDetail = function (userId: string) {
+export const useChatBookingDetail = function (
+  userId: string,
+  type: 'user' | 'reservation' = 'user',
+) {
   const { key } = chatQueryKey.chatBookingDetail(userId);
   return useQuery({
     queryKey: key,
-    queryFn: () => getBookingDetailByUserId(userId),
+    queryFn: () => {
+      if (type === 'user') {
+        return getBookingDetailByUserId(userId);
+      } else {
+        return getBookingDetail(userId);
+      }
+    },
     enabled: !!userId,
   });
 };

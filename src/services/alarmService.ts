@@ -16,12 +16,12 @@ export const getAlarmCount = async function () {
 
 export const getAlarmList = async function (
   category: 'BOOKING' | 'CHAT',
-  pageNo: number,
+  lastId: string,
 ) {
   return (
     await api<getAlarmListOutputDTO>({
       method: 'get',
-      url: alarmDomain.alarmList(category, pageNo),
+      url: alarmDomain.alarmList(category, lastId),
     })
   ).data;
 };
