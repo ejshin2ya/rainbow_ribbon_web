@@ -1,10 +1,13 @@
+import { useRecoilValue } from 'recoil';
 import styled, { createGlobalStyle } from 'styled-components';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import { useNavigate } from 'react-router-dom';
+import { authState } from '../atoms/authState';
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const auth = useRecoilValue(authState); // 로그인 상태 가져오기
 
   return (
     <>
@@ -27,14 +30,21 @@ const MainPage = () => {
               <MenuItem>문의</MenuItem>
             </MenuList>
 
-            <AuthButtons>
-              <SignUpButton onClick={() => navigate('/signup')}>
-                회원가입
-              </SignUpButton>
-              <LoginButton onClick={() => navigate('/login')}>
-                로그인
-              </LoginButton>
-            </AuthButtons>
+            {auth.name ? ( // 로그인 상태일 때
+              <UserGreeting>
+                <UserName>{auth.name}님 안녕하세요</UserName>
+              </UserGreeting>
+            ) : (
+              // 비로그인 상태일 때
+              <AuthButtons>
+                <SignUpButton onClick={() => navigate('/signup')}>
+                  회원가입
+                </SignUpButton>
+                <LoginButton onClick={() => navigate('/login')}>
+                  로그인
+                </LoginButton>
+              </AuthButtons>
+            )}
           </MenuContainer>
         </Nav>
 
@@ -50,7 +60,9 @@ const MainPage = () => {
               <br />
               로그인을 통해 새로운 반려동물 장례 비즈니스 솔루션을 경험하세요.
             </MainDescription>
-            <StartButton>무지개리본 파트너 시작하기</StartButton>
+            <StartButton onClick={() => navigate('/login')}>
+              무지개리본 파트너 시작하기
+            </StartButton>
           </HeroSection>
 
           <InfoSection>
@@ -104,7 +116,9 @@ const MainPage = () => {
             <FooterSection>
               <FooterCategory>
                 <CategoryTitle>이용약관</CategoryTitle>
-                <CategoryTitle>개인정보처리방침</CategoryTitle>
+                <CategoryTitle onClick={() => navigate('/privacy')}>
+                  개인정보처리방침
+                </CategoryTitle>
               </FooterCategory>
 
               <FooterCategory>
@@ -174,6 +188,7 @@ const FooterCategory = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 300px;
 `;
 
 const CategoryTitle = styled.span`
@@ -195,6 +210,7 @@ const CategoryItem = styled.span`
 const CompanyInfo = styled.p`
   font-size: 14px;
   color: #999;
+  padding-left: 40px;
 `;
 
 const Nav = styled.nav`
@@ -203,7 +219,6 @@ const Nav = styled.nav`
   padding: 0 40px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   position: fixed;
   top: 0;
   background: white;
@@ -214,7 +229,7 @@ const Nav = styled.nav`
 const Logo = styled.div`
   display: flex;
   align-items: center;
-
+  flex: 1;
   img {
     height: 24px;
   }
@@ -223,17 +238,19 @@ const Logo = styled.div`
 const MenuContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 40px;
+  flex: 1.5;
+  justify-content: center;
 `;
 
 const MenuList = styled.ul`
   display: flex;
-  gap: 32px;
+  gap: 60px;
   list-style: none;
 `;
 
 const MenuItem = styled.li`
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
   color: #333;
   cursor: pointer;
   &:hover {
@@ -244,6 +261,8 @@ const MenuItem = styled.li`
 const AuthButtons = styled.div`
   display: flex;
   gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
 `;
 
 const SignUpButton = styled.button`
@@ -365,4 +384,16 @@ const FooterLogo = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 40px;
+`;
+
+const UserGreeting = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const UserName = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
 `;
