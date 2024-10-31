@@ -3,6 +3,7 @@ import KakaoMap from './KakaoMap';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
 import MainPage from './pages/main';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import RegistrationPage from './pages/registraiton';
 import { Reservation } from './pages/Reservation';
 import { CommonRoute } from './components/CommonRoute';
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/registration" element={<RegistrationPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/partners" element={<CommonRoute />}>
             <Route index element={<Reservation />} />
             <Route path="company" element={<CompanyManagement />} />
