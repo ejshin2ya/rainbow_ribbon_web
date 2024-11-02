@@ -15,6 +15,8 @@ import { fetchFuneralInfo } from 'src/services/FuneralCompositionService';
 import {
   isCompanyInfoComplete,
   isFuneralInfoComplete,
+  mapCompanyInfoToRegistrationData,
+  mapFuneralInfoToFuneralComposition,
 } from 'src/utils/dataMappingUtils';
 
 const LoginPage: React.FC = () => {
@@ -75,8 +77,17 @@ const LoginPage: React.FC = () => {
               fetchFuneralInfo(),
             ]);
 
-            const hasCompleteCompanyInfo = isCompanyInfoComplete(companyInfo);
-            const hasCompleteFuneralInfo = isFuneralInfoComplete(funeralInfo);
+            const convertedRegistrationData =
+              mapCompanyInfoToRegistrationData(companyInfo);
+            const convertedFuneralComposition =
+              mapFuneralInfoToFuneralComposition(funeralInfo);
+
+            const hasCompleteCompanyInfo = isCompanyInfoComplete(
+              convertedRegistrationData,
+            );
+            const hasCompleteFuneralInfo = isFuneralInfoComplete(
+              convertedFuneralComposition,
+            );
 
             if (hasCompleteCompanyInfo && hasCompleteFuneralInfo) {
               navigate('/'); // 메인 페이지로 이동
