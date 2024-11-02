@@ -42,23 +42,34 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
     funeralComposition.funeralInfoUpdateReq.hasMemorial;
 
   useEffect(() => {
-    const hasImages = funeralComposition.memorialImage.length > 0;
-    const hasPrice = !!funeralComposition.funeralInfoUpdateReq.memorialPrice;
+    const { hasMemorial, memorialPrice } =
+      funeralComposition.funeralInfoUpdateReq;
 
     setIsNextButtonActive(
-      hasMemorialService === false ||
-        (hasMemorialService && hasImages && hasPrice),
+      hasMemorial === false ||
+        (hasMemorial &&
+          funeralComposition.memorialImage.length > 0 &&
+          memorialPrice > 0),
     );
 
+    // cleanup - 미리보기 URL 정리
     return () => {
       funeralComposition.memorialImage.forEach(image => {
         if ('preview' in image) {
-          // MemorialImage 타입 체크
           URL.revokeObjectURL(image.preview);
         }
       });
     };
-  }, [funeralComposition, hasMemorialService]);
+  }, [funeralComposition]);
+
+  // 디버깅을 위해 상태 변화 확인
+  useEffect(() => {
+    console.log('Current memorial state:', {
+      hasMemorial: funeralComposition.funeralInfoUpdateReq.hasMemorial,
+      memorialPrice: funeralComposition.funeralInfoUpdateReq.memorialPrice,
+      images: funeralComposition.memorialImage,
+    });
+  }, [funeralComposition]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -87,22 +98,23 @@ const MemorialServiceStep: React.FC<MemorialServiceStepProps> = ({
   };
 
   const handleSetMemorialService = (value: boolean) => {
-    setFuneralComposition(prev => ({
-      ...prev,
-      funeralInfoUpdateReq: {
-        ...prev.funeralInfoUpdateReq,
-        hasMemorial: value,
-      },
-      ...(value
-        ? {}
-        : {
-            memorialImage: [],
-            funeralInfoUpdateReq: {
-              ...prev.funeralInfoUpdateReq,
-              memorialPrice: 0,
-            },
-          }),
-    }));
+    setFuneralComposition(prev => {
+      // 새로운 상태 객체를 생성
+      const newState = {
+        ...prev,
+        funeralInfoUpdateReq: {
+          ...prev.funeralInfoUpdateReq,
+          hasMemorial: value,
+          // value가 false일 때는 관련 필드 초기화
+          memorialPrice: value ? prev.funeralInfoUpdateReq.memorialPrice : 0,
+        },
+        // value가 false일 때는 이미지 배열 초기화
+        memorialImage: value ? prev.memorialImage : [],
+      };
+
+      console.log('Setting memorial service:', { value, newState }); // 디버깅용
+      return newState;
+    });
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {

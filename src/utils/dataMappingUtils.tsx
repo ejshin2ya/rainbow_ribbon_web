@@ -108,80 +108,85 @@ export const isValidFuneralInfo = (info: Partial<FuneralInfo>): boolean => {
 };
 
 // 회사 정보에 대한 완전성 검사 함수
-export const isCompanyInfoComplete = (info: Partial<CompanyInfo>): boolean => {
-  // 필수 필드들이 모두 존재하고 유효한 값을 가지고 있는지 확인
-  const requiredFields = [
-    'companyName',
-    'contact',
-    'postalCode',
-    'address',
-    'addressDetail',
-    'offDay',
-    'weekdayOpen',
-    'weekdayClose',
-    'weekendOpen',
-    'weekendClose',
-    'parallel',
-    'notification',
-    'logoImage',
-  ];
+export const isCompanyInfoComplete = (
+  info: Partial<RegistrationData>,
+): boolean => {
+  if (!info?.companyInfoEditReq) {
+    return false;
+  }
 
-  return requiredFields.every(field => {
-    const value = info[field];
+  const {
+    companyName,
+    contact,
+    postalCode,
+    address,
+    addressDetail,
+    offDay,
+    weekdayOpen,
+    weekdayClose,
+    weekendOpen,
+    weekendClose,
+    parallel,
+    notification,
+  } = info.companyInfoEditReq;
 
-    // 특별한 검증이 필요한 필드들
-    if (field === 'offDay') {
-      return Array.isArray(value) && value.length > 0;
-    }
-    if (field === 'parallel') {
-      return typeof value === 'number' && value > 0;
-    }
-    if (field === 'logoImage') {
-      return value !== null && value !== undefined;
-    }
+  const checks = {
+    companyName: !!companyName,
+    contact: !!contact,
+    postalCode: !!postalCode,
+    address: !!address,
+    addressDetail: !!addressDetail,
+    offDay: Array.isArray(offDay) && offDay.length > 0,
+    weekdayOpen: !!weekdayOpen,
+    weekdayClose: !!weekdayClose,
+    weekendOpen: !!weekendOpen,
+    weekendClose: !!weekendClose,
+    parallel: !!parallel && parallel > 0,
+    notification: !!notification,
+    logoImage: !!info.logoImage,
+  };
 
-    // 문자열 필드들에 대한 기본 검증
-    return value !== null && value !== undefined && value !== '';
-  });
+  return Object.values(checks).every(Boolean);
 };
 
 // 장례 정보에 대한 완전성 검사 함수
-export const isFuneralInfoComplete = (info: Partial<FuneralInfo>): boolean => {
-  // 필수 필드들이 모두 존재하고 유효한 값을 가지고 있는지 확인
-  const requiredFields = [
-    'funeralDescription',
-    'durationMin',
-    'shroudDescription',
-    'shroudPrice',
-    'hasMemorial',
-    'memorialPrice',
-    'funeralImage',
-    'shroudImage',
-    'memorialImages',
-  ];
+export const isFuneralInfoComplete = (
+  info: Partial<FuneralCompositionState>,
+): boolean => {
+  if (!info?.funeralInfoUpdateReq) {
+    return false;
+  }
 
-  return requiredFields.every(field => {
-    const value = info[field];
+  const {
+    funeralDescription,
+    durationMin,
+    shroudDescription,
+    shroudPrice,
+    hasMemorial,
+    memorialPrice,
+  } = info.funeralInfoUpdateReq;
 
-    // 특별한 검증이 필요한 필드들
-    if (
-      field === 'durationMin' ||
-      field === 'shroudPrice' ||
-      field === 'memorialPrice'
-    ) {
-      return typeof value === 'number' && value > 0;
-    }
-    if (field === 'hasMemorial') {
-      return typeof value === 'boolean';
-    }
-    if (field === 'funeralImage' || field === 'shroudImage') {
-      return value !== null && value !== undefined;
-    }
-    if (field === 'memorialImages') {
-      return Array.isArray(value);
-    }
+  // 기본 체크 항목 (hasMemorial 상태와 관계없이 항상 체크)
+  const basicChecks = {
+    funeralDescription: !!funeralDescription,
+    durationMin: !!durationMin && durationMin > 0,
+    shroudDescription: !!shroudDescription,
+    shroudPrice: !!shroudPrice && shroudPrice > 0,
+    hasMemorial: hasMemorial !== undefined,
+    funeralImage: !!info.funeralImage,
+    shroudCoffinImage: !!info.shroudCoffinImage,
+  };
 
-    // 문자열 필드들에 대한 기본 검증
-    return value !== null && value !== undefined && value !== '';
-  });
+  // hasMemorial이 true일 때만 추가 체크
+  const memorialChecks = hasMemorial
+    ? {
+        memorialPrice: !!memorialPrice && memorialPrice > 0,
+        memorialImage:
+          Array.isArray(info.memorialImage) && info.memorialImage.length > 0,
+      }
+    : {};
+
+  const allChecks = { ...basicChecks, ...memorialChecks };
+
+  return Object.values(allChecks).every(Boolean);
 };
