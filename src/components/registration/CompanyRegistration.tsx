@@ -70,10 +70,10 @@ const CompanyRegistration = () => {
   // isCompanyInfoComplete 함수 내용도 확인해보기
 
   const isSubmitActive = useMemo(() => {
-    return (
-      isCompanyInfoComplete(registrationData) &&
-      isFuneralInfoComplete(funeralComposition)
-    );
+    const companyComplete = isCompanyInfoComplete(registrationData);
+    const funeralComplete = isFuneralInfoComplete(funeralComposition);
+
+    return companyComplete && funeralComplete;
   }, [registrationData, funeralComposition]);
 
   const handleOpenModal = useCallback(type => {
@@ -89,9 +89,10 @@ const CompanyRegistration = () => {
   const handleSubmit = useCallback(
     e => {
       e.preventDefault();
-      if (isSubmitActive) {
-        navigate('/partners');
+      if (!isSubmitActive) {
+        return;
       }
+      navigate('/partners');
     },
     [isSubmitActive, navigate],
   );
