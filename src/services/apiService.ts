@@ -89,3 +89,17 @@ export const loginUser = async (loginData: LoginReq): Promise<ApiResponse> => {
   );
   return response.data;
 };
+
+export const logout = async (): Promise<void> => {
+  try {
+    // 백엔드 로그아웃 API 호출
+    await api.post(`${ENDPOINT_COMPANY_AUTH}/logout`);
+
+    // 로컬 스토리지의 토큰 제거
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  } catch (error) {
+    console.error('Logout failed:', error);
+    throw error;
+  }
+};

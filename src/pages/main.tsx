@@ -4,10 +4,34 @@ import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import { useNavigate } from 'react-router-dom';
 import { authState } from '../atoms/authState';
+import { useSetRecoilState } from 'recoil';
+import { logout } from '../services/apiService';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 const MainPage = () => {
   const navigate = useNavigate();
   const auth = useRecoilValue(authState); // 로그인 상태 가져오기
+  const setAuth = useSetRecoilState(authState);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // 로그아웃 후 auth state 초기화
+      setAuth({
+        name: '',
+        accessToken: '',
+        refreshToken: '',
+        userType: '',
+        phone: '',
+      });
+      // 로그인 페이지로 리다이렉트
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // 에러 처리 - 필요한 경우 사용자에게 알림
+    }
+  };
 
   return (
     <>
@@ -33,6 +57,9 @@ const MainPage = () => {
             {auth.name ? ( // 로그인 상태일 때
               <UserGreeting>
                 <UserName>{auth.name}님 안녕하세요</UserName>
+                <LogoutButton onClick={handleLogout}>
+                  <FontAwesomeIcon icon={faSignOutAlt} />
+                </LogoutButton>
               </UserGreeting>
             ) : (
               // 비로그인 상태일 때
@@ -296,6 +323,23 @@ const StartButton = styled(Button)`
   font-size: 18px;
 `;
 
+const LogoutButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #666;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #ff6632;
+    background: rgba(0, 0, 0, 0.05);
+  }
+`;
+
 const MainContent = styled.main`
   width: 100%;
   margin: 0 auto;
@@ -388,6 +432,8 @@ const FooterLogo = styled.div`
 
 const UserGreeting = styled.div`
   display: flex;
+  flex: 1;
+  justify-content: flex-end;
   align-items: center;
   gap: 12px;
 `;
