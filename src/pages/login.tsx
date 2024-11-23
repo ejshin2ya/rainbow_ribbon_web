@@ -116,12 +116,7 @@ const LoginPage: React.FC = () => {
     <Container>
       <InnerContainer>
         <Logo onClick={() => navigate('/')}>
-          <img src="/assets/images/ic_logo_white.png" alt="reborn" />
-          <img
-            src="/assets/images/partners.png"
-            alt="partners"
-            style={{ paddingLeft: '5px' }}
-          />
+          <img src="/assets/images/RebornLogo.png" alt="reborn_logo" />
         </Logo>
 
         <FormBox onSubmit={handleSubmit}>

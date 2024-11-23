@@ -39,12 +39,7 @@ const MainPage = () => {
       <Container>
         <Nav>
           <Logo>
-            <img src="/assets/images/ic_logo_white.png" alt="reborn" />
-            <img
-              src="/assets/images/partners.png"
-              alt="partners"
-              style={{ paddingLeft: '5px' }}
-            />
+            <img src="/assets/images/RebornLogo.png" alt="reborn_logo" />
           </Logo>
 
           <MenuContainer>
