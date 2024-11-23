@@ -1,38 +1,62 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { FaCheck } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
-//부모 컴포넌트인 SignUpForm으로 부터 다음페이지로 이동하도록 전달 받은 props
 interface TermsAgreementProps {
   onNext: () => void;
 }
 
-// 전체동의, 선택 동의 타입 지정
 interface TermsAgreedInfoData {
   allAgreed: boolean;
   agreements: boolean[];
 }
-//선택값 내용
+
 const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
+  const navigate = useNavigate();
+
   const terms = [
-    '계약서의 정보 작성에 대한 확인',
-    '사업자 변경 불가 동의',
-    '셀프 서비스 이용 동의',
-    '광고 · 서비스 운영 원칙 동의',
-    '무지개리본 서비스 이용약관',
-    '고객 개인정보 보호 동의',
-    '개인정보 수집 및 이용 동의',
-    '서비스/이벤트 정보 수신 동의',
+    {
+      text: '계약서의 정보 작성에 대한 확인',
+      link: null,
+    },
+    {
+      text: '사업자 변경 불가 동의',
+      link: null,
+    },
+    {
+      text: '셀프 서비스 이용 동의',
+      link: null,
+    },
+    {
+      text: '광고 · 서비스 운영 원칙 동의',
+      link: null,
+    },
+    {
+      text: '무지개리본 서비스 이용약관',
+      link: null,
+    },
+    {
+      text: '고객 개인정보 보호 동의',
+      link: null,
+    },
+    {
+      text: '개인정보 수집 및 이용 동의',
+      link: '/privacy',
+    },
+    {
+      text: '서비스/이벤트 정보 수신 동의',
+      link: null,
+    },
   ];
 
-  const [TermsAgreedInfoData, setTermsAgreedInfoData] = //전체동의 여부와, 개별항목 동의 여부 상태 저장
+  const [TermsAgreedInfoData, setTermsAgreedInfoData] =
     useState<TermsAgreedInfoData>({
       allAgreed: false,
       agreements: Array(terms.length).fill(false),
     });
 
   const handleAgreeAllChange = () => {
-    //전체동의 선택시 useState 함수가 작동되어 값을 업데이트하고 렌더링 하는 함수
     const newState = TermsAgreedInfoData.allAgreed;
     setTermsAgreedInfoData(prev => ({
       ...prev,
@@ -42,7 +66,6 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
   };
 
   const handleIndividualChange = (index: number) => {
-    //개별 항목 동의 선택시 useState 함수가 작동되어 값을 업데이트하고 렌더링하는 함수
     const newAgreements = [...TermsAgreedInfoData.agreements];
     newAgreements[index] = !newAgreements[index];
     setTermsAgreedInfoData(prev => ({
@@ -52,8 +75,26 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
     }));
   };
 
+  const handleTermClick = (
+    link: string | null,
+    index: number,
+    e: React.MouseEvent,
+  ) => {
+    // 체크박스 영역을 클릭한 경우는 페이지 이동하지 않음
+    if (
+      (e.target as HTMLElement).tagName === 'svg' ||
+      (e.target as HTMLElement).tagName === 'path' ||
+      (e.target as HTMLElement).tagName === 'label'
+    ) {
+      return;
+    }
+
+    if (link) {
+      navigate(link);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
-    //전체동의 완료 후 제출 버튼 선택시 상위 컴포넌트인 SignUpForm 컴포넌트로 값을 보내주는 함수
     e.preventDefault();
     onNext();
   };
@@ -82,7 +123,11 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
       </CheckboxContainer>
       <TermsList>
         {terms.map((term, index) => (
-          <TermItem key={index}>
+          <TermItem
+            key={index}
+            onClick={e => handleTermClick(term.link, index, e)}
+            hasLink={!!term.link}
+          >
             <HiddenCheckbox
               id={`checkbox-${index}`}
               checked={TermsAgreedInfoData.agreements[index]}
@@ -96,8 +141,7 @@ const TermsAgreement: React.FC<TermsAgreementProps> = ({ onNext }) => {
                 }
               />
             </label>
-
-            <span>{term}</span>
+            <TermText hasLink={!!term.link}>{term.text}</TermText>
           </TermItem>
         ))}
       </TermsList>
@@ -191,12 +235,6 @@ const TermsList = styled.ul`
   }
 `;
 
-const TermItem = styled.li`
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
 const SubmitButton = styled.button<{ disabled: boolean }>`
   width: 100%;
   padding: 15px;
@@ -209,6 +247,24 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
 
   &:hover { 
   background-color:${props => (!props.disabled ? ' #e65c2d' : '#EBEBEB')}
+`;
+
+const TermItem = styled.li<{ hasLink: boolean }>`
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  cursor: ${props => (props.hasLink ? 'pointer' : 'default')};
+`;
+
+const TermText = styled.span<{ hasLink: boolean }>`
+  font-size: 14px;
+  color: #181717;
+  ${props =>
+    props.hasLink &&
+    `
+    text-decoration: underline;
+    color: #FF6632;
+  `}
 `;
 
 export default TermsAgreement;
