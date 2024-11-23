@@ -166,34 +166,36 @@ const BusinessInfo: React.FC<BusinessInfoProps> = ({ onSubmit }) => {
       <AddressContainer>
         {businessData.zonecode ? (
           <>
+            <InputWithLabel
+              label="주소"
+              htmlFor="input-zonecode"
+              type="text"
+              name="zonecode"
+              value={businessData.zonecode}
+              onChange={handleChange}
+              disabled
+            ></InputWithLabel>
             <InputBox>
               <Input
                 type="text"
-                name="zonecode"
-                value={businessData.zonecode}
+                name="address"
+                value={businessData.address}
                 onChange={handleChange}
+                placeholder="주소 찾기를 눌러주세요."
+                required
                 disabled
-              ></Input>
-              <Button onClick={openModal} type="button">
+              />
+              <Button type="button" onClick={openModal}>
                 주소 찾기
               </Button>
             </InputBox>
-            <InputWithLabel
-              label="주소"
-              htmlFor="input-address"
-              type="text"
-              name="address"
-              value={businessData.address}
-              onChange={handleChange}
-              placeholder="주소 찾기를 눌러주세요."
-              required
-              disabled
-            />
+
             <Input
               type="text"
               name="detailedAdress"
               value={businessData.detailedAdress}
               onChange={handleChange}
+              placeholder="상세주소를 작성해주세요."
             ></Input>
           </>
         ) : (
