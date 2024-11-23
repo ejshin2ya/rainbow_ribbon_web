@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
 import { SignUpFormData, LoginReq } from '../../services/apiService';
@@ -13,6 +14,8 @@ import { useLoginMutation } from '../../hooks/useLoginMutation';
 import ProgressBar from '../common/ProgressBar';
 import { useAuth } from '../../contexts/AuthContext';
 import { authState } from '../../atoms/authState';
+import Modal from '../../components/common/Modal';
+import useModal from '../../hooks/useModal';
 import {
   isCompanyInfoComplete,
   isFuneralInfoComplete,
@@ -33,7 +36,8 @@ const SignUpForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<SignUpStep>(
     SignUpStep.termsAgreedInfo,
   );
-
+  const [errorMessage, setErrorMessage] = useState<string>(''); // 에러 메시지 상태 추가
+  const { isOpen, openModal, closeModal } = useModal();
   //router를 통해 화면 전환하는 함수
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
@@ -107,13 +111,26 @@ const SignUpForm: React.FC = () => {
               navigate('/registration'); // 에러 발생시 등록 페이지로 이동
             }
           },
-          onError: error => {
-            console.log('로그인 실패', error);
+          onError: (error: Error) => {
+            if (axios.isAxiosError(error)) {
+              const msg = error.response?.data?.msg || '로그인에 실패했습니다.';
+              setErrorMessage(msg);
+            } else {
+              setErrorMessage('알 수 없는 오류가 발생했습니다.');
+            }
+            openModal();
           },
         });
       },
-      onError: error => {
-        console.error('회원가입 실패', error);
+      onError: (error: Error) => {
+        if (axios.isAxiosError(error)) {
+          const msg =
+            error.response?.data?.msg || '회원가입 중 오류가 발생했습니다.';
+          setErrorMessage(msg);
+        } else {
+          setErrorMessage('알 수 없는 오류가 발생했습니다.');
+        }
+        openModal();
       },
     });
   };
@@ -137,12 +154,7 @@ const SignUpForm: React.FC = () => {
   return (
     <div>
       <Logo onClick={() => navigate('/')}>
-        <img src="/assets/images/ic_logo_white.png" alt="reborn" />
-        <img
-          src="/assets/images/partners.png"
-          alt="partners"
-          style={{ paddingLeft: '5px' }}
-        />
+        <img src="/assets/images/RebornLogo.png" alt="reborn_logo" />
       </Logo>
       {currentStep === SignUpStep.termsAgreedInfo ? (
         <FormContainer>{renderCurrentStep()}</FormContainer>
@@ -166,6 +178,11 @@ const SignUpForm: React.FC = () => {
 
           <SubTitle>{stepName[currentStep - 1]} 정보를 작성해 주세요.</SubTitle>
           <ScrollableContent>{renderCurrentStep()}</ScrollableContent>
+          <Modal
+            isOpen={isOpen}
+            onClose={closeModal}
+            message={errorMessage}
+          ></Modal>
         </FormContainer>
       )}
     </div>
@@ -230,6 +247,9 @@ const Logo = styled.div`
   margin-bottom: 30px;
   margin-top: 30px;
   cursor: pointer; // 커서 포인터 추가
+  img {
+    height: 24px;
+  }
 
   &:hover {
     opacity: 0.8; // 호버 효과 추가
